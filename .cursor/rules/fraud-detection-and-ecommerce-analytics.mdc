@@ -1,0 +1,141 @@
+---
+description: >
+  Rules and conventions for developing the Enterprise Fraud Detection & 
+  E-commerce Analytics Platform. This includes Python coding standards, 
+  FastAPI microservices best practices, RabbitMQ-based event-driven 
+  communication, JAX/ML model integration, security/compliance requirements, 
+  and monitoring guidelines. These rules must be applied across all 
+  services: Fraud Detection, Analytics, Payment Intelligence, Data Ingestion, 
+  Feature Store, and Infrastructure components.
+
+globs:
+  - "fraud_detection/**"
+  - "analytics/**"
+  - "payment_intelligence/**"
+  - "data_ingestion/**"
+  - "feature_store/**"
+  - "notification_service/**"
+  - "config_service/**"
+  - "dashboard/**"
+  - "ml_pipeline/**"
+  - "models/**"
+  - "k8s-manifests/**"
+  - "helm-charts/**"
+  - "kong/**"
+  - "istio/**"
+  - "**/*.py"
+  - "**/*.md"
+
+alwaysApply: true
+---
+
+# Enterprise Fraud Detection & E-commerce Analytics Platform Rules
+
+## Advanced Principles
+- Design services to be stateless; leverage external storage and caches (e.g., Redis) for state persistence.
+- Implement API gateways and reverse proxies (e.g., Kong, NGINX, Traefik) for handling traffic to microservices.
+- Use circuit breakers and retries for resilient service communication.
+- Favor containerized and cloud-native deployments with Kubernetes and Helm.
+- Use asynchronous workers (Celery + RabbitMQ) for handling background tasks efficiently.
+- Design APIs with clear separation of concerns aligned with microservices principles.
+
+## Microservices and API Gateway Integration
+- Integrate FastAPI services with API Gateway solutions like Kong or Istio ingress gateway.
+- Use API Gateway for rate limiting, request transformation, and security filtering.
+- Implement inter-service communication using RabbitMQ for event-driven architecture.
+- Ensure APIs expose OpenAPI 3.0 specifications for documentation and testing.
+
+## Serverless and Cloud-Native Patterns
+- Optimize FastAPI apps for serverless or container-native deployments.
+- Minimize cold start times; use lightweight containers with uvicorn and Gunicorn.
+- Apply horizontal scaling via Kubernetes HPA and RabbitMQ-based message queuing.
+- Use managed services (e.g., Snowflake, MinIO/S3, Feast) to reduce operational overhead.
+
+## Advanced Middleware and Security
+- Implement custom middleware for logging, tracing, and monitoring API requests.
+- Use OpenTelemetry and Jaeger for distributed tracing in microservices.
+- Apply OAuth2/JWT for secure API access, RBAC for authorization, and API key management.
+- Apply security headers (CORS, CSP) and validate inputs against OWASP top vulnerabilities.
+
+## Optimizing for Performance and Scalability
+- Leverage FastAPI async capabilities for handling high concurrency.
+- Use caching layers (Redis) to reduce load on databases.
+- Apply load balancing with Istio service mesh for better communication and fault tolerance.
+- Optimize database schemas (PostgreSQL partitioning, ClickHouse for analytics).
+- Target SLA: <50ms latency, 99.9% uptime, 10,000+ TPS throughput.
+
+## Monitoring and Logging
+- Use Prometheus and Grafana for monitoring; define alerts for anomalies.
+- Implement structured logging with JSON format for centralized ELK stack analysis.
+- Collect metrics (latency, throughput, fraud score distribution, ML model accuracy).
+- Monitor ML models with Evidently AI for drift detection and retraining triggers.
+
+---
+
+# JAX, Python, NumPy, and Machine Learning Rules
+
+## Code Style and Structure
+- Write concise, technical Python code with accurate examples.
+- Prefer functional programming patterns; minimize unnecessary classes.
+- Use vectorized operations over loops for performance (NumPy, jax.numpy).
+- Organize code into functions and modules; follow PEP 8 style guidelines.
+- Use descriptive variable names (`learning_rate`, `gradients`, etc.).
+
+## JAX Best Practices
+- Use `jax.numpy` instead of standard NumPy for computations.
+- Utilize automatic differentiation with `jax.grad`, `jax.value_and_grad`.
+- Apply `jax.jit` for just-in-time compilation of critical functions.
+- Use `jax.vmap` to vectorize operations across batch dimensions.
+- Avoid in-place mutations; JAX arrays are immutable.
+- Keep functions pure and side-effect free for JAX transformations.
+
+## Optimization and Performance
+- Replace Python loops with JAX control flow (`jax.lax.scan`, `jax.lax.cond`).
+- Optimize memory usage by avoiding unnecessary copies; prefer float32.
+- Profile and benchmark to identify bottlenecks.
+- Reuse compiled functions to avoid JIT overhead.
+
+## Error Handling and Validation
+- Validate input shapes and types before computation.
+- Raise informative errors for invalid inputs.
+- Gracefully handle exceptions to prevent service crashes.
+
+## Testing and Debugging
+- Write unit tests with pytest for mathematical correctness.
+- Use `jax.debug.print` for debugging JIT-compiled functions.
+- Test ML pipelines end-to-end, including data preprocessing and model serving.
+
+## Documentation
+- Use docstrings following PEP 257 conventions.
+- Provide clear explanations of function purposes, inputs, outputs, and examples.
+- Comment on complex or non-obvious code sections.
+
+## Key Conventions
+- Naming: `snake_case` for functions/variables, `UPPERCASE` for constants.
+- Keep functions small and focused; avoid global variables.
+- Logical package/module organization for ML models, pipelines, and utilities.
+
+## JAX Transformations
+- Ensure pure functions for compatibility with `jit`, `grad`, `vmap`, `pmap`.
+- Use `jax.random` PRNG with explicit key management.
+- Leverage `jax.pmap` for parallel execution across multiple GPUs/TPUs.
+
+## Performance Tips
+- Benchmark frequently using `timeit` and JAX tools.
+- Minimize CPU↔GPU transfers; keep tensors on device.
+- Optimize large batch operations with `vmap`.
+
+## Best Practices
+- Immutability: Avoid mutable states, embrace functional programming.
+- Reproducibility: Manage random seeds carefully for deterministic results.
+- Track library versions (`jax`, `jaxlib`, `numpy`, `scikit-learn`) for compatibility.
+
+---
+
+Refer to official documentation for further details:
+- [FastAPI](https://fastapi.tiangolo.com)
+- [RabbitMQ](https://www.rabbitmq.com)
+- [Kubernetes](https://kubernetes.io)
+- [Istio](https://istio.io)
+- [Prometheus](https://prometheus.io)
+- [JAX Documentation](https://jax.readthedocs.io)
