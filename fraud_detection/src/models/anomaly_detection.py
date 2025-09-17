@@ -622,10 +622,11 @@ class IsolationForestFraudDetector:
             results_df['anomaly_score'] = self.anomaly_scores[contamination]
             results_df['is_fraud'] = (predictions == -1).astype(int)
             
-            # Add risk score (normalized anomaly score)
+            # Add risk score (inverted normalized anomaly score for Isolation Forest)
+            # Higher risk_score = Higher anomaly probability
             scores = self.anomaly_scores[contamination]
             min_score, max_score = scores.min(), scores.max()
-            results_df['risk_score'] = (scores - min_score) / (max_score - min_score)
+            results_df['risk_score'] = (max_score - scores) / (max_score - min_score)
             
             filename = f"fraud_predictions_contamination_{contamination}_{timestamp}.csv"
             filepath = os.path.join(output_dir, filename)
