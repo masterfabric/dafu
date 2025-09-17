@@ -141,6 +141,10 @@ class IsolationForestFraudDetector:
         logger.info("Detecting low variance columns...")
         
         for col in self.numerical_columns:
+            # Skip label column from low variance check
+            if col == self.label_column:
+                continue
+                
             if self.data[col].var() < 0.01:  # Very low variance
                 self.low_variance_columns.append(col)
                 logger.info(f"Low variance column detected: {col} (variance: {self.data[col].var():.6f})")
@@ -296,10 +300,13 @@ class IsolationForestFraudDetector:
             logger.info(f"Removing high cardinality columns: {self.high_cardinality_columns}")
             self.processed_data = self.processed_data.drop(columns=self.high_cardinality_columns)
         
-        # Remove low variance columns
+        # Remove low variance columns (but keep label column)
         if self.low_variance_columns:
-            logger.info(f"Removing low variance columns: {self.low_variance_columns}")
-            self.processed_data = self.processed_data.drop(columns=self.low_variance_columns)
+            # Filter out label column from low variance columns to remove
+            columns_to_remove = [col for col in self.low_variance_columns if col != self.label_column]
+            if columns_to_remove:
+                logger.info(f"Removing low variance columns: {columns_to_remove}")
+                self.processed_data = self.processed_data.drop(columns=columns_to_remove)
         
         # Handle missing values
         self._handle_missing_values()
@@ -444,6 +451,9 @@ class IsolationForestFraudDetector:
             else:
                 roc_auc = None
             
+            # Calculate confusion matrix
+            cm = confusion_matrix(y_true, binary_predictions)
+            
             self.results[contamination] = {
                 'accuracy': accuracy,
                 'f1_score': f1,
@@ -451,7 +461,8 @@ class IsolationForestFraudDetector:
                 'recall': recall,
                 'roc_auc': roc_auc,
                 'predictions': binary_predictions,
-                'scores': scores
+                'scores': scores,
+                'confusion_matrix': cm
             }
             
             logger.info(f"Contamination {contamination}: Accuracy={accuracy:.4f}, F1={f1:.4f}")
@@ -671,8 +682,17 @@ class IsolationForestFraudDetector:
         
         if self.is_supervised and self.label_column:
             print(f"🏷️  Label Column: {self.label_column}")
+            
+            # Show actual fraud/non-fraud counts
+            fraud_counts = self.data[self.label_column].value_counts().sort_index()
+            print(f"\n📊 ACTUAL DATA DISTRIBUTION:")
+            print("-" * 40)
+            for label, count in fraud_counts.items():
+                percentage = (count / len(self.data)) * 100
+                label_name = "FRAUD" if label == 1 else "NORMAL"
+                print(f"  {label_name} ({label}): {count:,} ({percentage:.2f}%)")
         
-        print(f"🤖 Models Trained: {len(self.models)} contamination levels")
+        print(f"\n🤖 Models Trained: {len(self.models)} contamination levels")
         
         if self.results:
             print("\n📊 MODEL PERFORMANCE:")
@@ -685,6 +705,17 @@ class IsolationForestFraudDetector:
                 print(f"  • Recall:    {metrics['recall']:.4f}")
                 if metrics.get('roc_auc'):
                     print(f"  • ROC-AUC:   {metrics['roc_auc']:.4f}")
+                
+                # Show confusion matrix details
+                if 'confusion_matrix' in metrics:
+                    cm = metrics['confusion_matrix']
+                    tn, fp, fn, tp = cm.ravel()
+                    print(f"\n  📋 CONFUSION MATRIX:")
+                    print(f"    • True Negative  (TN): {tn:,} - Correctly predicted NORMAL")
+                    print(f"    • False Positive (FP): {fp:,} - Incorrectly predicted FRAUD")
+                    print(f"    • False Negative (FN): {fn:,} - Missed FRAUD")
+                    print(f"    • True Positive  (TP): {tp:,} - Correctly predicted FRAUD")
+                    print(f"    • Total Predictions: {tn + fp + fn + tp:,}")
                 print()
         
         # Find best model
