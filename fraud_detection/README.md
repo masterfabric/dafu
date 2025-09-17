@@ -7,6 +7,7 @@ A comprehensive Isolation Forest-based fraud detection system designed for enter
 ### Core Capabilities
 - **Automatic Data Analysis**: Intelligent column detection and data suitability assessment
 - **Dual Learning Modes**: Support for both supervised and unsupervised learning
+- **Dual Detection Methods**: Classic Isolation Forest predictions or Risk Score-based threshold detection
 - **Advanced Preprocessing**: Automatic handling of missing values, categorical encoding, and feature standardization
 - **Multi-Model Training**: Train multiple models with different contamination levels
 - **Comprehensive Evaluation**: Detailed performance metrics and statistical analysis
@@ -19,6 +20,7 @@ A comprehensive Isolation Forest-based fraud detection system designed for enter
 - **Comprehensive Logging**: Structured logging with configurable levels
 - **Result Export**: Multiple output formats (CSV, JSON) with timestamps
 - **Risk Scoring**: Normalized risk scores for business decision making
+- **Flexible Thresholding**: Custom risk score thresholds for fine-tuned anomaly detection
 
 ## 📁 Project Structure
 
@@ -89,6 +91,9 @@ detector.check_data_suitability()
 # Set learning mode (supervised/unsupervised)
 detector.setup_learning_mode()
 
+# Choose anomaly detection method (classic or risk score based)
+# This will be prompted during setup_learning_mode()
+
 # Preprocess data
 detector.preprocess_data()
 
@@ -121,6 +126,23 @@ python test_anomaly_detection.py
 ```bash
 # Run the interactive system
 python src/models/anomaly_detection.py
+```
+
+### 4. Risk Score Based Detection
+
+```python
+# Example of risk score based detection
+detector = IsolationForestFraudDetector(random_state=42)
+detector.load_and_analyze_data('your_data.csv')
+
+# Setup will prompt for detection method
+detector.setup_learning_mode()
+# Choose: 2. Risk Score based (custom threshold)
+# Enter threshold: 0.7 (example)
+
+detector.preprocess_data()
+detector.train_models([0.1])
+detector.evaluate_models()  # Uses risk score threshold
 ```
 
 ## 📊 Data Requirements
@@ -156,6 +178,20 @@ python src/models/anomaly_detection.py
 - Suitable for real-time fraud detection
 - Best for production environments
 
+## 🔍 Detection Methods
+
+### Classic Method
+- Uses Isolation Forest's built-in predictions
+- Binary classification based on contamination level
+- Automatic threshold determination
+- Best for standard anomaly detection scenarios
+
+### Risk Score Based Method
+- Uses custom risk score thresholds (0.0 - 1.0)
+- User-defined anomaly detection sensitivity
+- More granular control over detection criteria
+- Best for business-specific risk management
+
 ## 📈 Output and Results
 
 ### Generated Files
@@ -168,6 +204,7 @@ python src/models/anomaly_detection.py
 - **Anomaly Score**: Raw Isolation Forest decision function output
 - **Risk Score**: Normalized score (0-1) for business interpretation
 - **Binary Prediction**: 0 (normal) or 1 (fraud) classification
+- **Custom Thresholding**: User-defined risk score thresholds for anomaly detection
 
 ## 🔧 Configuration
 
@@ -176,6 +213,8 @@ python src/models/anomaly_detection.py
 - **Random State**: 42 (for reproducibility)
 - **N Estimators**: 100 (number of trees)
 - **Max Samples**: 'auto' (sample size for each tree)
+- **Detection Method**: Classic or Risk Score based (user selectable)
+- **Risk Score Threshold**: 0.0 - 1.0 (for risk score based method)
 
 ### Preprocessing Options
 - **High Cardinality Threshold**: 50% unique values
@@ -195,6 +234,7 @@ python src/models/anomaly_detection.py
 - **Anomaly Score Distribution**: Statistical analysis of scores
 - **Feature Importance**: Variance-based feature ranking
 - **Risk Score Distribution**: Business-interpretable risk levels
+- **Threshold-based Detection**: Custom risk score threshold analysis
 
 ## 🏗️ Enterprise Integration
 
@@ -290,6 +330,8 @@ This project is part of the Enterprise Fraud Detection Platform and follows the 
 - **Memory Usage**: Large datasets may require chunked processing
 - **Dependencies**: Ensure all required packages are installed
 - **Permissions**: Check file read/write permissions
+- **Risk Score Threshold**: Choose appropriate threshold (0.0-1.0) for your use case
+- **Detection Method**: Select classic method for standard scenarios, risk score for custom control
 
 ---
 
