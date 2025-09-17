@@ -75,6 +75,8 @@ class IsolationForestFraudDetector:
         self.predictions = {}
         self.anomaly_scores = {}
         self.results = {}
+        self.use_risk_score_threshold = False
+        self.risk_score_threshold = None
         
     def load_and_analyze_data(self, file_path: str) -> pd.DataFrame:
         """
@@ -242,8 +244,10 @@ class IsolationForestFraudDetector:
         
         if self.is_supervised:
             self._setup_supervised_mode()
+            self._setup_anomaly_detection_method()
         else:
             print("🔍 Unsupervised mode selected - no ground truth labels available.")
+            self._setup_anomaly_detection_method()
     
     def _setup_supervised_mode(self) -> None:
         """Setup supervised learning mode with label selection."""
@@ -279,6 +283,47 @@ class IsolationForestFraudDetector:
         else:
             print(f"⚠️  Multi-class classification detected ({unique_labels} classes).")
             print("   Isolation Forest is typically used for binary anomaly detection.")
+    
+    def _setup_anomaly_detection_method(self) -> None:
+        """Setup anomaly detection method (classic or risk score based)."""
+        print("\n" + "="*60)
+        print("🔍 ANOMALY DETECTION METHOD SETUP")
+        print("="*60)
+        
+        while True:
+            method = input("Choose anomaly detection method:\n1. Classic (Isolation Forest predictions)\n2. Risk Score based (custom threshold)\nEnter choice (1 or 2): ").strip()
+            if method == '1':
+                self.use_risk_score_threshold = False
+                print("✅ Classic method selected - using Isolation Forest predictions")
+                break
+            elif method == '2':
+                self.use_risk_score_threshold = True
+                self._setup_risk_score_threshold()
+                break
+            else:
+                print("Please enter '1' or '2'.")
+    
+    def _setup_risk_score_threshold(self) -> None:
+        """Setup risk score threshold for anomaly detection."""
+        print("\n🎯 RISK SCORE THRESHOLD SETUP")
+        print("="*40)
+        print("Risk score ranges from 0.0 to 1.0:")
+        print("  - 0.0 = Lowest risk (most normal)")
+        print("  - 1.0 = Highest risk (most anomalous)")
+        print("  - Values above threshold will be classified as anomalies")
+        
+        while True:
+            try:
+                threshold = float(input("\nEnter risk score threshold (0.0 - 1.0): ").strip())
+                if 0.0 <= threshold <= 1.0:
+                    self.risk_score_threshold = threshold
+                    print(f"✅ Risk score threshold set to: {threshold}")
+                    print(f"   Records with risk_score >= {threshold} will be classified as anomalies")
+                    break
+                else:
+                    print("Please enter a value between 0.0 and 1.0")
+            except ValueError:
+                print("Please enter a valid number")
     
     def preprocess_data(self) -> pd.DataFrame:
         """
@@ -415,6 +460,28 @@ class IsolationForestFraudDetector:
         
         return self.models
     
+    def _get_risk_score_predictions(self, contamination: float) -> np.ndarray:
+        """
+        Get predictions based on risk score threshold.
+        
+        Args:
+            contamination: Contamination level for the model
+            
+        Returns:
+            Binary predictions (0: normal, 1: anomaly)
+        """
+        if not self.use_risk_score_threshold:
+            # Use classic Isolation Forest predictions
+            return (self.predictions[contamination] == -1).astype(int)
+        
+        # Use risk score threshold
+        risk_scores = self.anomaly_scores[contamination]
+        min_score, max_score = risk_scores.min(), risk_scores.max()
+        normalized_risk_scores = (max_score - risk_scores) / (max_score - min_score)
+        
+        # Apply threshold
+        return (normalized_risk_scores >= self.risk_score_threshold).astype(int)
+    
     def evaluate_models(self) -> Dict:
         """
         Evaluate models and return performance metrics.
@@ -435,8 +502,8 @@ class IsolationForestFraudDetector:
             predictions = self.predictions[contamination]
             scores = self.anomaly_scores[contamination]
             
-            # Convert predictions to binary (0: normal, 1: anomaly)
-            binary_predictions = (predictions == -1).astype(int)
+            # Get binary predictions based on selected method
+            binary_predictions = self._get_risk_score_predictions(contamination)
             
             # Calculate metrics
             accuracy = accuracy_score(y_true, binary_predictions)
@@ -620,7 +687,10 @@ class IsolationForestFraudDetector:
             results_df = self.data.copy()
             results_df['anomaly_prediction'] = predictions
             results_df['anomaly_score'] = self.anomaly_scores[contamination]
-            results_df['is_fraud'] = (predictions == -1).astype(int)
+            
+            # Get binary predictions based on selected method
+            binary_predictions = self._get_risk_score_predictions(contamination)
+            results_df['is_fraud'] = binary_predictions
             
             # Add risk score (inverted normalized anomaly score for Isolation Forest)
             # Higher risk_score = Higher anomaly probability
@@ -663,7 +733,9 @@ class IsolationForestFraudDetector:
             'numerical_columns': self.numerical_columns,
             'high_cardinality_columns': self.high_cardinality_columns,
             'low_variance_columns': self.low_variance_columns,
-            'contamination_levels': list(self.models.keys())
+            'contamination_levels': list(self.models.keys()),
+            'use_risk_score_threshold': self.use_risk_score_threshold,
+            'risk_score_threshold': self.risk_score_threshold
         }
         
         config_file = os.path.join(output_dir, f"configuration_{timestamp}.json")
@@ -680,6 +752,9 @@ class IsolationForestFraudDetector:
         print(f"📈 Dataset: {self.data.shape[0]:,} rows × {self.data.shape[1]} columns")
         print(f"🔧 Processed: {self.processed_data.shape[0]:,} rows × {self.processed_data.shape[1]} columns")
         print(f"🎯 Mode: {'Supervised' if self.is_supervised else 'Unsupervised'}")
+        print(f"🔍 Method: {'Risk Score Based' if self.use_risk_score_threshold else 'Classic Isolation Forest'}")
+        if self.use_risk_score_threshold:
+            print(f"🎯 Risk Score Threshold: {self.risk_score_threshold}")
         
         if self.is_supervised and self.label_column:
             print(f"🏷️  Label Column: {self.label_column}")
