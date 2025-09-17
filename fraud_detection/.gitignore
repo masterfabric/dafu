@@ -1,0 +1,85 @@
+# Fraud Detection Service - Generated Files
+# ==========================================
+
+# Analysis results and outputs
+fraud_detection_results/
+unsupervised_test_results/
+supervised_test_results/
+test_results/
+analysis_results/
+
+# Generated visualization files
+fraud_detection_analysis_*.png
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Sample test data files
+sample_fraud_data_*.csv
+test_data_*.csv
+*_test.csv
+
+# Model artifacts and checkpoints (but keep source code)
+# models/  # Commented out to keep src/models/ directory
+checkpoints/
+*.pkl
+*.joblib
+*.h5
+*.hdf5
+*.model
+*.bin
+
+# Logs and monitoring
+logs/
+*.log
+monitoring/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Data files (if sensitive)
+data/
+datasets/
+*.csv
+*.json
+*.xlsx
+*.xls
+!requirements.txt
+
+# Configuration with sensitive data
+config.json
+secrets.json
+.env
+.env.local
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Coverage reports
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Virtual environment
+venv/
+env/
+.venv/
