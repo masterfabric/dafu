@@ -65,11 +65,59 @@ fraud_detection/
 ### Install Dependencies
 
 ```bash
-# Install required packages
+# Method 1: Minimal installation (recommended for basic usage)
+pip install -r requirements-minimal.txt
+
+# Method 2: Full installation (all enterprise features)
 pip install -r requirements.txt
 
-# Or install specific packages
+# Method 3: Manual core packages installation
 pip install pandas numpy scikit-learn matplotlib seaborn
+
+# Method 4: Create virtual environment (recommended)
+python3 -m venv fraud_detection_env
+source fraud_detection_env/bin/activate  # On Windows: fraud_detection_env\Scripts\activate
+pip install -r requirements-minimal.txt  # or requirements.txt for full features
+```
+
+### Package Requirements
+
+| Package | Purpose | Required |
+|---------|---------|----------|
+| **pandas** | Data manipulation and analysis | ✅ Yes |
+| **numpy** | Numerical computing | ✅ Yes |
+| **scikit-learn** | Machine learning (IsolationForest) | ✅ Yes |
+| **matplotlib** | Data visualization | ✅ Yes |
+| **seaborn** | Statistical data visualization | ✅ Yes |
+| **scipy** | Scientific computing | ✅ Yes |
+| **joblib** | Parallel processing | ✅ Yes |
+| **fastapi** | API framework | Optional |
+| **redis** | Caching | Optional |
+| **pytest** | Testing | Optional |
+
+### Quick Installation Script
+
+```bash
+# Automated installation (recommended)
+./install.sh              # Full installation
+./install.sh minimal      # Minimal installation only
+
+# Make script executable (if needed)
+chmod +x install.sh
+```
+
+### Verify Installation
+
+```bash
+# Test if all packages are installed correctly
+python3 -c "
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
+import matplotlib.pyplot as plt
+import seaborn as sns
+print('✅ All packages installed successfully!')
+"
 ```
 
 ## 🚀 Quick Start
@@ -184,12 +232,14 @@ detector.evaluate_models()  # Uses risk score threshold
 - Uses Isolation Forest's built-in predictions
 - Binary classification based on contamination level
 - Automatic threshold determination
+- **Multiple contamination levels** (0.01, 0.05, 0.1) for comparison
 - Best for standard anomaly detection scenarios
 
 ### Risk Score Based Method
 - Uses custom risk score thresholds (0.0 - 1.0)
 - User-defined anomaly detection sensitivity
 - More granular control over detection criteria
+- **Single contamination level** (0.1) - optimized for risk scoring
 - Best for business-specific risk management
 
 ## 📈 Output and Results
@@ -209,7 +259,8 @@ detector.evaluate_models()  # Uses risk score threshold
 ## 🔧 Configuration
 
 ### Model Parameters
-- **Contamination Levels**: [0.01, 0.05, 0.1] (customizable)
+- **Classic Method**: Multiple contamination levels [0.01, 0.05, 0.1] for comparison
+- **Risk Score Method**: Single contamination level [0.1] for optimal risk scoring
 - **Random State**: 42 (for reproducibility)
 - **N Estimators**: 100 (number of trees)
 - **Max Samples**: 'auto' (sample size for each tree)

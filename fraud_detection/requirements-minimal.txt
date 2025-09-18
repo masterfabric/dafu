@@ -1,0 +1,19 @@
+# Minimal Requirements for Fraud Detection
+# ======================================
+# Only essential packages for basic fraud detection functionality
+
+# Core data science libraries
+pandas>=1.5.0
+numpy>=1.21.0
+scikit-learn>=1.1.0
+
+# Visualization libraries
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Additional utilities
+scipy>=1.9.0
+joblib>=1.2.0
+
+# Installation command:
+# pip install -r requirements-minimal.txt

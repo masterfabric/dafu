@@ -418,8 +418,16 @@ class IsolationForestFraudDetector:
         Returns:
             Dictionary of trained models
         """
-        if contamination_levels is None:
-            contamination_levels = [0.01, 0.05, 0.1]
+        # Determine contamination levels based on detection method
+        if self.use_risk_score_threshold:
+            # Risk score based: use single contamination level (0.1 is optimal for risk scoring)
+            contamination_levels = [0.1]
+            logger.info("Risk score based detection - using single contamination level: 0.1")
+        else:
+            # Classic method: use multiple contamination levels for comparison
+            if contamination_levels is None:
+                contamination_levels = [0.01, 0.05, 0.1]
+            logger.info(f"Classic detection - using multiple contamination levels: {contamination_levels}")
         
         logger.info(f"Training Isolation Forest models with contamination levels: {contamination_levels}")
         
@@ -768,7 +776,10 @@ class IsolationForestFraudDetector:
                 label_name = "FRAUD" if label == 1 else "NORMAL"
                 print(f"  {label_name} ({label}): {count:,} ({percentage:.2f}%)")
         
-        print(f"\n🤖 Models Trained: {len(self.models)} contamination levels")
+        if self.use_risk_score_threshold:
+            print(f"\n🤖 Models Trained: 1 model (risk score based detection)")
+        else:
+            print(f"\n🤖 Models Trained: {len(self.models)} contamination levels (classic comparison)")
         
         if self.results:
             print("\n📊 MODEL PERFORMANCE:")
@@ -840,8 +851,11 @@ def main():
         
         # Step 5: Train models
         print("\n🤖 Training Isolation Forest models...")
-        contamination_levels = [0.01, 0.05, 0.1]
-        detector.train_models(contamination_levels)
+        if detector.use_risk_score_threshold:
+            print("   Using single contamination level (0.1) for risk score based detection")
+        else:
+            print("   Using multiple contamination levels for comparison")
+        detector.train_models()
         
         # Step 6: Evaluate models (if supervised)
         if detector.is_supervised:
