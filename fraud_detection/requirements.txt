@@ -35,6 +35,9 @@ fastapi>=0.95.0
 uvicorn[standard]>=0.20.0
 pydantic>=1.10.0
 
+# Deep learning for sequence models
+tensorflow>=2.13.0
+
 # ======================================
 # OPTIONAL ENTERPRISE FEATURES
 # ======================================
