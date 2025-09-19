@@ -340,10 +340,13 @@ class IsolationForestFraudDetector:
             logger.info(f"Removing primary key columns: {self.primary_keys}")
             self.processed_data = self.processed_data.drop(columns=self.primary_keys)
         
-        # Remove high cardinality columns
+        # Remove high cardinality columns (but not primary keys already removed)
         if self.high_cardinality_columns:
-            logger.info(f"Removing high cardinality columns: {self.high_cardinality_columns}")
-            self.processed_data = self.processed_data.drop(columns=self.high_cardinality_columns)
+            # Filter out primary keys from high cardinality columns to remove
+            columns_to_remove = [col for col in self.high_cardinality_columns if col not in self.primary_keys]
+            if columns_to_remove:
+                logger.info(f"Removing high cardinality columns: {columns_to_remove}")
+                self.processed_data = self.processed_data.drop(columns=columns_to_remove)
         
         # Remove low variance columns (but keep label column)
         if self.low_variance_columns:
