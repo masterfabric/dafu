@@ -82,7 +82,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-fraud_detection_env/
+fraud_detection/fraud_detection_env/
 
 # Spyder project settings
 .spyderproject
