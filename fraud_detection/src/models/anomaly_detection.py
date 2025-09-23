@@ -64,6 +64,7 @@ class IsolationForestFraudDetector:
         self.processed_data = None
         self.label_column = None
         self.is_supervised = False
+        self.use_labels_for_training = True
         self.primary_keys = []
         self.categorical_columns = []
         self.numerical_columns = []
@@ -231,42 +232,62 @@ class IsolationForestFraudDetector:
         print("🎯 LEARNING MODE SETUP")
         print("="*60)
         
-        while True:
-            mode = input("Is your data supervised? (y/n): ").lower().strip()
-            if mode in ['y', 'yes']:
-                self.is_supervised = True
-                break
-            elif mode in ['n', 'no']:
-                self.is_supervised = False
-                break
-            else:
-                print("Please enter 'y' for yes or 'n' for no.")
-        
-        if self.is_supervised:
-            self._setup_supervised_mode()
-            self._setup_anomaly_detection_method()
-        else:
-            print("🔍 Unsupervised mode selected - no ground truth labels available.")
-            self._setup_anomaly_detection_method()
-    
-    def _setup_supervised_mode(self) -> None:
-        """Setup supervised learning mode with label selection."""
-        print("\n📋 Available columns for label selection:")
+        # Always ask user for label column selection
+        print("📋 Available columns for label selection:")
         for i, col in enumerate(self.data.columns, 1):
             print(f"   {i}. {col}")
         
         while True:
-            try:
-                choice = input(f"\nEnter column number for label (1-{len(self.data.columns)}): ").strip()
-                col_idx = int(choice) - 1
-                if 0 <= col_idx < len(self.data.columns):
-                    self.label_column = self.data.columns[col_idx]
-                    break
-                else:
-                    print(f"Please enter a number between 1 and {len(self.data.columns)}")
-            except ValueError:
-                print("Please enter a valid number.")
+            choice = input(f"\nEnter column number for label (1-{len(self.data.columns)}) or 'n' for no label: ").strip()
+            if choice.lower() in ['n', 'no']:
+                self.is_supervised = False
+                print("🔍 Unsupervised mode selected - no ground truth labels available.")
+                break
+            else:
+                try:
+                    col_idx = int(choice) - 1
+                    if 0 <= col_idx < len(self.data.columns):
+                        self.label_column = self.data.columns[col_idx]
+                        self.is_supervised = True
+                        self._setup_supervised_mode()
+                        break
+                    else:
+                        print(f"Please enter a number between 1 and {len(self.data.columns)} or 'n'")
+                except ValueError:
+                    print("Please enter a valid number or 'n'")
         
+        # Ask for learning approach if supervised
+        if self.is_supervised:
+            self._setup_learning_approach()
+        
+        # Setup anomaly detection method
+        self._setup_anomaly_detection_method()
+    
+    def _setup_learning_approach(self) -> None:
+        """Setup learning approach for supervised data."""
+        print("\n" + "="*60)
+        print("🎯 LEARNING APPROACH SETUP")
+        print("="*60)
+        print("You have supervised data with labels. Choose your approach:")
+        print("1. Supervised Learning - Use labels for training and evaluation")
+        print("2. Unsupervised Learning - Remove labels, train without them, then compare with actual labels")
+        
+        while True:
+            approach = input("Enter choice (1 or 2): ").strip()
+            if approach == '1':
+                self.use_labels_for_training = True
+                print("✅ Supervised learning selected - labels will be used for training")
+                break
+            elif approach == '2':
+                self.use_labels_for_training = False
+                print("✅ Unsupervised learning selected - labels will be removed during training")
+                print("   Labels will be used only for final evaluation comparison")
+                break
+            else:
+                print("Please enter '1' or '2'.")
+    
+    def _setup_supervised_mode(self) -> None:
+        """Setup supervised learning mode with label analysis."""
         # Analyze label distribution
         label_counts = self.data[self.label_column].value_counts()
         label_percentages = (label_counts / len(self.data)) * 100
@@ -434,10 +455,18 @@ class IsolationForestFraudDetector:
         
         logger.info(f"Training Isolation Forest models with contamination levels: {contamination_levels}")
         
-        # Prepare features (exclude label if supervised)
+        # Prepare features based on learning approach
         if self.is_supervised and self.label_column in self.processed_data.columns:
-            X = self.processed_data.drop(columns=[self.label_column])
-            y = self.processed_data[self.label_column]
+            if self.use_labels_for_training:
+                # Supervised: use labels for training
+                X = self.processed_data.drop(columns=[self.label_column])
+                y = self.processed_data[self.label_column]
+                logger.info("Using labels for supervised training")
+            else:
+                # Unsupervised: remove labels during training
+                X = self.processed_data.drop(columns=[self.label_column])
+                y = None
+                logger.info("Removed labels for unsupervised training (will compare later)")
         else:
             X = self.processed_data
             y = None
@@ -500,13 +529,14 @@ class IsolationForestFraudDetector:
         Returns:
             Dictionary of evaluation results
         """
-        if not self.is_supervised:
+        if not self.is_supervised or not self.label_column:
             logger.info("Unsupervised mode - skipping supervised evaluation")
             return {}
         
         logger.info("Evaluating models with supervised metrics...")
         
-        y_true = self.processed_data[self.label_column]
+        # Get actual labels for evaluation
+        y_true = self.data[self.label_column]  # Use original data labels
         self.results = {}
         
         for contamination, model in self.models.items():
@@ -738,6 +768,7 @@ class IsolationForestFraudDetector:
             'data_shape': self.data.shape,
             'processed_shape': self.processed_data.shape if self.processed_data is not None else None,
             'is_supervised': self.is_supervised,
+            'use_labels_for_training': self.use_labels_for_training,
             'label_column': self.label_column,
             'primary_keys': self.primary_keys,
             'categorical_columns': self.categorical_columns,
@@ -763,6 +794,8 @@ class IsolationForestFraudDetector:
         print(f"📈 Dataset: {self.data.shape[0]:,} rows × {self.data.shape[1]} columns")
         print(f"🔧 Processed: {self.processed_data.shape[0]:,} rows × {self.processed_data.shape[1]} columns")
         print(f"🎯 Mode: {'Supervised' if self.is_supervised else 'Unsupervised'}")
+        if self.is_supervised:
+            print(f"🎓 Learning Approach: {'Supervised' if self.use_labels_for_training else 'Unsupervised (labels removed during training)'}")
         print(f"🔍 Method: {'Risk Score Based' if self.use_risk_score_threshold else 'Classic Isolation Forest'}")
         if self.use_risk_score_threshold:
             print(f"🎯 Risk Score Threshold: {self.risk_score_threshold}")
