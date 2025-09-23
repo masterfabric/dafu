@@ -64,6 +64,7 @@ class IsolationForestFraudDetector:
         self.processed_data = None
         self.label_column = None
         self.is_supervised = False
+        self.use_labels_for_training = True
         self.primary_keys = []
         self.categorical_columns = []
         self.numerical_columns = []
@@ -77,6 +78,13 @@ class IsolationForestFraudDetector:
         self.results = {}
         self.use_risk_score_threshold = False
         self.risk_score_threshold = None
+        
+        # Fine-tuning parameters
+        self.contamination_levels = [0.01, 0.05, 0.1]
+        self.n_estimators = 100
+        self.max_samples = 'auto'
+        self.max_features = 1.0
+        self.bootstrap = False
         
     def load_and_analyze_data(self, file_path: str) -> pd.DataFrame:
         """
@@ -231,42 +239,65 @@ class IsolationForestFraudDetector:
         print("🎯 LEARNING MODE SETUP")
         print("="*60)
         
-        while True:
-            mode = input("Is your data supervised? (y/n): ").lower().strip()
-            if mode in ['y', 'yes']:
-                self.is_supervised = True
-                break
-            elif mode in ['n', 'no']:
-                self.is_supervised = False
-                break
-            else:
-                print("Please enter 'y' for yes or 'n' for no.")
-        
-        if self.is_supervised:
-            self._setup_supervised_mode()
-            self._setup_anomaly_detection_method()
-        else:
-            print("🔍 Unsupervised mode selected - no ground truth labels available.")
-            self._setup_anomaly_detection_method()
-    
-    def _setup_supervised_mode(self) -> None:
-        """Setup supervised learning mode with label selection."""
-        print("\n📋 Available columns for label selection:")
+        # Always ask user for label column selection
+        print("📋 Available columns for label selection:")
         for i, col in enumerate(self.data.columns, 1):
             print(f"   {i}. {col}")
         
         while True:
-            try:
-                choice = input(f"\nEnter column number for label (1-{len(self.data.columns)}): ").strip()
-                col_idx = int(choice) - 1
-                if 0 <= col_idx < len(self.data.columns):
-                    self.label_column = self.data.columns[col_idx]
-                    break
-                else:
-                    print(f"Please enter a number between 1 and {len(self.data.columns)}")
-            except ValueError:
-                print("Please enter a valid number.")
+            choice = input(f"\nEnter column number for label (1-{len(self.data.columns)}) or 'n' for no label: ").strip()
+            if choice.lower() in ['n', 'no']:
+                self.is_supervised = False
+                print("🔍 Unsupervised mode selected - no ground truth labels available.")
+                break
+            else:
+                try:
+                    col_idx = int(choice) - 1
+                    if 0 <= col_idx < len(self.data.columns):
+                        self.label_column = self.data.columns[col_idx]
+                        self.is_supervised = True
+                        self._setup_supervised_mode()
+                        break
+                    else:
+                        print(f"Please enter a number between 1 and {len(self.data.columns)} or 'n'")
+                except ValueError:
+                    print("Please enter a valid number or 'n'")
         
+        # Ask for learning approach if supervised
+        if self.is_supervised:
+            self._setup_learning_approach()
+        
+        # Setup anomaly detection method
+        self._setup_anomaly_detection_method()
+        
+        # Setup fine-tuning parameters
+        self._setup_fine_tuning_parameters()
+    
+    def _setup_learning_approach(self) -> None:
+        """Setup learning approach for supervised data."""
+        print("\n" + "="*60)
+        print("🎯 LEARNING APPROACH SETUP")
+        print("="*60)
+        print("You have supervised data with labels. Choose your approach:")
+        print("1. Supervised Learning - Use labels for training and evaluation")
+        print("2. Unsupervised Learning - Remove labels, train without them, then compare with actual labels")
+        
+        while True:
+            approach = input("Enter choice (1 or 2): ").strip()
+            if approach == '1':
+                self.use_labels_for_training = True
+                print("✅ Supervised learning selected - labels will be used for training")
+                break
+            elif approach == '2':
+                self.use_labels_for_training = False
+                print("✅ Unsupervised learning selected - labels will be removed during training")
+                print("   Labels will be used only for final evaluation comparison")
+                break
+            else:
+                print("Please enter '1' or '2'.")
+    
+    def _setup_supervised_mode(self) -> None:
+        """Setup supervised learning mode with label analysis."""
         # Analyze label distribution
         label_counts = self.data[self.label_column].value_counts()
         label_percentages = (label_counts / len(self.data)) * 100
@@ -283,6 +314,263 @@ class IsolationForestFraudDetector:
         else:
             print(f"⚠️  Multi-class classification detected ({unique_labels} classes).")
             print("   Isolation Forest is typically used for binary anomaly detection.")
+    
+    def _setup_fine_tuning_parameters(self) -> None:
+        """Setup fine-tuning parameters for Isolation Forest."""
+        print("\n" + "="*60)
+        print("⚙️  FINE-TUNING PARAMETERS SETUP")
+        print("="*60)
+        print("Configure Isolation Forest parameters for optimal performance:")
+        
+        # Contamination levels setup
+        self._setup_contamination_levels()
+        
+        # n_estimators setup
+        self._setup_n_estimators()
+        
+        # max_samples setup
+        self._setup_max_samples()
+        
+        # max_features setup
+        self._setup_max_features()
+        
+        # bootstrap setup
+        self._setup_bootstrap()
+        
+        # Display final configuration
+        self._display_parameter_summary()
+    
+    def _setup_contamination_levels(self) -> None:
+        """Setup contamination levels for Isolation Forest."""
+        print("\n" + "="*50)
+        print("🎯 CONTAMINATION LEVELS SETUP")
+        print("="*50)
+        print("Contamination level: Expected proportion of outliers in the dataset")
+        print("Range: 0.0 to 1.0 (0.0 = no outliers expected, 1.0 = all data are outliers)")
+        print("\nExamples:")
+        print("  • Single value: 0.1")
+        print("  • Multiple values: 0.01,0.05,0.1,0.2")
+        print("  • Range: 0.01-0.2 (will generate: 0.01, 0.05, 0.1, 0.15, 0.2)")
+        print("  • Default: Use default values [0.01, 0.05, 0.1]")
+        
+        while True:
+            choice = input("\nEnter contamination levels (or 'default' for default): ").strip()
+            
+            if choice.lower() in ['default', 'd']:
+                self.contamination_levels = [0.01, 0.05, 0.1]
+                print("✅ Using default contamination levels: [0.01, 0.05, 0.1]")
+                break
+            elif choice.lower() in ['range', 'r']:
+                self._setup_contamination_range()
+                break
+            else:
+                try:
+                    # Parse comma-separated values
+                    values = [float(x.strip()) for x in choice.split(',')]
+                    if all(0.0 <= v <= 1.0 for v in values):
+                        self.contamination_levels = sorted(values)
+                        print(f"✅ Contamination levels set to: {self.contamination_levels}")
+                        break
+                    else:
+                        print("❌ All values must be between 0.0 and 1.0")
+                except ValueError:
+                    print("❌ Invalid format. Please use comma-separated numbers (e.g., 0.01,0.05,0.1)")
+    
+    def _setup_contamination_range(self) -> None:
+        """Setup contamination range with step size."""
+        print("\n🎯 CONTAMINATION RANGE SETUP")
+        print("="*40)
+        
+        while True:
+            try:
+                min_val = float(input("Enter minimum contamination (0.0-0.5): ").strip())
+                if not 0.0 <= min_val <= 0.5:
+                    print("❌ Minimum value must be between 0.0 and 0.5")
+                    continue
+                
+                max_val = float(input("Enter maximum contamination (0.0-1.0): ").strip())
+                if not min_val < max_val <= 1.0:
+                    print("❌ Maximum value must be greater than minimum and ≤ 1.0")
+                    continue
+                
+                step = float(input("Enter step size (e.g., 0.01): ").strip())
+                if step <= 0:
+                    print("❌ Step size must be positive")
+                    continue
+                
+                # Generate range
+                values = []
+                current = min_val
+                while current <= max_val:
+                    values.append(round(current, 3))
+                    current += step
+                
+                if len(values) > 20:
+                    print(f"⚠️  Warning: This will create {len(values)} models. Continue? (y/n): ", end="")
+                    if input().lower() not in ['y', 'yes']:
+                        continue
+                
+                self.contamination_levels = values
+                print(f"✅ Generated contamination levels: {self.contamination_levels}")
+                break
+                
+            except ValueError:
+                print("❌ Please enter valid numbers")
+    
+    def _setup_n_estimators(self) -> None:
+        """Setup n_estimators parameter."""
+        print("\n" + "="*50)
+        print("🌲 N_ESTIMATORS SETUP")
+        print("="*50)
+        print("Number of base estimators (trees) in the ensemble")
+        print("Higher values = better performance but slower training")
+        print("\nExamples:")
+        print("  • Small dataset (<1000 samples): 50-100")
+        print("  • Medium dataset (1000-10000 samples): 100-200")
+        print("  • Large dataset (>10000 samples): 200-500")
+        print("  • Default: 100")
+        
+        while True:
+            choice = input("\nEnter number of estimators (or 'default' for 100): ").strip()
+            
+            if choice.lower() in ['default', 'd']:
+                self.n_estimators = 100
+                print("✅ Using default n_estimators: 100")
+                break
+            else:
+                try:
+                    value = int(choice)
+                    if 10 <= value <= 1000:
+                        self.n_estimators = value
+                        print(f"✅ n_estimators set to: {self.n_estimators}")
+                        break
+                    else:
+                        print("❌ Value must be between 10 and 1000")
+                except ValueError:
+                    print("❌ Please enter a valid integer")
+    
+    def _setup_max_samples(self) -> None:
+        """Setup max_samples parameter."""
+        print("\n" + "="*50)
+        print("📊 MAX_SAMPLES SETUP")
+        print("="*50)
+        print("Number of samples to draw from X to train each base estimator")
+        print("\nOptions:")
+        print("  1. 'auto' - max_samples = min(256, n_samples)")
+        print("  2. 'int' - Use specific number (e.g., 1000)")
+        print("  3. 'float' - Use fraction of samples (e.g., 0.8)")
+        print("  4. 'default' - Use 'auto'")
+        
+        while True:
+            choice = input("\nEnter max_samples (or 'default' for 'auto'): ").strip()
+            
+            if choice.lower() in ['default', 'd']:
+                self.max_samples = 'auto'
+                print("✅ Using default max_samples: 'auto'")
+                break
+            elif choice.lower() == 'auto':
+                self.max_samples = 'auto'
+                print("✅ max_samples set to: 'auto'")
+                break
+            else:
+                try:
+                    # Try as float first
+                    value = float(choice)
+                    if 0.0 < value <= 1.0:
+                        self.max_samples = value
+                        print(f"✅ max_samples set to: {self.max_samples} (fraction)")
+                        break
+                    elif value > 1.0:
+                        self.max_samples = int(value)
+                        print(f"✅ max_samples set to: {self.max_samples} (absolute)")
+                        break
+                    else:
+                        print("❌ Value must be positive")
+                except ValueError:
+                    print("❌ Please enter 'auto', a number, or 'default'")
+    
+    def _setup_max_features(self) -> None:
+        """Setup max_features parameter."""
+        print("\n" + "="*50)
+        print("🔢 MAX_FEATURES SETUP")
+        print("="*50)
+        print("Number of features to draw from X to train each base estimator")
+        print("\nOptions:")
+        print("  1. 'auto' - max_features = sqrt(n_features)")
+        print("  2. 'sqrt' - max_features = sqrt(n_features)")
+        print("  3. 'log2' - max_features = log2(n_features)")
+        print("  4. 'int' - Use specific number (e.g., 5)")
+        print("  5. 'float' - Use fraction of features (e.g., 0.8)")
+        print("  6. 'default' - Use 1.0 (all features)")
+        
+        while True:
+            choice = input("\nEnter max_features (or 'default' for 1.0): ").strip()
+            
+            if choice.lower() in ['default', 'd']:
+                self.max_features = 1.0
+                print("✅ Using default max_features: 1.0")
+                break
+            elif choice.lower() in ['auto', 'sqrt']:
+                self.max_features = 'sqrt'
+                print("✅ max_features set to: 'sqrt'")
+                break
+            elif choice.lower() == 'log2':
+                self.max_features = 'log2'
+                print("✅ max_features set to: 'log2'")
+                break
+            else:
+                try:
+                    # Try as float first
+                    value = float(choice)
+                    if 0.0 < value <= 1.0:
+                        self.max_features = value
+                        print(f"✅ max_features set to: {self.max_features} (fraction)")
+                        break
+                    elif value > 1.0:
+                        self.max_features = int(value)
+                        print(f"✅ max_features set to: {self.max_features} (absolute)")
+                        break
+                    else:
+                        print("❌ Value must be positive")
+                except ValueError:
+                    print("❌ Please enter 'auto', 'sqrt', 'log2', a number, or 'default'")
+    
+    def _setup_bootstrap(self) -> None:
+        """Setup bootstrap parameter."""
+        print("\n" + "="*50)
+        print("🔄 BOOTSTRAP SETUP")
+        print("="*50)
+        print("Whether to use bootstrap sampling for base estimators")
+        print("\nOptions:")
+        print("  1. False - Use all samples (recommended for Isolation Forest)")
+        print("  2. True - Use bootstrap sampling")
+        print("  3. Default - False")
+        
+        while True:
+            choice = input("\nUse bootstrap sampling? (y/n or 'default' for n): ").strip().lower()
+            
+            if choice in ['default', 'd', 'n', 'no', 'false']:
+                self.bootstrap = False
+                print("✅ Bootstrap set to: False")
+                break
+            elif choice in ['y', 'yes', 'true']:
+                self.bootstrap = True
+                print("✅ Bootstrap set to: True")
+                break
+            else:
+                print("❌ Please enter 'y' for yes, 'n' for no, or 'default'")
+    
+    def _display_parameter_summary(self) -> None:
+        """Display summary of all fine-tuning parameters."""
+        print("\n" + "="*60)
+        print("📋 FINE-TUNING PARAMETERS SUMMARY")
+        print("="*60)
+        print(f"🎯 Contamination Levels: {self.contamination_levels}")
+        print(f"🌲 N Estimators: {self.n_estimators}")
+        print(f"📊 Max Samples: {self.max_samples}")
+        print(f"🔢 Max Features: {self.max_features}")
+        print(f"🔄 Bootstrap: {self.bootstrap}")
+        print("="*60)
     
     def _setup_anomaly_detection_method(self) -> None:
         """Setup anomaly detection method (classic or risk score based)."""
@@ -416,28 +704,39 @@ class IsolationForestFraudDetector:
         Train Isolation Forest models with different contamination levels.
         
         Args:
-            contamination_levels: List of contamination levels to test
+            contamination_levels: List of contamination levels to test (overrides user settings)
             
         Returns:
             Dictionary of trained models
         """
+        # Use user-defined contamination levels unless overridden
+        if contamination_levels is None:
+            contamination_levels = self.contamination_levels
+        
         # Determine contamination levels based on detection method
         if self.use_risk_score_threshold:
             # Risk score based: use single contamination level (0.1 is optimal for risk scoring)
             contamination_levels = [0.1]
             logger.info("Risk score based detection - using single contamination level: 0.1")
         else:
-            # Classic method: use multiple contamination levels for comparison
-            if contamination_levels is None:
-                contamination_levels = [0.01, 0.05, 0.1]
-            logger.info(f"Classic detection - using multiple contamination levels: {contamination_levels}")
+            # Classic method: use user-defined contamination levels
+            logger.info(f"Classic detection - using contamination levels: {contamination_levels}")
         
         logger.info(f"Training Isolation Forest models with contamination levels: {contamination_levels}")
+        logger.info(f"Model parameters - n_estimators: {self.n_estimators}, max_samples: {self.max_samples}, max_features: {self.max_features}, bootstrap: {self.bootstrap}")
         
-        # Prepare features (exclude label if supervised)
+        # Prepare features based on learning approach
         if self.is_supervised and self.label_column in self.processed_data.columns:
-            X = self.processed_data.drop(columns=[self.label_column])
-            y = self.processed_data[self.label_column]
+            if self.use_labels_for_training:
+                # Supervised: use labels for training
+                X = self.processed_data.drop(columns=[self.label_column])
+                y = self.processed_data[self.label_column]
+                logger.info("Using labels for supervised training")
+            else:
+                # Unsupervised: remove labels during training
+                X = self.processed_data.drop(columns=[self.label_column])
+                y = None
+                logger.info("Removed labels for unsupervised training (will compare later)")
         else:
             X = self.processed_data
             y = None
@@ -447,13 +746,26 @@ class IsolationForestFraudDetector:
         for contamination in contamination_levels:
             logger.info(f"Training model with contamination: {contamination}")
             
+            # Convert max_features string to appropriate value
+            max_features_value = self.max_features
+            if isinstance(max_features_value, str):
+                if max_features_value == 'sqrt':
+                    # Calculate sqrt of number of features
+                    max_features_value = int(np.sqrt(X.shape[1]))
+                elif max_features_value == 'log2':
+                    # Calculate log2 of number of features
+                    max_features_value = int(np.log2(X.shape[1]))
+                elif max_features_value == 'auto':
+                    # Default to sqrt for auto
+                    max_features_value = int(np.sqrt(X.shape[1]))
+            
             model = IsolationForest(
                 contamination=contamination,
                 random_state=self.random_state,
-                n_estimators=100,
-                max_samples='auto',
-                max_features=1.0,
-                bootstrap=False,
+                n_estimators=self.n_estimators,
+                max_samples=self.max_samples,
+                max_features=max_features_value,
+                bootstrap=self.bootstrap,
                 n_jobs=-1
             )
             
@@ -500,13 +812,14 @@ class IsolationForestFraudDetector:
         Returns:
             Dictionary of evaluation results
         """
-        if not self.is_supervised:
+        if not self.is_supervised or not self.label_column:
             logger.info("Unsupervised mode - skipping supervised evaluation")
             return {}
         
         logger.info("Evaluating models with supervised metrics...")
         
-        y_true = self.processed_data[self.label_column]
+        # Get actual labels for evaluation
+        y_true = self.data[self.label_column]  # Use original data labels
         self.results = {}
         
         for contamination, model in self.models.items():
@@ -738,6 +1051,7 @@ class IsolationForestFraudDetector:
             'data_shape': self.data.shape,
             'processed_shape': self.processed_data.shape if self.processed_data is not None else None,
             'is_supervised': self.is_supervised,
+            'use_labels_for_training': self.use_labels_for_training,
             'label_column': self.label_column,
             'primary_keys': self.primary_keys,
             'categorical_columns': self.categorical_columns,
@@ -746,7 +1060,11 @@ class IsolationForestFraudDetector:
             'low_variance_columns': self.low_variance_columns,
             'contamination_levels': list(self.models.keys()),
             'use_risk_score_threshold': self.use_risk_score_threshold,
-            'risk_score_threshold': self.risk_score_threshold
+            'risk_score_threshold': self.risk_score_threshold,
+            'n_estimators': self.n_estimators,
+            'max_samples': self.max_samples,
+            'max_features': self.max_features,
+            'bootstrap': self.bootstrap
         }
         
         config_file = os.path.join(output_dir, f"configuration_{timestamp}.json")
@@ -763,6 +1081,8 @@ class IsolationForestFraudDetector:
         print(f"📈 Dataset: {self.data.shape[0]:,} rows × {self.data.shape[1]} columns")
         print(f"🔧 Processed: {self.processed_data.shape[0]:,} rows × {self.processed_data.shape[1]} columns")
         print(f"🎯 Mode: {'Supervised' if self.is_supervised else 'Unsupervised'}")
+        if self.is_supervised:
+            print(f"🎓 Learning Approach: {'Supervised' if self.use_labels_for_training else 'Unsupervised (labels removed during training)'}")
         print(f"🔍 Method: {'Risk Score Based' if self.use_risk_score_threshold else 'Classic Isolation Forest'}")
         if self.use_risk_score_threshold:
             print(f"🎯 Risk Score Threshold: {self.risk_score_threshold}")
@@ -783,6 +1103,13 @@ class IsolationForestFraudDetector:
             print(f"\n🤖 Models Trained: 1 model (risk score based detection)")
         else:
             print(f"\n🤖 Models Trained: {len(self.models)} contamination levels (classic comparison)")
+        
+        print(f"\n⚙️  FINE-TUNING PARAMETERS:")
+        print(f"   • Contamination Levels: {self.contamination_levels}")
+        print(f"   • N Estimators: {self.n_estimators}")
+        print(f"   • Max Samples: {self.max_samples}")
+        print(f"   • Max Features: {self.max_features}")
+        print(f"   • Bootstrap: {self.bootstrap}")
         
         if self.results:
             print("\n📊 MODEL PERFORMANCE:")
