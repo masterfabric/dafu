@@ -1230,34 +1230,42 @@ class SequenceFraudDetector:
         
         # Get actual labels for evaluation
         if self.is_supervised and self.label_column in self.data.columns:
-            # Get actual labels for the test set
-            test_start_idx = len(self.data) - len(self.lstm_predictions)
+            # Get actual labels for the test set - use available predictions to determine test set size
+            if self.lstm_predictions is not None:
+                test_start_idx = len(self.data) - len(self.lstm_predictions)
+            elif self.gru_predictions is not None:
+                test_start_idx = len(self.data) - len(self.gru_predictions)
+            else:
+                logger.error("No model predictions available for evaluation")
+                return self.results
+            
             actual_labels = self.data[self.label_column].iloc[test_start_idx:].values
             
             logger.info("Evaluating with actual labels...")
             
-            # Evaluate LSTM
-            lstm_accuracy = accuracy_score(actual_labels, self.lstm_predictions_binary)
-            lstm_f1 = f1_score(actual_labels, self.lstm_predictions_binary, average='weighted')
-            lstm_precision = precision_score(actual_labels, self.lstm_predictions_binary, average='weighted')
-            lstm_recall = recall_score(actual_labels, self.lstm_predictions_binary, average='weighted')
-            lstm_roc_auc = roc_auc_score(actual_labels, self.lstm_predictions.flatten())
-            lstm_cm = confusion_matrix(actual_labels, self.lstm_predictions_binary)
-            
-            self.results['LSTM'] = {
-                'accuracy': lstm_accuracy,
-                'f1_score': lstm_f1,
-                'precision': lstm_precision,
-                'recall': lstm_recall,
-                'roc_auc': lstm_roc_auc,
-                'predictions': self.lstm_predictions_binary,
-                'scores': self.lstm_predictions.flatten(),
-                'confusion_matrix': lstm_cm,
-                'actual_labels': actual_labels
-            }
+            # Evaluate LSTM (only if LSTM was trained)
+            if 'LSTM' in self.selected_models and self.lstm_predictions is not None:
+                lstm_accuracy = accuracy_score(actual_labels, self.lstm_predictions_binary)
+                lstm_f1 = f1_score(actual_labels, self.lstm_predictions_binary, average='weighted')
+                lstm_precision = precision_score(actual_labels, self.lstm_predictions_binary, average='weighted')
+                lstm_recall = recall_score(actual_labels, self.lstm_predictions_binary, average='weighted')
+                lstm_roc_auc = roc_auc_score(actual_labels, self.lstm_predictions.flatten())
+                lstm_cm = confusion_matrix(actual_labels, self.lstm_predictions_binary)
+                
+                self.results['LSTM'] = {
+                    'accuracy': lstm_accuracy,
+                    'f1_score': lstm_f1,
+                    'precision': lstm_precision,
+                    'recall': lstm_recall,
+                    'roc_auc': lstm_roc_auc,
+                    'predictions': self.lstm_predictions_binary,
+                    'scores': self.lstm_predictions.flatten(),
+                    'confusion_matrix': lstm_cm,
+                    'actual_labels': actual_labels
+                }
             
             # Evaluate GRU (only if GRU was trained)
-            if 'GRU' in self.selected_models and hasattr(self, 'gru_predictions_binary'):
+            if 'GRU' in self.selected_models and self.gru_predictions is not None:
                 gru_accuracy = accuracy_score(actual_labels, self.gru_predictions_binary)
                 gru_f1 = f1_score(actual_labels, self.gru_predictions_binary, average='weighted')
                 gru_precision = precision_score(actual_labels, self.gru_predictions_binary, average='weighted')
@@ -1277,22 +1285,26 @@ class SequenceFraudDetector:
                     'actual_labels': actual_labels
                 }
             
-            logger.info(f"LSTM - Accuracy: {lstm_accuracy:.4f}, F1: {lstm_f1:.4f}")
-            if 'GRU' in self.selected_models and hasattr(self, 'gru_predictions_binary'):
-                logger.info(f"GRU - Accuracy: {gru_accuracy:.4f}, F1: {gru_f1:.4f}")
+            # Log performance metrics for trained models
+            if 'LSTM' in self.results:
+                logger.info(f"LSTM - Accuracy: {self.results['LSTM']['accuracy']:.4f}, F1: {self.results['LSTM']['f1_score']:.4f}")
+            if 'GRU' in self.results:
+                logger.info(f"GRU - Accuracy: {self.results['GRU']['accuracy']:.4f}, F1: {self.results['GRU']['f1_score']:.4f}")
             
         else:
             logger.info("No labels available for evaluation - unsupervised mode")
             # Store basic prediction info without evaluation metrics
-            self.results['LSTM'] = {
-                'predictions': self.lstm_predictions_binary,
-                'scores': self.lstm_predictions.flatten()
-            }
+            if 'LSTM' in self.selected_models and self.lstm_predictions is not None:
+                self.results['LSTM'] = {
+                    'predictions': self.lstm_predictions_binary,
+                    'scores': self.lstm_predictions.flatten()
+                }
             
-            self.results['GRU'] = {
-                'predictions': self.gru_predictions_binary,
-                'scores': self.gru_predictions.flatten()
-            }
+            if 'GRU' in self.selected_models and self.gru_predictions is not None:
+                self.results['GRU'] = {
+                    'predictions': self.gru_predictions_binary,
+                    'scores': self.gru_predictions.flatten()
+                }
         
         return self.results
     
@@ -1521,28 +1533,33 @@ class SequenceFraudDetector:
         results_df = self.data.copy()
         
         # Add predictions for the test set
-        if self.lstm_predictions is not None and self.gru_predictions is not None:
+        if self.lstm_predictions is not None or self.gru_predictions is not None:
+            # Determine test set size from available predictions
+            if self.lstm_predictions is not None:
+                test_start_idx = len(self.data) - len(self.lstm_predictions)
+            else:
+                test_start_idx = len(self.data) - len(self.gru_predictions)
+            
             # Create full-length arrays with NaN for training data
             lstm_full_predictions = np.full(len(self.data), np.nan)
             gru_full_predictions = np.full(len(self.data), np.nan)
             lstm_full_scores = np.full(len(self.data), np.nan)
             gru_full_scores = np.full(len(self.data), np.nan)
             
-            # Fill test predictions
-            test_start_idx = len(self.data) - len(self.lstm_predictions)
-            lstm_full_predictions[test_start_idx:] = self.lstm_predictions_binary
-            gru_full_predictions[test_start_idx:] = self.gru_predictions_binary
-            lstm_full_scores[test_start_idx:] = self.lstm_predictions.flatten()
-            gru_full_scores[test_start_idx:] = self.gru_predictions.flatten()
+            # Fill test predictions for available models
+            if self.lstm_predictions is not None:
+                lstm_full_predictions[test_start_idx:] = self.lstm_predictions_binary
+                lstm_full_scores[test_start_idx:] = self.lstm_predictions.flatten()
+                results_df['lstm_prediction'] = lstm_full_predictions
+                results_df['lstm_score'] = lstm_full_scores
+                results_df['lstm_risk_score'] = lstm_full_scores
             
-            results_df['lstm_prediction'] = lstm_full_predictions
-            results_df['gru_prediction'] = gru_full_predictions
-            results_df['lstm_score'] = lstm_full_scores
-            results_df['gru_score'] = gru_full_scores
-            
-            # Add risk scores (normalized prediction scores)
-            results_df['lstm_risk_score'] = lstm_full_scores
-            results_df['gru_risk_score'] = gru_full_scores
+            if self.gru_predictions is not None:
+                gru_full_predictions[test_start_idx:] = self.gru_predictions_binary
+                gru_full_scores[test_start_idx:] = self.gru_predictions.flatten()
+                results_df['gru_prediction'] = gru_full_predictions
+                results_df['gru_score'] = gru_full_scores
+                results_df['gru_risk_score'] = gru_full_scores
         
         filename = f"sequence_fraud_predictions_{timestamp}.csv"
         filepath = os.path.join(output_dir, filename)
