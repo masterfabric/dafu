@@ -1,0 +1,34 @@
+repos:
+  # - repo: https://github.com/pycqa/pylint
+  #   rev: v3.2.0
+  #   hooks:
+  #     - id: pylint
+  #       name: pylint (block on errors)
+  #       entry: pylint
+  #       language: system
+  #       types: [python]
+  #       args: ["--rcfile=fraud_detection/.pylintrc"]
+
+  - repo: local
+    hooks:
+      - id: forbid-non-ascii-filenames
+        name: forbid non-ascii characters in filenames
+        entry: python fraud_detection/scripts/hooks/forbid_non_ascii_filenames.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: forbid-non-ascii-content
+        name: forbid non-ascii characters in file contents
+        entry: python fraud_detection/scripts/hooks/forbid_non_ascii_content.py
+        language: system
+        # Hangi metin dosyaları taransın? Gerekirse genişlet.
+        files: >
+          (?x)
+          \.(py|pyi|toml|yaml|yml|ini|md|txt|json|cfg|rst|sh|bat|ps1|cfg|conf)$
+        exclude: >
+          (?x)
+          ^(fraud_detection/\.pre-commit-config\.yaml|
+            fraud_detection/scripts/hooks/forbid_non_ascii_content\.py|
+            fraud_detection/scripts/hooks/forbid_non_ascii_filenames\.py)$
+        stages: [pre-commit]
