@@ -364,6 +364,15 @@ pytest tests/test_anomaly_detection.py
 - **Docstrings**: Google-style documentation
 - **Testing**: 90%+ test coverage required
 
+### ASCII Character Policy
+**Non-ASCII (Turkce dahil) karakterler yasaktir; pre-commit ve Pylint bunu enforce eder.**
+
+This project enforces strict ASCII-only character usage throughout the codebase:
+- **File names**: Must contain only ASCII characters
+- **Code content**: Comments, strings, docstrings, and all text must be ASCII-only
+- **Identifiers**: Variable names, function names, class names must be ASCII-only
+- **Enforcement**: Pre-commit hooks and Pylint configuration automatically reject non-ASCII content
+
 ## 📄 License
 
 This project is part of the Enterprise Fraud Detection Platform and follows the platform's licensing terms.

@@ -1,0 +1,14 @@
+[MASTER]
+py-version=3.11
+
+[BASIC]
+variable-rgx=^[a-z_][a-z0-9_]*$
+argument-rgx=^[a-z_][a-z0-9_]*$
+attr-rgx=^[a-z_][a-z0-9_]*$
+function-rgx=^[a-z_][a-z0-9_]*$
+method-rgx=^[a-z_][a-z0-9_]*$
+class-rgx=^[A-Z][a-zA-Z0-9]*$
+const-rgx=^[A-Z][A-Z0-9_]*$
+class-attribute-rgx=^[a-z_][a-z0-9_]*$
+inlinevar-rgx=^[a-z_][a-z0-9_]*$
+good-names=i,j,k,x,y,_

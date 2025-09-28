@@ -60,6 +60,7 @@ def test_sequence_models_interactive():
     detector1.is_supervised = True
     detector1.label_column = 'is_fraud'
     detector1.use_labels_for_training = True
+    detector1.selected_models = ['LSTM', 'GRU']  # Test both models
     
     print(f"✅ Configuration:")
     print(f"   - Label column: {detector1.label_column}")
@@ -114,6 +115,7 @@ def test_sequence_models_interactive():
     detector2.is_supervised = True
     detector2.label_column = 'is_fraud'
     detector2.use_labels_for_training = False  # Key difference
+    detector2.selected_models = ['LSTM', 'GRU']  # Test both models
     
     print(f"✅ Configuration:")
     print(f"   - Label column: {detector2.label_column}")
