@@ -1,10 +1,10 @@
 # DAFU - Data Analytics Functional Utilities 
 
-[![License](https://img.shields.io/badge/license-Enterprise-blue.svg)](LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.95%2B-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-blue.svg)](https://kubernetes.io/)
+[![Docker](https://img.shields.io/badge/Docker-In%20Development-orange.svg)](https://www.docker.com/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-Planned-yellow.svg)](https://kubernetes.io/)
 
 **DAFU** is a comprehensive fraud detection and e-commerce analytics platform designed for enterprise deployment. Currently in active development, it provides advanced machine learning-based fraud detection capabilities with a focus on anomaly detection and sequence analysis.
 
@@ -1252,7 +1252,33 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
 ## 📄 License
 
-This project is part of the Enterprise Fraud Detection Platform and follows the platform's licensing terms.
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+### License Summary
+
+- **Commercial Use**: ✅ Allowed with restrictions
+- **Modification**: ✅ Allowed
+- **Distribution**: ✅ Allowed with source code disclosure
+- **Patent Use**: ✅ Allowed
+- **Private Use**: ✅ Allowed
+- **Sublicensing**: ❌ Not allowed
+
+### Key Requirements
+
+1. **Source Code Disclosure**: Any distribution of the software must include the complete source code
+2. **Network Interaction**: If you run the software on a server and provide services over a network, you must make the source code available to users
+3. **License Compatibility**: Any derivative works must be licensed under the same AGPL-3.0 license
+4. **Attribution**: You must retain all copyright notices and license text
+
+### Full License Text
+
+The complete license text is available in the [LICENSE](LICENSE) file in this repository.
+
+### Enterprise Licensing
+
+For commercial enterprises requiring different licensing terms, please contact MasterFabric for enterprise licensing options.
+
+**MasterFabric** - Enterprise-level fraud detection and e-commerce analytics solutions.
 
 ## 🆘 Support and Community
 
