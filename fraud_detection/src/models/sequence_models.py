@@ -37,6 +37,7 @@ from tensorflow.keras.layers import LSTM, GRU, Dense, Dropout, BatchNormalizatio
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.utils import to_categorical
+import joblib
 
 # Configure logging
 logging.basicConfig(
@@ -93,6 +94,37 @@ class SequenceFraudDetector:
         self.lstm_scores = None
         self.gru_scores = None
         self.results = {}
+        
+        # Persistence and prediction mode
+        self.prediction_mode = None  # 'batch' or 'stream'
+        self.model_save_path = None
+        self.model_loaded = False
+
+    def setup_prediction_mode(self) -> None:
+        """Setup prediction mode (batch or stream)."""
+        print("\n" + "="*60)
+        print("🎯 PREDICTION MODE SETUP")
+        print("="*60)
+        print("Choose your prediction mode:")
+        print("1. Batch Prediction - Train LSTM/GRU on batch data and predict on the same data")
+        print("2. Stream Prediction - Load pre-trained model and predict on new stream data")
+        
+        while True:
+            choice = input("Enter choice (1 or 2): ").strip()
+            if choice == '1':
+                self.prediction_mode = 'batch'
+                print("✅ Batch prediction mode selected")
+                print("   - Models will be trained on the provided data")
+                print("   - Predictions will be made on the same data")
+                break
+            elif choice == '2':
+                self.prediction_mode = 'stream'
+                print("✅ Stream prediction mode selected")
+                print("   - Pre-trained models will be loaded")
+                print("   - Predictions will be made on new stream data")
+                break
+            else:
+                print("Please enter '1' or '2'.")
         
         # Sequence data
         self.X_sequences = None
@@ -1307,6 +1339,296 @@ class SequenceFraudDetector:
                 }
         
         return self.results
+
+    def save_model(self, model_path: str = None) -> str:
+        """
+        Save trained models and preprocessing objects to disk as a joblib package.
+        Keras models are saved to .h5 files and referenced in the package.
+        
+        Args:
+            model_path: Path to save the joblib package (optional)
+        Returns:
+            Path where the package was saved
+        """
+        if (self.lstm_model is None and self.gru_model is None) or not self.selected_models:
+            raise ValueError("No trained models found. Please train models first.")
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        if model_path is None:
+            model_path = f"sequence_fraud_detection_model_{timestamp}.joblib"
+        
+        # Save keras models to .h5 and collect paths
+        model_files = {}
+        base_dir = os.path.dirname(model_path) or '.'
+        os.makedirs(base_dir, exist_ok=True)
+        
+        if 'LSTM' in self.selected_models and self.lstm_model is not None:
+            lstm_path = os.path.join(base_dir, f"lstm_model_{timestamp}.h5")
+            self.lstm_model.save(lstm_path)
+            model_files['LSTM'] = lstm_path
+        
+        if 'GRU' in self.selected_models and self.gru_model is not None:
+            gru_path = os.path.join(base_dir, f"gru_model_{timestamp}.h5")
+            self.gru_model.save(gru_path)
+            model_files['GRU'] = gru_path
+        
+        # Create package
+        package = {
+            'model_files': model_files,
+            'selected_models': self.selected_models,
+            'sequence_length': self.sequence_length,
+            'scaler': self.scaler,
+            'sequence_scaler': self.sequence_scaler,
+            'label_encoders': self.label_encoders,
+            'label_column': self.label_column,
+            'is_supervised': self.is_supervised,
+            'use_labels_for_training': self.use_labels_for_training,
+            'primary_keys': self.primary_keys,
+            'categorical_columns': self.categorical_columns,
+            'numerical_columns': self.numerical_columns,
+            'high_cardinality_columns': self.high_cardinality_columns,
+            'low_variance_columns': self.low_variance_columns,
+            'epochs': self.epochs,
+            'batch_size': self.batch_size,
+            'learning_rate': self.learning_rate,
+            'dropout_rate': self.dropout_rate,
+            'dense_units': self.dense_units,
+            'early_stopping_patience': self.early_stopping_patience,
+            'reduce_lr_patience': self.reduce_lr_patience,
+            'reduce_lr_factor': self.reduce_lr_factor,
+            'lstm_units': self.lstm_units,
+            'gru_units': self.gru_units,
+            'random_state': self.random_state,
+            'model_metadata': {
+                'timestamp': datetime.now().isoformat(),
+                'version': '1.0.0',
+                'algorithm': 'LSTM/GRU',
+                'prediction_mode': 'batch_training'
+            }
+        }
+        
+        joblib.dump(package, model_path)
+        self.model_save_path = model_path
+        print(f"✅ Model package saved to: {model_path}")
+        return model_path
+
+    def load_model(self, model_path: str) -> None:
+        """
+        Load trained models and preprocessing objects from a joblib package.
+        Args:
+            model_path: Path to the saved joblib package
+        """
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model file not found: {model_path}")
+        
+        package = joblib.load(model_path)
+        
+        # Restore attributes
+        self.selected_models = package['selected_models']
+        self.sequence_length = package['sequence_length']
+        self.scaler = package['scaler']
+        self.sequence_scaler = package['sequence_scaler']
+        self.label_encoders = package['label_encoders']
+        self.label_column = package['label_column']
+        self.is_supervised = package['is_supervised']
+        self.use_labels_for_training = package['use_labels_for_training']
+        self.primary_keys = package['primary_keys']
+        self.categorical_columns = package['categorical_columns']
+        self.numerical_columns = package['numerical_columns']
+        self.high_cardinality_columns = package['high_cardinality_columns']
+        self.low_variance_columns = package['low_variance_columns']
+        self.epochs = package['epochs']
+        self.batch_size = package['batch_size']
+        self.learning_rate = package['learning_rate']
+        self.dropout_rate = package['dropout_rate']
+        self.dense_units = package['dense_units']
+        self.early_stopping_patience = package['early_stopping_patience']
+        self.reduce_lr_patience = package['reduce_lr_patience']
+        self.reduce_lr_factor = package['reduce_lr_factor']
+        self.lstm_units = package['lstm_units']
+        self.gru_units = package['gru_units']
+        self.random_state = package['random_state']
+        
+        model_files = package['model_files']
+        self.lstm_model = None
+        self.gru_model = None
+        if 'LSTM' in self.selected_models and 'LSTM' in model_files and os.path.exists(model_files['LSTM']):
+            self.lstm_model = tf.keras.models.load_model(model_files['LSTM'])
+        if 'GRU' in self.selected_models and 'GRU' in model_files and os.path.exists(model_files['GRU']):
+            self.gru_model = tf.keras.models.load_model(model_files['GRU'])
+        
+        self.model_loaded = True
+        self.model_save_path = model_path
+        print(f"✅ Model package loaded from: {model_path}")
+
+    def _handle_missing_values_stream(self, data: pd.DataFrame) -> None:
+        """Handle missing values in stream data."""
+        for col in data.columns:
+            if data[col].isnull().sum() > 0:
+                if col in self.categorical_columns:
+                    mode_value = data[col].mode()[0] if not data[col].mode().empty else str(data[col].iloc[0])
+                    data[col].fillna(mode_value, inplace=True)
+                else:
+                    median_value = data[col].median()
+                    data[col].fillna(median_value, inplace=True)
+
+    def _encode_categorical_variables_stream(self, data: pd.DataFrame) -> None:
+        """Encode categorical variables using saved encoders."""
+        categorical_cols = [col for col in data.columns 
+                          if col in self.categorical_columns and col != self.label_column]
+        for col in categorical_cols:
+            if col in self.label_encoders:
+                le = self.label_encoders[col]
+                data[col] = data[col].astype(str)
+                unique_values = data[col].unique()
+                known_values = set(le.classes_)
+                unknown_values = set(unique_values) - known_values
+                if unknown_values:
+                    most_frequent = le.classes_[0]
+                    data[col] = data[col].replace(list(unknown_values), most_frequent)
+                data[col] = le.transform(data[col])
+            else:
+                le = LabelEncoder()
+                data[col] = le.fit_transform(data[col].astype(str))
+
+    def _standardize_numerical_features_stream(self, data: pd.DataFrame) -> None:
+        """Standardize numerical features using saved scaler."""
+        numerical_cols = [col for col in data.columns 
+                         if col in self.numerical_columns and col != self.label_column]
+        if numerical_cols:
+            data[numerical_cols] = self.scaler.transform(data[numerical_cols])
+
+    def preprocess_stream_data(self, stream_data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Preprocess stream data using saved preprocessing steps.
+        Returns preprocessed DataFrame.
+        """
+        if not self.model_loaded:
+            raise ValueError("No model loaded. Please load a model first.")
+        processed = stream_data.copy()
+        # Remove primary key columns if they exist
+        if self.primary_keys:
+            existing_primary = [c for c in self.primary_keys if c in processed.columns]
+            if existing_primary:
+                processed = processed.drop(columns=existing_primary)
+        # Remove high cardinality columns
+        if self.high_cardinality_columns:
+            existing_hc = [c for c in self.high_cardinality_columns if c in processed.columns and c not in self.primary_keys]
+            if existing_hc:
+                processed = processed.drop(columns=existing_hc)
+        # Remove low variance columns
+        if self.low_variance_columns:
+            existing_lv = [c for c in self.low_variance_columns if c in processed.columns and c != self.label_column]
+            if existing_lv:
+                processed = processed.drop(columns=existing_lv)
+        # Handle missing, encode, scale
+        self._handle_missing_values_stream(processed)
+        self._encode_categorical_variables_stream(processed)
+        self._standardize_numerical_features_stream(processed)
+        return processed
+
+    def prepare_sequences_stream(self, processed_stream: pd.DataFrame) -> np.ndarray:
+        """Prepare sequences from processed stream data using saved sequence scaler."""
+        X = processed_stream.drop(columns=[self.label_column]).values if (self.label_column and self.label_column in processed_stream.columns) else processed_stream.values
+        X_scaled = self.sequence_scaler.transform(X)
+        X_sequences = []
+        for i in range(self.sequence_length, len(X_scaled)):
+            X_sequences.append(X_scaled[i-self.sequence_length:i])
+        if not X_sequences:
+            raise ValueError("Not enough stream data to form sequences. Provide more rows.")
+        return np.array(X_sequences)
+
+    def predict_stream(self, stream_data: pd.DataFrame) -> Dict:
+        """
+        Make predictions on stream data using loaded models.
+        Returns a dictionary with per-model predictions and scores.
+        """
+        if not self.model_loaded:
+            raise ValueError("No model loaded. Please load a model first.")
+        if self.lstm_model is None and self.gru_model is None:
+            raise ValueError("No models available for prediction.")
+        
+        processed = self.preprocess_stream_data(stream_data)
+        X_seq = self.prepare_sequences_stream(processed)
+        results = { 'data_shape': stream_data.shape, 'processed_shape': processed.shape, 'sequence_shape': X_seq.shape }
+        
+        # Determine mode from availability of y during training
+        is_autoencoder = not self.is_supervised or not self.use_labels_for_training
+        
+        if 'LSTM' in self.selected_models and self.lstm_model is not None:
+            if is_autoencoder:
+                reconstructed = self.lstm_model.predict(X_seq, verbose=0)
+                mse = np.mean(np.square(X_seq - reconstructed), axis=(1,2))
+                max_err = np.max(mse) if np.max(mse) > 0 else 1.0
+                scores = (mse / max_err).reshape(-1)
+                binary = (scores > 0.5).astype(int)
+            else:
+                probs = self.lstm_model.predict(X_seq, verbose=0).reshape(-1)
+                scores = probs
+                binary = (probs > 0.5).astype(int)
+            results['LSTM'] = { 'scores': scores, 'binary_predictions': binary }
+        
+        if 'GRU' in self.selected_models and self.gru_model is not None:
+            if is_autoencoder:
+                reconstructed = self.gru_model.predict(X_seq, verbose=0)
+                mse = np.mean(np.square(X_seq - reconstructed), axis=(1,2))
+                max_err = np.max(mse) if np.max(mse) > 0 else 1.0
+                scores = (mse / max_err).reshape(-1)
+                binary = (scores > 0.5).astype(int)
+            else:
+                probs = self.gru_model.predict(X_seq, verbose=0).reshape(-1)
+                scores = probs
+                binary = (probs > 0.5).astype(int)
+            results['GRU'] = { 'scores': scores, 'binary_predictions': binary }
+        
+        return results
+
+    def export_stream_results(self, stream_data: pd.DataFrame, results: Dict, 
+                              output_dir: str = "sequence_stream_results") -> None:
+        """Export stream prediction results to CSV files."""
+        logger.info(f"Exporting stream results to: {output_dir}")
+        os.makedirs(output_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        results_df = stream_data.copy()
+        # Fill with NaN for initial rows that cannot form sequences
+        seq_len = self.sequence_length
+        prefix_len = min(len(results_df), seq_len)
+        
+        if 'LSTM' in results:
+            lstm_bin = np.full(len(results_df), np.nan)
+            lstm_scores = np.full(len(results_df), np.nan)
+            lstm_bin[prefix_len:] = results['LSTM']['binary_predictions']
+            lstm_scores[prefix_len:] = results['LSTM']['scores']
+            results_df['lstm_prediction'] = lstm_bin
+            results_df['lstm_score'] = lstm_scores
+            results_df['lstm_risk_score'] = lstm_scores
+        
+        if 'GRU' in results:
+            gru_bin = np.full(len(results_df), np.nan)
+            gru_scores = np.full(len(results_df), np.nan)
+            gru_bin[prefix_len:] = results['GRU']['binary_predictions']
+            gru_scores[prefix_len:] = results['GRU']['scores']
+            results_df['gru_prediction'] = gru_bin
+            results_df['gru_score'] = gru_scores
+            results_df['gru_risk_score'] = gru_scores
+        
+        filename = f"sequence_stream_predictions_{timestamp}.csv"
+        filepath = os.path.join(output_dir, filename)
+        results_df.to_csv(filepath, index=False)
+        logger.info(f"Stream results exported to: {filepath}")
+        
+        summary = {
+            'timestamp': timestamp,
+            'data_shape': results.get('data_shape'),
+            'processed_shape': results.get('processed_shape'),
+            'sequence_shape': results.get('sequence_shape'),
+            'selected_models': self.selected_models
+        }
+        summary_file = os.path.join(output_dir, f"sequence_stream_summary_{timestamp}.json")
+        with open(summary_file, 'w') as f:
+            json.dump(summary, f, indent=2)
+        logger.info(f"Stream summary exported to: {summary_file}")
     
     def create_visualizations(self, save_plots: bool = True) -> None:
         """
@@ -1708,55 +2030,99 @@ def main():
     detector = SequenceFraudDetector(random_state=42, sequence_length=10)
     
     try:
-        # Step 1: Load and analyze data
-        file_path = input("📁 Enter CSV file path: ").strip()
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"File not found: {file_path}")
+        # Step 1: Setup prediction mode
+        detector.setup_prediction_mode()
         
-        detector.load_and_analyze_data(file_path)
-        
-        # Step 2: Check data suitability
-        if not detector.check_data_suitability():
-            proceed = input("\n⚠️  Continue anyway? (y/n): ").lower().strip()
-            if proceed not in ['y', 'yes']:
-                print("Exiting...")
-                return
-        
-        # Step 3: Setup learning mode
-        detector.setup_learning_mode()
-        
-        # Step 4: Preprocess data
-        print("\n🔧 Preprocessing data...")
-        detector.preprocess_data()
-        
-        # Step 5: Prepare sequences
-        print("\n📏 Preparing sequences...")
-        detector.prepare_sequences()
-        
-        # Step 6: Split data
-        print("\n✂️  Splitting data...")
-        detector.split_data()
-        
-        # Step 7: Train models
-        print("\n🤖 Training LSTM and GRU models...")
-        detector.train_models()
-        
-        # Step 8: Evaluate models
-        print("\n📊 Evaluating models...")
-        detector.evaluate_models()
-        
-        # Step 9: Create visualizations
-        print("\n📈 Creating visualizations...")
-        detector.create_visualizations(save_plots=True)
-        
-        # Step 10: Export results
-        print("\n💾 Exporting results...")
-        detector.export_results()
-        
-        # Step 11: Print summary
-        detector.print_summary()
-        
-        print("\n✅ Sequence fraud detection analysis completed successfully!")
+        if detector.prediction_mode == 'batch':
+            print("\n" + "="*60)
+            print("🔄 BATCH PREDICTION MODE")
+            print("="*60)
+            # Load and analyze data
+            file_path = input("📁 Enter CSV file path: ").strip()
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"File not found: {file_path}")
+            detector.load_and_analyze_data(file_path)
+            
+            # Check data suitability
+            if not detector.check_data_suitability():
+                proceed = input("\n⚠️  Continue anyway? (y/n): ").lower().strip()
+                if proceed not in ['y', 'yes']:
+                    print("Exiting...")
+                    return
+            
+            # Setup learning mode and parameters
+            detector.setup_learning_mode()
+            
+            # Preprocess and prepare sequences
+            print("\n🔧 Preprocessing data...")
+            detector.preprocess_data()
+            print("\n📏 Preparing sequences...")
+            detector.prepare_sequences()
+            
+            # Split and train
+            print("\n✂️  Splitting data...")
+            detector.split_data()
+            print("\n🤖 Training LSTM and GRU models...")
+            detector.train_models()
+            
+            # Evaluate and visualize
+            print("\n📊 Evaluating models...")
+            detector.evaluate_models()
+            print("\n📈 Creating visualizations...")
+            detector.create_visualizations(save_plots=True)
+            
+            # Export results
+            print("\n💾 Exporting results...")
+            detector.export_results()
+            
+            # Ask to save model
+            save_model = input("\n💾 Save trained model for future stream use? (y/n): ").lower().strip()
+            if save_model in ['y', 'yes']:
+                model_path = input("Enter model save path (or press Enter for auto-generated name): ").strip()
+                if not model_path:
+                    model_path = None
+                detector.save_model(model_path)
+            
+            # Summary
+            detector.print_summary()
+            print("\n✅ Sequence fraud detection analysis completed successfully!")
+        else:
+            print("\n" + "="*60)
+            print("🌊 STREAM PREDICTION MODE")
+            print("="*60)
+            # Load model package
+            model_path = input("📁 Enter path to saved model package (.joblib): ").strip()
+            if not os.path.exists(model_path):
+                raise FileNotFoundError(f"Model file not found: {model_path}")
+            detector.load_model(model_path)
+            
+            # Load stream data
+            stream_file_path = input("📁 Enter CSV file path for stream data: ").strip()
+            if not os.path.exists(stream_file_path):
+                raise FileNotFoundError(f"Stream data file not found: {stream_file_path}")
+            print(f"Loading stream data from: {stream_file_path}")
+            stream_data = pd.read_csv(stream_file_path)
+            print(f"Stream data loaded. Shape: {stream_data.shape}")
+            
+            # Predict
+            print("\n🔮 Making predictions on stream data...")
+            results = detector.predict_stream(stream_data)
+            
+            # Summary print
+            print("\n📊 STREAM PREDICTION RESULTS:")
+            print("-" * 40)
+            if 'LSTM' in results:
+                print(f"LSTM - Total seq preds: {len(results['LSTM']['binary_predictions']):,}, Anomaly Rate: {np.mean(results['LSTM']['binary_predictions']):.2%}")
+            if 'GRU' in results:
+                print(f"GRU  - Total seq preds: {len(results['GRU']['binary_predictions']):,}, Anomaly Rate: {np.mean(results['GRU']['binary_predictions']):.2%}")
+            print(f"Data Shape: {results['data_shape']}")
+            print(f"Processed Shape: {results['processed_shape']}")
+            print(f"Sequence Shape: {results['sequence_shape']}")
+            
+            # Export
+            print("\n💾 Exporting stream results...")
+            detector.export_stream_results(stream_data, results)
+            print("\n✅ Stream prediction completed successfully!")
         
     except Exception as e:
         logger.error(f"Error in main execution: {str(e)}")
