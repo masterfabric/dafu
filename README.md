@@ -1,4 +1,4 @@
-# DAFU - Enterprise Fraud Detection & E-commerce Analytics Platform
+# DAFU - Data Analytics Functional Utilities 
 
 [![License](https://img.shields.io/badge/license-Enterprise-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
@@ -14,84 +14,101 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 
 ### Current Capabilities (Implemented)
 
-- **Advanced ML Algorithms**: Isolation Forest and LSTM/GRU sequence models fully implemented
-- **Stream Processing**: Real-time data stream processing with pre-trained models (NEW!)
-- **Model Persistence**: Save and load trained models for production deployment (NEW!)
-- **Dual Prediction Modes**: Both batch and stream prediction capabilities (NEW!)
-- **Dual Learning Modes**: Both supervised and unsupervised learning approaches
-- **Comprehensive Analysis**: 4-panel visualization with detailed performance metrics
-- **Production-Ready Core**: Complete fraud detection pipeline with evaluation
-- **Flexible Detection**: Classic and risk-score based detection methods
-- **Data Processing**: Automatic preprocessing with missing value handling
+- 🧠 **Advanced ML Algorithms**: Isolation Forest and LSTM/GRU sequence models fully implemented
+- 📡 **Stream Processing**: Real-time data stream processing with pre-trained models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 💾 **Model Persistence**: Save and load trained models for production deployment ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🔀 **Dual Prediction Modes**: Both batch and stream prediction capabilities ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🧪🎓 **Dual Learning Modes**: Both supervised and unsupervised learning approaches
+- 📊📈 **Comprehensive Analysis**: 4-panel visualization with detailed performance metrics
+- 🚀 **Production-Ready Core**: Complete fraud detection pipeline with evaluation
+- 🕵️‍♀️🎯 **Flexible Detection**: Classic and risk-score based detection methods
+- 🧹 **Data Processing**: Automatic preprocessing with missing value handling
 
-### Planned Capabilities (Roadmap)
 
-- **Real-time API**: Sub-50ms fraud scoring endpoints
-- **Enterprise Security**: OAuth2, JWT, RBAC implementation
-- **Scalable Architecture**: Kubernetes deployment with auto-scaling
-- **Advanced Monitoring**: Prometheus, Grafana, Jaeger integration
-- **High-throughput Processing**: 10,000+ TPS optimization
+### Planned Capabilities ![ROADMAP](https://img.shields.io/badge/ROADMAP-blue)
+
+- ⚡ **Real-time API** : Sub-50ms fraud scoring endpoints for ultra-low latency decisioning.  
+  Enables the system to detect fraud instantly in live payment flows, ensuring compliance with real-time financial transaction requirements.
+
+- 🔐 **Enterprise Security** : OAuth2, JWT, RBAC implementation.  
+  Adds enterprise-grade authentication, token-based access, and role-based authorization to secure deployments in regulated environments.
+
+- ☸️ **Scalable Architecture** : Kubernetes deployment with auto-scaling.  
+  Provides seamless horizontal scaling based on traffic load, supporting both small-scale PoCs and large enterprise production clusters.
+
+- 📈 **Advanced Monitoring** : Prometheus, Grafana, Jaeger integration.  
+  Full observability with metrics collection, real-time dashboards, and distributed tracing for faster issue detection and resolution.
+
+- 🚦 **High-throughput Processing** : 10,000+ TPS optimization.  
+  Optimized to handle extremely high transaction volumes, scaling to 10,000+ transactions per second to meet the demands of major banks and payment providers.
+
 
 ## 🏗️ Architecture
 
 ### High-Level Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        DAFU Platform                           │
-├─────────────────────────────────────────────────────────────────┤
-│  API Gateway (Kong/Istio)  │  Load Balancer  │  Service Mesh   │
-├─────────────────────────────────────────────────────────────────┤
-│  Fraud Detection Service   │  Analytics API  │  Model Manager  │
-├─────────────────────────────────────────────────────────────────┤
-│  Feature Engineering      │  Rules Engine    │  Sequence Models│
-├─────────────────────────────────────────────────────────────────┤
-│  Redis Cache              │  Message Queue   │  Model Storage  │
-├─────────────────────────────────────────────────────────────────┤
-│  PostgreSQL/ClickHouse    │  Prometheus      │  Grafana        │
-└─────────────────────────────────────────────────────────────────┘
-```
+![High-Level Architecture](images/High-level-architecture.drawio.png)
 
-### Core Components
+## Core Components
 
-#### 1. Fraud Detection Service (`/fraud_detection/`)
-The main fraud detection microservice with comprehensive ML capabilities:
+### 1. Fraud Detection Service (`/fraud_detection/`)
+The main fraud detection microservice with **end-to-end ML capabilities**, exposed via **FastAPI** for real-time and batch use cases.
 
-- **Anomaly Detection**: Isolation Forest-based fraud detection
-- **Sequence Models**: LSTM/GRU for temporal pattern recognition
-- **Ensemble Methods**: XGBoost, Random Forest for robust predictions
-- **Neural Networks**: Deep learning models for complex patterns
-- **Rules Engine**: Business rule processing and optimization
+- **Anomaly Detection**: [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html) for unsupervised fraud detection and anomaly scoring.  
+- **Sequence Models**: [LSTM (Long Short-Term Memory)](https://en.wikipedia.org/wiki/Long_short-term_memory) and [GRU (Gated Recurrent Unit)](https://en.wikipedia.org/wiki/Gated_recurrent_unit) models for temporal/behavioral pattern recognition.  
+- **Ensemble Methods**: [XGBoost](https://xgboost.readthedocs.io/en/stable/) and [Random Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html) for robust, tree-based predictions.  
+- **Neural Networks**: [Deep learning models](https://www.tensorflow.org/guide/keras/sequential_model) (via TensorFlow/Keras) for complex nonlinear fraud patterns.  
+- **Rules Engine**: Extensible **business rules** for configurable thresholds, velocity checks, and custom scoring strategies.
 
-#### 2. Feature Engineering Pipeline
-Advanced feature extraction and preprocessing:
+---
 
-- **Transaction Features**: Amount, frequency, merchant analysis
-- **User Features**: Behavioral patterns and risk profiling
-- **Network Features**: Graph-based relationship analysis
-- **Temporal Features**: Time-series pattern extraction
+### 2. Feature Engineering Pipeline
+A **modular preprocessing and feature extraction pipeline** designed for **real-time** and **offline** analytics.
 
-#### 3. API Services
-RESTful APIs for real-time and batch processing:
+- **Transaction Features**: Amount distributions, frequency of transactions, merchant category profiling.  
+- **User Features**: Historical behavioral patterns, device fingerprints, account age/risk indicators.  
+- **Network Features**: Graph-based entity relationships (shared IPs, merchants, accounts).  
+- **Temporal Features**: Time-series analysis (sliding windows, session duration, peak-time anomalies).
 
-- **Fraud Scoring API**: Real-time fraud detection
-- **Batch Processing API**: Large-scale data analysis
-- **Model Management API**: Model deployment and versioning
+---
 
-#### 4. Enterprise Infrastructure
-Production-ready deployment and monitoring:
+### 3. API Services
+Enterprise-grade **RESTful APIs** providing low-latency endpoints for **real-time scoring** and **large-scale data ingestion**.  
+All APIs are implemented using [FastAPI](https://fastapi.tiangolo.com/), leveraging [OpenAPI/Swagger](https://swagger.io/specification/) for documentation and schema validation.
 
-- **Containerization**: Docker with multi-stage builds
-- **Orchestration**: Kubernetes with Helm charts
-- **Monitoring**: Prometheus, Grafana, Jaeger tracing
-- **Security**: OAuth2/JWT, RBAC, API key management
+- **Fraud Scoring API**: Real-time fraud detection endpoint.  
+  - Built on [FastAPI](https://fastapi.tiangolo.com/) for async performance.  
+  - Supports **REST** and optionally **gRPC** for low-latency scenarios.  
+  - Designed for **sub-50ms** response times with Redis caching.  
+
+- **Batch Processing API**: Bulk scoring and data ingestion.  
+  - Optimized for large datasets with [Dask](https://www.dask.org/) / [Apache Spark](https://spark.apache.org/) integration.  
+  - Used for offline analysis, backfills, reporting, and model monitoring.  
+  - Supports scheduled jobs (via [Apache Airflow](https://airflow.apache.org/)).  
+
+- **Model Management API**: Centralized model lifecycle control.  
+  - Provides endpoints for **deployment**, **versioning**, and **rollback** of fraud detection models.  
+  - Integrates with object storage ([MinIO](https://min.io/) / [Amazon S3](https://aws.amazon.com/s3/)) for model registry.  
+  - Secured with [OAuth2](https://oauth.net/2/) / [JWT](https://jwt.io/) for enterprise compliance.  
+
+
+---
+
+### 4. Enterprise Infrastructure
+A **cloud-native, microservices-based foundation**, optimized for scalability and observability.
+
+- **Containerization**: [Docker](https://www.docker.com/) multi-stage builds for lightweight, reproducible services ([Podman](https://docs.podman.io/en/latest/) is another option).  
+- **Orchestration**: [Kubernetes](https://kubernetes.io/) with [Helm](https://helm.sh/) charts for deployment, scaling, and service discovery.  
+- **Monitoring**: [Prometheus](https://prometheus.io/) (metrics), [Grafana](https://grafana.com/) (dashboards), [Jaeger](https://www.jaegertracing.io/) (distributed tracing).  
+- **Security**: [OAuth2](https://oauth.net/2/) / [JWT](https://jwt.io/) authentication, **RBAC policies**, and API key management for multi-tenant enterprise compliance.
+
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.8+
-- Docker (optional)
+- Docker/Podman
 - Kubernetes cluster (for production)
 - Redis (for caching)
 - PostgreSQL/ClickHouse (for data storage)
