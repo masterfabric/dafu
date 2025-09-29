@@ -42,6 +42,51 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 - 🚦 **High-throughput Processing** : 10,000+ TPS optimization.  
   Optimized to handle extremely high transaction volumes, scaling to 10,000+ transactions per second to meet the demands of major banks and payment providers.
 
+## 📋 Table of Contents
+
+### 🚀 Getting Started
+- [Quick Start](#-quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [First-Time User Guide](#first-time-user-guide)
+- [Supported Data Formats](#-supported-data-formats)
+- [Use Cases and Scenarios](#-use-cases-and-scenarios)
+
+### 🏗️ Architecture & Components
+- [High-Level Architecture](#-architecture)
+- [Core Components](#core-components)
+  - [Fraud Detection Service](#1-fraud-detection-service-fraud_detection)
+  - [Feature Engineering Pipeline](#2-feature-engineering-pipeline)
+  - [API Services](#3-api-services)
+  - [Enterprise Infrastructure](#4-enterprise-infrastructure)
+
+### ⚙️ Configuration & Usage
+- [Configuration and Customization](#-configuration-and-customization)
+- [Performance and Scalability](#-performance-and-scalability)
+- [Security and Compliance](#-security-and-compliance)
+
+### 🧪 Development & Testing
+- [Testing and Quality Assurance](#-testing-and-quality-assurance)
+- [Monitoring and Observability](#-monitoring-and-observability)
+- [Deployment](#-deployment)
+- [Contributing](#-contributing)
+
+### 📚 API & Documentation
+- [API Documentation](#-api-documentation)
+  - [Fraud Scoring API](#fraud-scoring-api)
+  - [Model Management API](#model-management-api)
+
+### 📊 Project Status
+- [Current Implementation Status](#-current-implementation-status)
+- [Performance Metrics](#-current-performance-metrics)
+- [Development Roadmap](#-development-roadmap)
+- [Test Results](#-current-test-results)
+
+### 🆘 Support
+- [Support and Community](#-support-and-community)
+- [License](#-license)
+
+---
 
 ## 🏗️ Architecture
 
