@@ -680,7 +680,7 @@ timestamp,user_id,transaction_count,daily_amount,risk_score
 
 ```python
 # Real-time scoring
-response = requests.post('https://api.dafu.masterfabric.co/v1/score', json={
+response = requests.post('https://api.masterfabric.co/dafu/v1/score', json={
     'transaction_id': 'tx_123',
     'amount': 150.00,
     'user_id': 'user_456',
@@ -708,7 +708,7 @@ batch_request = {
     'output_format': 'detailed_report'
 }
 
-response = requests.post('https://api.dafu.masterfabric.co/v1/batch/analyze', json=batch_request)
+response = requests.post('https://api.masterfabric.co/dafu/v1/batch/analyze', json=batch_request)
 ```
 
 ### 3. User Behavior Analysis
@@ -1149,7 +1149,7 @@ jobs:
 
 ### Fraud Scoring API
 
-#### POST `/v1/score`
+#### POST `/dafu/v1/score`
 Real-time fraud scoring endpoint.
 
 **Request:**
@@ -1182,7 +1182,7 @@ Real-time fraud scoring endpoint.
 }
 ```
 
-#### POST `/v1/batch/analyze`
+#### POST `/dafu/v1/batch/analyze`
 Batch fraud analysis endpoint.
 
 **Request:**
@@ -1197,13 +1197,13 @@ Batch fraud analysis endpoint.
 
 ### Model Management API
 
-#### GET `/v1/models`
+#### GET `/dafu/v1/models`
 List available models.
 
-#### POST `/v1/models/deploy`
+#### POST `/dafu/v1/models/deploy`
 Deploy a new model version.
 
-#### GET `/v1/models/{model_id}/performance`
+#### GET `/dafu/v1/models/{model_id}/performance`
 Get model performance metrics.
 
 ## 🤝 Contributing
@@ -1291,7 +1291,7 @@ For commercial enterprises requiring different licensing terms, please contact M
 
 ### Resources
 
-- **API Documentation**: [Swagger UI](https://api.dafu.masterfabric.co/docs)
+- **API Documentation**: [Swagger UI](https://api.masterfabric.co/dafu/docs)
 - **Architecture Guide**: [docs/architecture.md](docs/architecture.md)
 - **Deployment Guide**: [docs/deployment.md](docs/deployment.md)
 - **Performance Tuning**: [docs/performance.md](docs/performance.md)
