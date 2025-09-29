@@ -32,6 +32,7 @@ from typing import Tuple, Dict, List, Optional, Union
 import os
 from datetime import datetime
 import json
+import joblib
 
 # Configure logging
 logging.basicConfig(
@@ -79,6 +80,11 @@ class IsolationForestFraudDetector:
         self.use_risk_score_threshold = False
         self.risk_score_threshold = None
         
+        # Mode selection
+        self.prediction_mode = None  # 'batch' or 'stream'
+        self.model_save_path = None
+        self.model_loaded = False
+        
         # Fine-tuning parameters
         self.contamination_levels = [0.01, 0.05, 0.1]
         self.n_estimators = 100
@@ -115,6 +121,32 @@ class IsolationForestFraudDetector:
         except Exception as e:
             logger.error(f"Error loading data: {str(e)}")
             raise
+    
+    def setup_prediction_mode(self) -> None:
+        """Setup prediction mode (batch or stream)."""
+        print("\n" + "="*60)
+        print("🎯 PREDICTION MODE SETUP")
+        print("="*60)
+        print("Choose your prediction mode:")
+        print("1. Batch Prediction - Train model on batch data and predict on the same data")
+        print("2. Stream Prediction - Load pre-trained model and predict on new stream data")
+        
+        while True:
+            choice = input("Enter choice (1 or 2): ").strip()
+            if choice == '1':
+                self.prediction_mode = 'batch'
+                print("✅ Batch prediction mode selected")
+                print("   - Model will be trained on the provided data")
+                print("   - Predictions will be made on the same data")
+                break
+            elif choice == '2':
+                self.prediction_mode = 'stream'
+                print("✅ Stream prediction mode selected")
+                print("   - Pre-trained model will be loaded")
+                print("   - Predictions will be made on new stream data")
+                break
+            else:
+                print("Please enter '1' or '2'.")
     
     def _analyze_columns(self) -> None:
         """Analyze column types and characteristics."""
@@ -783,6 +815,352 @@ class IsolationForestFraudDetector:
         
         return self.models
     
+    def save_model(self, model_path: str = None) -> str:
+        """
+        Save the trained model and preprocessing objects to disk.
+        
+        Args:
+            model_path: Path to save the model (optional)
+            
+        Returns:
+            Path where the model was saved
+        """
+        if not self.models:
+            raise ValueError("No trained models found. Please train models first.")
+        
+        if model_path is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            model_path = f"fraud_detection_model_{timestamp}.joblib"
+        
+        # Create model package
+        model_package = {
+            'models': self.models,
+            'scaler': self.scaler,
+            'label_encoders': self.label_encoders,
+            'label_column': self.label_column,
+            'is_supervised': self.is_supervised,
+            'use_labels_for_training': self.use_labels_for_training,
+            'primary_keys': self.primary_keys,
+            'categorical_columns': self.categorical_columns,
+            'numerical_columns': self.numerical_columns,
+            'high_cardinality_columns': self.high_cardinality_columns,
+            'low_variance_columns': self.low_variance_columns,
+            'use_risk_score_threshold': self.use_risk_score_threshold,
+            'risk_score_threshold': self.risk_score_threshold,
+            'contamination_levels': self.contamination_levels,
+            'n_estimators': self.n_estimators,
+            'max_samples': self.max_samples,
+            'max_features': self.max_features,
+            'bootstrap': self.bootstrap,
+            'random_state': self.random_state,
+            'model_metadata': {
+                'timestamp': datetime.now().isoformat(),
+                'version': '1.0.0',
+                'algorithm': 'IsolationForest',
+                'prediction_mode': 'batch_training'
+            }
+        }
+        
+        # Save the model
+        joblib.dump(model_package, model_path)
+        self.model_save_path = model_path
+        
+        logger.info(f"Model saved successfully to: {model_path}")
+        print(f"✅ Model saved to: {model_path}")
+        
+        return model_path
+    
+    def load_model(self, model_path: str) -> None:
+        """
+        Load a pre-trained model and preprocessing objects from disk.
+        
+        Args:
+            model_path: Path to the saved model
+        """
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model file not found: {model_path}")
+        
+        try:
+            # Load the model package
+            model_package = joblib.load(model_path)
+            
+            # Restore all attributes
+            self.models = model_package['models']
+            self.scaler = model_package['scaler']
+            self.label_encoders = model_package['label_encoders']
+            self.label_column = model_package['label_column']
+            self.is_supervised = model_package['is_supervised']
+            self.use_labels_for_training = model_package['use_labels_for_training']
+            self.primary_keys = model_package['primary_keys']
+            self.categorical_columns = model_package['categorical_columns']
+            self.numerical_columns = model_package['numerical_columns']
+            self.high_cardinality_columns = model_package['high_cardinality_columns']
+            self.low_variance_columns = model_package['low_variance_columns']
+            self.use_risk_score_threshold = model_package['use_risk_score_threshold']
+            self.risk_score_threshold = model_package['risk_score_threshold']
+            self.contamination_levels = model_package['contamination_levels']
+            self.n_estimators = model_package['n_estimators']
+            self.max_samples = model_package['max_samples']
+            self.max_features = model_package['max_features']
+            self.bootstrap = model_package['bootstrap']
+            self.random_state = model_package['random_state']
+            
+            self.model_loaded = True
+            self.model_save_path = model_path
+            
+            logger.info(f"Model loaded successfully from: {model_path}")
+            print(f"✅ Model loaded from: {model_path}")
+            
+            # Display model info
+            metadata = model_package.get('model_metadata', {})
+            print(f"📊 Model Info:")
+            print(f"   • Algorithm: {metadata.get('algorithm', 'Unknown')}")
+            print(f"   • Trained on: {metadata.get('timestamp', 'Unknown')}")
+            print(f"   • Contamination Levels: {list(self.models.keys())}")
+            print(f"   • Risk Score Threshold: {self.risk_score_threshold if self.use_risk_score_threshold else 'Classic'}")
+            
+        except Exception as e:
+            logger.error(f"Error loading model: {str(e)}")
+            raise
+    
+    def preprocess_stream_data(self, stream_data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Preprocess stream data using the same preprocessing steps as training data.
+        
+        Args:
+            stream_data: New data to preprocess
+            
+        Returns:
+            Preprocessed DataFrame
+        """
+        if not self.model_loaded:
+            raise ValueError("No model loaded. Please load a model first.")
+        
+        logger.info("Preprocessing stream data...")
+        processed_stream_data = stream_data.copy()
+        
+        # Remove primary key columns if they exist
+        if self.primary_keys:
+            existing_primary_keys = [col for col in self.primary_keys if col in processed_stream_data.columns]
+            if existing_primary_keys:
+                logger.info(f"Removing primary key columns: {existing_primary_keys}")
+                processed_stream_data = processed_stream_data.drop(columns=existing_primary_keys)
+        
+        # Remove high cardinality columns if they exist
+        if self.high_cardinality_columns:
+            existing_high_cardinality = [col for col in self.high_cardinality_columns 
+                                      if col in processed_stream_data.columns and col not in self.primary_keys]
+            if existing_high_cardinality:
+                logger.info(f"Removing high cardinality columns: {existing_high_cardinality}")
+                processed_stream_data = processed_stream_data.drop(columns=existing_high_cardinality)
+        
+        # Remove low variance columns if they exist (but keep label column if present)
+        if self.low_variance_columns:
+            existing_low_variance = [col for col in self.low_variance_columns 
+                                   if col in processed_stream_data.columns and col != self.label_column]
+            if existing_low_variance:
+                logger.info(f"Removing low variance columns: {existing_low_variance}")
+                processed_stream_data = processed_stream_data.drop(columns=existing_low_variance)
+        
+        # Handle missing values
+        self._handle_missing_values_stream(processed_stream_data)
+        
+        # Encode categorical variables using saved encoders
+        self._encode_categorical_variables_stream(processed_stream_data)
+        
+        # Standardize numerical features using saved scaler
+        self._standardize_numerical_features_stream(processed_stream_data)
+        
+        logger.info(f"Stream data preprocessing completed. Shape: {processed_stream_data.shape}")
+        return processed_stream_data
+    
+    def _handle_missing_values_stream(self, data: pd.DataFrame) -> None:
+        """Handle missing values in stream data."""
+        for col in data.columns:
+            if data[col].isnull().sum() > 0:
+                if col in self.categorical_columns:
+                    # Use mode from training data or most frequent value
+                    if col in self.label_encoders:
+                        # Use the most frequent class from training
+                        mode_value = data[col].mode()[0] if not data[col].mode().empty else data[col].iloc[0]
+                    else:
+                        mode_value = data[col].mode()[0] if not data[col].mode().empty else data[col].iloc[0]
+                    data[col].fillna(mode_value, inplace=True)
+                    logger.info(f"Filled missing values in '{col}' with mode: {mode_value}")
+                else:
+                    # Use median from training data
+                    median_value = data[col].median()
+                    data[col].fillna(median_value, inplace=True)
+                    logger.info(f"Filled missing values in '{col}' with median: {median_value:.4f}")
+    
+    def _encode_categorical_variables_stream(self, data: pd.DataFrame) -> None:
+        """Encode categorical variables using saved encoders."""
+        categorical_cols = [col for col in data.columns 
+                          if col in self.categorical_columns and col != self.label_column]
+        
+        for col in categorical_cols:
+            if col in self.label_encoders:
+                # Use saved encoder
+                le = self.label_encoders[col]
+                # Handle unseen categories by using the most frequent class
+                data[col] = data[col].astype(str)
+                unique_values = data[col].unique()
+                known_values = le.classes_
+                unknown_values = set(unique_values) - set(known_values)
+                
+                if unknown_values:
+                    logger.warning(f"Unknown categories in '{col}': {unknown_values}")
+                    # Replace unknown values with the most frequent known value
+                    most_frequent = le.classes_[0]  # First class is usually the most frequent
+                    data[col] = data[col].replace(list(unknown_values), most_frequent)
+                
+                data[col] = le.transform(data[col])
+                logger.info(f"Encoded categorical column: {col}")
+            else:
+                # If no encoder found, use simple label encoding
+                le = LabelEncoder()
+                data[col] = le.fit_transform(data[col].astype(str))
+                logger.info(f"Created new encoder for categorical column: {col}")
+    
+    def _standardize_numerical_features_stream(self, data: pd.DataFrame) -> None:
+        """Standardize numerical features using saved scaler."""
+        numerical_cols = [col for col in data.columns 
+                         if col in self.numerical_columns and col != self.label_column]
+        
+        if numerical_cols:
+            data[numerical_cols] = self.scaler.transform(data[numerical_cols])
+            logger.info(f"Standardized {len(numerical_cols)} numerical columns")
+    
+    def predict_stream(self, stream_data: pd.DataFrame, contamination: float = None) -> Dict:
+        """
+        Make predictions on stream data using loaded model.
+        
+        Args:
+            stream_data: New data to predict on
+            contamination: Contamination level to use (if None, uses the first available)
+            
+        Returns:
+            Dictionary containing predictions and scores
+        """
+        if not self.model_loaded:
+            raise ValueError("No model loaded. Please load a model first.")
+        
+        if not self.models:
+            raise ValueError("No models available for prediction.")
+        
+        # Use specified contamination or the first available
+        if contamination is None:
+            contamination = list(self.models.keys())[0]
+        
+        if contamination not in self.models:
+            raise ValueError(f"Contamination level {contamination} not found in loaded models.")
+        
+        logger.info(f"Making predictions on stream data with contamination: {contamination}")
+        
+        # Preprocess the stream data
+        processed_data = self.preprocess_stream_data(stream_data)
+        
+        # Remove label column if present (for prediction)
+        if self.label_column and self.label_column in processed_data.columns:
+            processed_data = processed_data.drop(columns=[self.label_column])
+        
+        # Get the model
+        model = self.models[contamination]
+        
+        # Make predictions
+        predictions = model.predict(processed_data)
+        scores = model.decision_function(processed_data)
+        
+        # Get binary predictions based on selected method
+        binary_predictions = self._get_risk_score_predictions_stream(scores)
+        
+        # Calculate risk scores
+        min_score, max_score = scores.min(), scores.max()
+        risk_scores = (max_score - scores) / (max_score - min_score)
+        
+        # Create results
+        results = {
+            'predictions': predictions,
+            'binary_predictions': binary_predictions,
+            'scores': scores,
+            'risk_scores': risk_scores,
+            'contamination': contamination,
+            'data_shape': stream_data.shape,
+            'processed_shape': processed_data.shape
+        }
+        
+        logger.info(f"Stream predictions completed. Found {binary_predictions.sum()} anomalies out of {len(binary_predictions)} records")
+        
+        return results
+    
+    def _get_risk_score_predictions_stream(self, scores: np.ndarray) -> np.ndarray:
+        """
+        Get predictions based on risk score threshold for stream data.
+        
+        Args:
+            scores: Anomaly scores from the model
+            
+        Returns:
+            Binary predictions (0: normal, 1: anomaly)
+        """
+        if not self.use_risk_score_threshold:
+            # Use classic Isolation Forest predictions
+            return (scores < 0).astype(int)
+        
+        # Use risk score threshold
+        min_score, max_score = scores.min(), scores.max()
+        normalized_risk_scores = (max_score - scores) / (max_score - min_score)
+        
+        # Apply threshold
+        return (normalized_risk_scores >= self.risk_score_threshold).astype(int)
+    
+    def export_stream_results(self, stream_data: pd.DataFrame, results: Dict, 
+                            output_dir: str = "stream_prediction_results") -> None:
+        """
+        Export stream prediction results to CSV files.
+        
+        Args:
+            stream_data: Original stream data
+            results: Prediction results from predict_stream
+            output_dir: Directory to save results
+        """
+        logger.info(f"Exporting stream results to: {output_dir}")
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Create results DataFrame
+        results_df = stream_data.copy()
+        results_df['anomaly_prediction'] = results['predictions']
+        results_df['anomaly_score'] = results['scores']
+        results_df['is_fraud'] = results['binary_predictions']
+        results_df['risk_score'] = results['risk_scores']
+        
+        # Save results
+        filename = f"stream_predictions_contamination_{results['contamination']}_{timestamp}.csv"
+        filepath = os.path.join(output_dir, filename)
+        results_df.to_csv(filepath, index=False)
+        logger.info(f"Stream results exported to: {filepath}")
+        
+        # Save summary
+        summary = {
+            'timestamp': timestamp,
+            'contamination': results['contamination'],
+            'total_records': len(results['binary_predictions']),
+            'anomalies_detected': int(results['binary_predictions'].sum()),
+            'anomaly_rate': float(results['binary_predictions'].mean()),
+            'data_shape': results['data_shape'],
+            'processed_shape': results['processed_shape'],
+            'use_risk_score_threshold': self.use_risk_score_threshold,
+            'risk_score_threshold': self.risk_score_threshold
+        }
+        
+        summary_file = os.path.join(output_dir, f"stream_summary_{timestamp}.json")
+        with open(summary_file, 'w') as f:
+            json.dump(summary, f, indent=2)
+        logger.info(f"Stream summary exported to: {summary_file}")
+    
     def _get_risk_score_predictions(self, contamination: float) -> np.ndarray:
         """
         Get predictions based on risk score threshold.
@@ -1158,52 +1536,129 @@ def main():
     detector = IsolationForestFraudDetector(random_state=42)
     
     try:
-        # Step 1: Load and analyze data
-        file_path = input("📁 Enter CSV file path: ").strip()
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"File not found: {file_path}")
+        # Step 1: Setup prediction mode
+        detector.setup_prediction_mode()
         
-        detector.load_and_analyze_data(file_path)
-        
-        # Step 2: Check data suitability
-        if not detector.check_data_suitability():
-            proceed = input("\n⚠️  Continue anyway? (y/n): ").lower().strip()
-            if proceed not in ['y', 'yes']:
-                print("Exiting...")
-                return
-        
-        # Step 3: Setup learning mode
-        detector.setup_learning_mode()
-        
-        # Step 4: Preprocess data
-        print("\n🔧 Preprocessing data...")
-        detector.preprocess_data()
-        
-        # Step 5: Train models
-        print("\n🤖 Training Isolation Forest models...")
-        if detector.use_risk_score_threshold:
-            print("   Using single contamination level (0.1) for risk score based detection")
-        else:
-            print("   Using multiple contamination levels for comparison")
-        detector.train_models()
-        
-        # Step 6: Evaluate models (if supervised)
-        if detector.is_supervised:
-            print("\n📊 Evaluating models...")
-            detector.evaluate_models()
-        
-        # Step 7: Create visualizations
-        print("\n📈 Creating visualizations...")
-        detector.create_visualizations(save_plots=True)
-        
-        # Step 8: Export results
-        print("\n💾 Exporting results...")
-        detector.export_results()
-        
-        # Step 9: Print summary
-        detector.print_summary()
-        
-        print("\n✅ Fraud detection analysis completed successfully!")
+        if detector.prediction_mode == 'batch':
+            # BATCH PREDICTION MODE
+            print("\n" + "="*60)
+            print("🔄 BATCH PREDICTION MODE")
+            print("="*60)
+            
+            # Step 2: Load and analyze data
+            file_path = input("📁 Enter CSV file path: ").strip()
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(f"File not found: {file_path}")
+            
+            detector.load_and_analyze_data(file_path)
+            
+            # Step 3: Check data suitability
+            if not detector.check_data_suitability():
+                proceed = input("\n⚠️  Continue anyway? (y/n): ").lower().strip()
+                if proceed not in ['y', 'yes']:
+                    print("Exiting...")
+                    return
+            
+            # Step 4: Setup learning mode
+            detector.setup_learning_mode()
+            
+            # Step 5: Preprocess data
+            print("\n🔧 Preprocessing data...")
+            detector.preprocess_data()
+            
+            # Step 6: Train models
+            print("\n🤖 Training Isolation Forest models...")
+            if detector.use_risk_score_threshold:
+                print("   Using single contamination level (0.1) for risk score based detection")
+            else:
+                print("   Using multiple contamination levels for comparison")
+            detector.train_models()
+            
+            # Step 7: Evaluate models (if supervised)
+            if detector.is_supervised:
+                print("\n📊 Evaluating models...")
+                detector.evaluate_models()
+            
+            # Step 8: Create visualizations
+            print("\n📈 Creating visualizations...")
+            detector.create_visualizations(save_plots=True)
+            
+            # Step 9: Export results
+            print("\n💾 Exporting results...")
+            detector.export_results()
+            
+            # Step 10: Ask if user wants to save model
+            save_model = input("\n💾 Save trained model for future use? (y/n): ").lower().strip()
+            if save_model in ['y', 'yes']:
+                model_path = input("Enter model save path (or press Enter for auto-generated name): ").strip()
+                if not model_path:
+                    model_path = None
+                detector.save_model(model_path)
+            
+            # Step 11: Print summary
+            detector.print_summary()
+            
+            print("\n✅ Batch fraud detection analysis completed successfully!")
+            
+        elif detector.prediction_mode == 'stream':
+            # STREAM PREDICTION MODE
+            print("\n" + "="*60)
+            print("🌊 STREAM PREDICTION MODE")
+            print("="*60)
+            
+            # Step 2: Load pre-trained model
+            model_path = input("📁 Enter path to saved model (.joblib file): ").strip()
+            if not os.path.exists(model_path):
+                raise FileNotFoundError(f"Model file not found: {model_path}")
+            
+            detector.load_model(model_path)
+            
+            # Step 3: Load stream data
+            stream_file_path = input("📁 Enter CSV file path for stream data: ").strip()
+            if not os.path.exists(stream_file_path):
+                raise FileNotFoundError(f"Stream data file not found: {stream_file_path}")
+            
+            print(f"Loading stream data from: {stream_file_path}")
+            stream_data = pd.read_csv(stream_file_path)
+            print(f"Stream data loaded. Shape: {stream_data.shape}")
+            
+            # Step 4: Select contamination level (if multiple available)
+            if len(detector.models) > 1:
+                print(f"\nAvailable contamination levels: {list(detector.models.keys())}")
+                contamination_choice = input("Enter contamination level to use (or press Enter for first available): ").strip()
+                if contamination_choice:
+                    try:
+                        contamination = float(contamination_choice)
+                        if contamination not in detector.models:
+                            print(f"Contamination {contamination} not found. Using first available.")
+                            contamination = None
+                    except ValueError:
+                        print("Invalid contamination level. Using first available.")
+                        contamination = None
+                else:
+                    contamination = None
+            else:
+                contamination = None
+            
+            # Step 5: Make predictions
+            print("\n🔮 Making predictions on stream data...")
+            results = detector.predict_stream(stream_data, contamination)
+            
+            # Step 6: Display results summary
+            print("\n📊 STREAM PREDICTION RESULTS:")
+            print("-" * 40)
+            print(f"Total Records: {len(results['binary_predictions']):,}")
+            print(f"Anomalies Detected: {results['binary_predictions'].sum():,}")
+            print(f"Anomaly Rate: {results['binary_predictions'].mean():.2%}")
+            print(f"Contamination Used: {results['contamination']}")
+            print(f"Data Shape: {results['data_shape']}")
+            print(f"Processed Shape: {results['processed_shape']}")
+            
+            # Step 7: Export stream results
+            print("\n💾 Exporting stream results...")
+            detector.export_stream_results(stream_data, results)
+            
+            print("\n✅ Stream prediction completed successfully!")
         
     except Exception as e:
         logger.error(f"Error in main execution: {str(e)}")
