@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/masterfabric/dafu#readme
+    about: Please check our documentation first for common questions and setup guides
+  - name: 💬 Discussions
+    url: https://github.com/masterfabric/dafu/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📧 License & Commercial Use
+    url: mailto:license@masterfabric.co
+    about: Contact us for commercial licensing and enterprise support

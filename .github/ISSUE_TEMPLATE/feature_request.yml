@@ -1,0 +1,156 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for DAFU fraud detection platform
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new feature for DAFU! Please provide detailed information about your feature request to help us understand and prioritize it.
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: 🎯 Feature Category
+      description: Which area would this feature enhance?
+      options:
+        - Machine Learning Models (New algorithms, model improvements)
+        - API Services (New endpoints, API enhancements)
+        - Feature Engineering (New feature extraction methods)
+        - Rules Engine (New business rules, rule optimization)
+        - Data Processing (New data sources, processing methods)
+        - Visualization & Analytics (New charts, dashboards)
+        - Performance & Scalability (Optimization, caching)
+        - Security & Compliance (Authentication, data protection)
+        - Deployment & DevOps (Containerization, monitoring)
+        - Documentation & Examples (Tutorials, guides)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 🚀 Priority
+      description: How important is this feature?
+      options:
+        - Critical (Essential for core functionality)
+        - High (Significant improvement to existing features)
+        - Medium (Nice to have enhancement)
+        - Low (Future consideration)
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: ✨ Feature Description
+      description: A clear and concise description of the feature you'd like to see
+      placeholder: Describe the feature in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: 🎯 Problem Statement
+      description: What problem does this feature solve?
+      placeholder: |
+        Is your feature request related to a problem? Please describe.
+        A clear and concise description of what the problem is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: |
+        A clear and concise description of what you want to happen.
+        Include any specific implementation ideas if you have them.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: 📋 Use Cases
+      description: Describe specific use cases for this feature
+      placeholder: |
+        1. Use case 1: ...
+        2. Use case 2: ...
+        3. Use case 3: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: 🔧 Technical Considerations
+      description: Any technical aspects or constraints to consider
+      placeholder: |
+        - Performance requirements
+        - Integration points
+        - Data requirements
+        - Security considerations
+        - Backward compatibility
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: |
+        A clear and concise description of any alternative solutions or features you've considered.
+
+  - type: textarea
+    id: business-impact
+    attributes:
+      label: 💼 Business Impact
+      description: How would this feature benefit users or the platform?
+      placeholder: |
+        - Improved fraud detection accuracy
+        - Better user experience
+        - Reduced processing time
+        - Enhanced security
+        - Cost savings
+
+  - type: textarea
+    id: implementation-ideas
+    attributes:
+      label: 🛠️ Implementation Ideas
+      description: If you have ideas about how this could be implemented, please share them
+      placeholder: |
+        - Suggested technologies or libraries
+        - Architecture considerations
+        - API design ideas
+        - Database schema changes
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 Additional Context
+      description: Add any other context, screenshots, or references about the feature request here
+      placeholder: |
+        - Screenshots or mockups
+        - Links to similar features in other projects
+        - Research papers or documentation
+        - Any other relevant information
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 📋 Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided all the required information above
+          required: true
+        - label: I understand this is a fraud detection platform and will consider security implications
+          required: true
+        - label: I am willing to contribute to the implementation if needed
+          required: false

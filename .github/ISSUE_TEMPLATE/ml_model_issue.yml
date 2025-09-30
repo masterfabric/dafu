@@ -1,0 +1,206 @@
+name: 🤖 ML Model Issue
+description: Report issues or request improvements related to machine learning models in DAFU
+title: "[ML] "
+labels: ["ml-models", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for issues related to machine learning models in DAFU fraud detection platform. Please provide detailed information about the model behavior, performance, or training issues.
+
+  - type: dropdown
+    id: model-type
+    attributes:
+      label: 🎯 Model Type
+      description: Which ML model is affected?
+      options:
+        - Isolation Forest (Anomaly Detection)
+        - LSTM (Long Short-Term Memory)
+        - GRU (Gated Recurrent Unit)
+        - XGBoost (Ensemble)
+        - Random Forest (Ensemble)
+        - Neural Networks (Deep Learning)
+        - Model Persistence/Serialization
+        - Model Evaluation/Metrics
+        - Data Preprocessing for Models
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: 🚨 Issue Type
+      description: What type of ML issue is this?
+      options:
+        - Model Performance (Accuracy, Precision, Recall issues)
+        - Training Issues (Convergence, overfitting, underfitting)
+        - Prediction Issues (Incorrect predictions, errors)
+        - Model Persistence (Save/load problems)
+        - Data Quality (Input data issues)
+        - Hyperparameter Tuning (Parameter optimization)
+        - Model Evaluation (Metrics calculation issues)
+        - Feature Engineering (Feature extraction problems)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: 🤖 Issue Description
+      description: A clear and concise description of the ML model issue
+      placeholder: Describe the issue with the machine learning model...
+    validations:
+      required: true
+
+  - type: textarea
+    id: model-configuration
+    attributes:
+      label: ⚙️ Model Configuration
+      description: Please provide model configuration details
+      placeholder: |
+        - Model parameters/hyperparameters
+        - Training configuration
+        - Data preprocessing steps
+        - Feature engineering pipeline
+        - Model architecture (for neural networks)
+    validations:
+      required: true
+
+  - type: textarea
+    id: performance-metrics
+    attributes:
+      label: 📊 Performance Metrics
+      description: Current model performance metrics (if available)
+      placeholder: |
+        - Accuracy: X%
+        - Precision: X%
+        - Recall: X%
+        - F1-Score: X%
+        - AUC-ROC: X%
+        - Training Loss: X
+        - Validation Loss: X
+    validations:
+      required: false
+
+  - type: textarea
+    id: data-information
+    attributes:
+      label: 📋 Data Information
+      description: Information about the dataset used
+      placeholder: |
+        - Dataset size (rows, columns)
+        - Data types and distributions
+        - Missing values percentage
+        - Class imbalance (if applicable)
+        - Data preprocessing applied
+        - Train/validation/test split ratios
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: 📋 Error Logs
+      description: If applicable, add error logs or stack traces
+      placeholder: |
+        ```
+        Paste error logs here
+        ```
+      render: shell
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ Expected Behavior
+      description: What was the expected model behavior?
+      placeholder: |
+        - Expected accuracy range
+        - Expected prediction behavior
+        - Expected training convergence
+        - Expected model performance
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ Actual Behavior
+      description: What actually happened with the model?
+      placeholder: |
+        - Actual accuracy achieved
+        - Actual prediction behavior
+        - Training issues encountered
+        - Performance problems
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: Steps to reproduce the model issue
+      placeholder: |
+        1. Load dataset: '...'
+        2. Configure model with parameters: '...'
+        3. Train model: '...'
+        4. Evaluate model: '...'
+        5. See issue: '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🖥️ Environment
+      description: Environment details for ML model execution
+      placeholder: |
+        - OS: [e.g., Ubuntu 20.04, macOS 12.0]
+        - Python version: [e.g., 3.8.10, 3.9.7]
+        - TensorFlow version: [e.g., 2.8.0]
+        - scikit-learn version: [e.g., 1.0.2]
+        - NumPy version: [e.g., 1.21.0]
+        - Pandas version: [e.g., 1.3.0]
+        - GPU: [e.g., CUDA 11.2, M1 Mac]
+    validations:
+      required: true
+
+  - type: textarea
+    id: sample-code
+    attributes:
+      label: 💻 Sample Code
+      description: If applicable, provide code snippets that reproduce the issue
+      placeholder: |
+        ```python
+        # Paste relevant code here
+        ```
+      render: python
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 Additional Context
+      description: Add any other context about the ML model issue here
+      placeholder: |
+        - Research papers or references
+        - Similar issues in other projects
+        - Potential solutions you've tried
+        - Any other relevant information
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 📋 Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided all the required information above
+          required: true
+        - label: I understand this is a fraud detection platform and will not share sensitive data
+          required: true
+        - label: I have tested with different datasets/parameters if applicable
+          required: false

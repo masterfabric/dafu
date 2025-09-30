@@ -1,0 +1,226 @@
+name: 🔌 API Issue
+description: Report issues or request improvements related to DAFU API services
+title: "[API] "
+labels: ["api", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for issues related to DAFU API services. Please provide detailed information about API behavior, performance, or integration issues.
+
+  - type: dropdown
+    id: api-service
+    attributes:
+      label: 🎯 API Service
+      description: Which API service is affected?
+      options:
+        - Fraud Scoring API (Real-time fraud detection)
+        - Batch Processing API (Bulk scoring and data ingestion)
+        - Model Management API (Model versioning and deployment)
+        - Feature Engineering API (Feature extraction endpoints)
+        - Rules Engine API (Business rules processing)
+        - Authentication/Authorization API
+        - Health Check/Monitoring API
+        - Documentation/Swagger API
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: 🚨 Issue Type
+      description: What type of API issue is this?
+      options:
+        - Performance (Slow response times, timeouts)
+        - Authentication (Auth failures, token issues)
+        - Validation (Input validation errors)
+        - Response Format (Incorrect response structure)
+        - Error Handling (Unexpected error responses)
+        - Rate Limiting (Throttling issues)
+        - Integration (Client integration problems)
+        - Documentation (API docs issues)
+        - Security (Security vulnerabilities)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: 🔌 Issue Description
+      description: A clear and concise description of the API issue
+      placeholder: Describe the API issue in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: endpoint-details
+    attributes:
+      label: 🌐 Endpoint Details
+      description: API endpoint information
+      placeholder: |
+        - Endpoint URL: [e.g., POST /api/v1/fraud/score]
+        - HTTP Method: [e.g., GET, POST, PUT, DELETE]
+        - API Version: [e.g., v1.0.0]
+        - Authentication Required: [Yes/No]
+    validations:
+      required: true
+
+  - type: textarea
+    id: request-details
+    attributes:
+      label: 📤 Request Details
+      description: Request information (anonymize sensitive data)
+      placeholder: |
+        - Request Headers: [e.g., Content-Type: application/json, Authorization: Bearer token]
+        - Request Body: [JSON payload - anonymize sensitive data]
+        - Query Parameters: [if applicable]
+        - Request Size: [e.g., 1KB, 10MB]
+    validations:
+      required: true
+
+  - type: textarea
+    id: response-details
+    attributes:
+      label: 📥 Response Details
+      description: Response information
+      placeholder: |
+        - HTTP Status Code: [e.g., 200, 400, 500]
+        - Response Headers: [e.g., Content-Type: application/json]
+        - Response Body: [JSON response - anonymize sensitive data]
+        - Response Time: [e.g., 2.5s, timeout after 30s]
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: 📋 Error Logs
+      description: If applicable, add error logs or stack traces
+      placeholder: |
+        ```
+        Paste error logs here
+        ```
+      render: shell
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ Expected Behavior
+      description: What was the expected API behavior?
+      placeholder: |
+        - Expected response time
+        - Expected response format
+        - Expected status code
+        - Expected functionality
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ Actual Behavior
+      description: What actually happened with the API?
+      placeholder: |
+        - Actual response time
+        - Actual response format
+        - Actual status code
+        - Actual functionality
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: Steps to reproduce the API issue
+      placeholder: |
+        1. Make API call to: '...'
+        2. Send request with: '...'
+        3. Wait for response: '...'
+        4. See issue: '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: client-information
+    attributes:
+      label: 💻 Client Information
+      description: Information about the client making the API call
+      placeholder: |
+        - Programming Language: [e.g., Python, JavaScript, Java]
+        - HTTP Client Library: [e.g., requests, axios, OkHttp]
+        - Client Version: [e.g., requests 2.28.0]
+        - Operating System: [e.g., Ubuntu 20.04, Windows 10]
+    validations:
+      required: true
+
+  - type: textarea
+    id: server-information
+    attributes:
+      label: 🖥️ Server Information
+      description: Server environment details (if known)
+      placeholder: |
+        - DAFU Version: [e.g., v1.0.0]
+        - FastAPI Version: [e.g., 0.95.0]
+        - Python Version: [e.g., 3.9.7]
+        - Server Environment: [e.g., Docker, Kubernetes, Local]
+    validations:
+      required: false
+
+  - type: textarea
+    id: curl-example
+    attributes:
+      label: 🌐 cURL Example
+      description: If applicable, provide a cURL command that reproduces the issue (anonymize sensitive data)
+      placeholder: |
+        ```bash
+        curl -X POST "https://api.example.com/v1/fraud/score" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer YOUR_TOKEN" \
+          -d '{"transaction_id": "123", "amount": 100.0}'
+        ```
+      render: shell
+
+  - type: textarea
+    id: performance-metrics
+    attributes:
+      label: 📊 Performance Metrics
+      description: Performance-related information (if applicable)
+      placeholder: |
+        - Response Time: [e.g., 2.5s, timeout after 30s]
+        - Throughput: [e.g., 100 requests/second]
+        - Error Rate: [e.g., 5% of requests fail]
+        - Memory Usage: [e.g., 512MB peak]
+        - CPU Usage: [e.g., 80% average]
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 Additional Context
+      description: Add any other context about the API issue here
+      placeholder: |
+        - Related issues or pull requests
+        - Workarounds you've found
+        - Impact on your application
+        - Any other relevant information
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 📋 Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided all the required information above
+          required: true
+        - label: I have anonymized any sensitive data in the request/response examples
+          required: true
+        - label: I have tested the API call multiple times to confirm the issue
+          required: false

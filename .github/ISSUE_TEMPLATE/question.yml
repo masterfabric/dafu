@@ -1,0 +1,137 @@
+name: ❓ Question
+description: Ask a question about DAFU fraud detection platform
+title: "[QUESTION] "
+labels: ["question", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your question about DAFU! Please provide as much detail as possible to help us give you a comprehensive answer.
+
+  - type: dropdown
+    id: question-category
+    attributes:
+      label: 🎯 Question Category
+      description: What area does your question relate to?
+      options:
+        - Getting Started (Setup, installation, first steps)
+        - Machine Learning Models (Model usage, training, evaluation)
+        - API Usage (How to use APIs, integration)
+        - Feature Engineering (Data preprocessing, feature extraction)
+        - Deployment (Docker, Kubernetes, cloud deployment)
+        - Configuration (Environment setup, parameters)
+        - Performance (Optimization, scaling, troubleshooting)
+        - Data Science (Best practices, data handling)
+        - Security (Authentication, data protection)
+        - Documentation (Missing docs, clarification needed)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: ❓ Your Question
+      description: What would you like to know?
+      placeholder: Please describe your question in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 📋 Context
+      description: Provide context about your use case or situation
+      placeholder: |
+        - What are you trying to achieve?
+        - What is your current setup?
+        - What have you tried so far?
+        - Any specific requirements or constraints?
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🖥️ Environment
+      description: Your environment details (if relevant to the question)
+      placeholder: |
+        - OS: [e.g., Ubuntu 20.04, macOS 12.0, Windows 10]
+        - Python version: [e.g., 3.8.10, 3.9.7]
+        - DAFU version: [e.g., v1.0.0, latest commit]
+        - Deployment method: [e.g., Docker, local, cloud]
+    validations:
+      required: false
+
+  - type: textarea
+    id: code-example
+    attributes:
+      label: 💻 Code Example
+      description: If applicable, provide code snippets or examples
+      placeholder: |
+        ```python
+        # Your code example here
+        ```
+      render: python
+
+  - type: textarea
+    id: error-message
+    attributes:
+      label: 📋 Error Message
+      description: If you're encountering an error, paste it here
+      placeholder: |
+        ```
+        Paste error message here
+        ```
+      render: shell
+
+  - type: textarea
+    id: research-done
+    attributes:
+      label: 🔍 Research Done
+      description: What have you already tried or researched?
+      placeholder: |
+        - Documentation checked: [e.g., README, API docs]
+        - Issues searched: [e.g., searched for similar issues]
+        - Solutions tried: [e.g., tried different approaches]
+        - Resources consulted: [e.g., Stack Overflow, tutorials]
+
+  - type: textarea
+    id: expected-answer
+    attributes:
+      label: 💡 Expected Answer
+      description: What kind of answer are you looking for?
+      placeholder: |
+        - Step-by-step instructions
+        - Code example
+        - Explanation of concepts
+        - Best practices
+        - Troubleshooting help
+        - Other
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 Additional Context
+      description: Add any other context about your question here
+      placeholder: |
+        - Screenshots (if applicable)
+        - Related issues or discussions
+        - Any other relevant information
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 📋 Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues and discussions for similar questions
+          required: true
+        - label: I have checked the documentation and README
+          required: true
+        - label: I have provided all the relevant information above
+          required: true
+        - label: I understand this is a fraud detection platform and will not share sensitive data
+          required: true

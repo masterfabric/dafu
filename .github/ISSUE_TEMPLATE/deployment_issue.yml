@@ -1,0 +1,249 @@
+name: 🚀 Deployment Issue
+description: Report issues or request help with DAFU deployment and infrastructure
+title: "[DEPLOYMENT] "
+labels: ["deployment", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for issues related to deploying DAFU fraud detection platform. Please provide detailed information about deployment problems, infrastructure issues, or configuration problems.
+
+  - type: dropdown
+    id: deployment-type
+    attributes:
+      label: 🎯 Deployment Type
+      description: Which deployment method are you using?
+      options:
+        - Docker (Container deployment)
+        - Kubernetes (K8s cluster deployment)
+        - Local Development (Local machine setup)
+        - Cloud Platform (AWS, Azure, GCP)
+        - Virtual Machine (VM deployment)
+        - Bare Metal (Physical server)
+        - CI/CD Pipeline (Automated deployment)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: 🚨 Issue Type
+      description: What type of deployment issue is this?
+      options:
+        - Build Issues (Docker build, compilation errors)
+        - Runtime Issues (Application startup, crashes)
+        - Configuration Issues (Environment variables, config files)
+        - Network Issues (Port binding, connectivity)
+        - Resource Issues (Memory, CPU, disk space)
+        - Security Issues (Authentication, permissions)
+        - Scaling Issues (Load balancing, auto-scaling)
+        - Monitoring Issues (Logs, metrics, health checks)
+        - Database Issues (Connection, migration)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: 🚀 Issue Description
+      description: A clear and concise description of the deployment issue
+      placeholder: Describe the deployment issue in detail...
+    validations:
+      required: true
+
+  - type: textarea
+    id: deployment-configuration
+    attributes:
+      label: ⚙️ Deployment Configuration
+      description: Your deployment configuration details
+      placeholder: |
+        - Docker version: [e.g., 20.10.0]
+        - Kubernetes version: [e.g., 1.21.0]
+        - Python version: [e.g., 3.9.7]
+        - DAFU version: [e.g., v1.0.0]
+        - Environment: [e.g., production, staging, development]
+        - Resource limits: [e.g., 2 CPU, 4GB RAM]
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment-variables
+    attributes:
+      label: 🔧 Environment Variables
+      description: Environment variables and configuration (anonymize sensitive data)
+      placeholder: |
+        - DATABASE_URL: [anonymized]
+        - REDIS_URL: [anonymized]
+        - API_KEY: [anonymized]
+        - LOG_LEVEL: [e.g., INFO, DEBUG]
+        - MODEL_PATH: [e.g., /app/models/]
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: 📋 Error Logs
+      description: Deployment error logs and stack traces
+      placeholder: |
+        ```
+        Paste deployment error logs here
+        ```
+      render: shell
+
+  - type: textarea
+    id: docker-logs
+    attributes:
+      label: 🐳 Docker Logs
+      description: Docker container logs (if applicable)
+      placeholder: |
+        ```bash
+        docker logs <container_name>
+        ```
+      render: shell
+
+  - type: textarea
+    id: kubernetes-logs
+    attributes:
+      label: ☸️ Kubernetes Logs
+      description: Kubernetes pod logs (if applicable)
+      placeholder: |
+        ```bash
+        kubectl logs <pod_name> -n <namespace>
+        ```
+      render: shell
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ Expected Behavior
+      description: What was the expected deployment behavior?
+      placeholder: |
+        - Expected startup time
+        - Expected service availability
+        - Expected resource usage
+        - Expected functionality
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ Actual Behavior
+      description: What actually happened during deployment?
+      placeholder: |
+        - Actual startup behavior
+        - Actual service status
+        - Actual resource usage
+        - Actual functionality
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: Steps to reproduce the deployment issue
+      placeholder: |
+        1. Run command: '...'
+        2. Configure: '...'
+        3. Deploy: '...'
+        4. See issue: '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: infrastructure-details
+    attributes:
+      label: 🏗️ Infrastructure Details
+      description: Infrastructure and environment details
+      placeholder: |
+        - Operating System: [e.g., Ubuntu 20.04, CentOS 8]
+        - Cloud Provider: [e.g., AWS, Azure, GCP, On-premise]
+        - Instance Type: [e.g., t3.medium, Standard_D2s_v3]
+        - Network Configuration: [e.g., VPC, subnets, security groups]
+        - Load Balancer: [e.g., ALB, NLB, HAProxy]
+    validations:
+      required: true
+
+  - type: textarea
+    id: dockerfile-content
+    attributes:
+      label: 🐳 Dockerfile Content
+      description: Dockerfile content (if applicable)
+      placeholder: |
+        ```dockerfile
+        FROM python:3.9-slim
+        # ... rest of Dockerfile
+        ```
+      render: dockerfile
+
+  - type: textarea
+    id: kubernetes-manifests
+    attributes:
+      label: ☸️ Kubernetes Manifests
+      description: Kubernetes YAML manifests (if applicable)
+      placeholder: |
+        ```yaml
+        apiVersion: apps/v1
+        kind: Deployment
+        # ... rest of manifest
+        ```
+      render: yaml
+
+  - type: textarea
+    id: health-checks
+    attributes:
+      label: 🏥 Health Checks
+      description: Health check and monitoring information
+      placeholder: |
+        - Health check endpoint: [e.g., /health]
+        - Health check status: [e.g., 200 OK, 500 Internal Server Error]
+        - Monitoring tools: [e.g., Prometheus, Grafana, ELK]
+        - Alert configurations: [e.g., CPU > 80%, Memory > 90%]
+    validations:
+      required: false
+
+  - type: textarea
+    id: performance-metrics
+    attributes:
+      label: 📊 Performance Metrics
+      description: Performance-related information
+      placeholder: |
+        - Startup time: [e.g., 30 seconds, timeout after 5 minutes]
+        - Memory usage: [e.g., 512MB, 2GB peak]
+        - CPU usage: [e.g., 50% average, 100% spike]
+        - Disk usage: [e.g., 1GB, 10GB]
+        - Network latency: [e.g., 10ms, 100ms]
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 Additional Context
+      description: Add any other context about the deployment issue here
+      placeholder: |
+        - Related issues or pull requests
+        - Workarounds you've found
+        - Impact on your deployment
+        - Any other relevant information
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 📋 Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided all the required information above
+          required: true
+        - label: I have anonymized any sensitive data in configuration examples
+          required: true
+        - label: I have tested the deployment multiple times to confirm the issue
+          required: false
