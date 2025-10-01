@@ -88,66 +88,6 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 
 ---
 
-## 🏗️ Architecture
-
-### High-Level Architecture
-
-![High-Level Architecture](docs/assets/High-level-architecture.drawio.png)
-
-## Core Components
-
-### 1. Fraud Detection Service (`/fraud_detection/`)
-The main fraud detection microservice with **end-to-end ML capabilities**, exposed via **FastAPI** for real-time and batch use cases.
-
-- **Anomaly Detection**: [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html) for unsupervised fraud detection and anomaly scoring.  
-- **Sequence Models**: [LSTM (Long Short-Term Memory)](https://en.wikipedia.org/wiki/Long_short-term_memory) and [GRU (Gated Recurrent Unit)](https://en.wikipedia.org/wiki/Gated_recurrent_unit) models for temporal/behavioral pattern recognition.  
-- **Ensemble Methods**: [XGBoost](https://xgboost.readthedocs.io/en/stable/) and [Random Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html) for robust, tree-based predictions.  
-- **Neural Networks**: [Deep learning models](https://www.tensorflow.org/guide/keras/sequential_model) (via TensorFlow/Keras) for complex nonlinear fraud patterns.  
-- **Rules Engine**: Extensible **business rules** for configurable thresholds, velocity checks, and custom scoring strategies.
-
----
-
-### 2. Feature Engineering Pipeline
-A **modular preprocessing and feature extraction pipeline** designed for **real-time** and **offline** analytics.
-
-- **Transaction Features**: Amount distributions, frequency of transactions, merchant category profiling.  
-- **User Features**: Historical behavioral patterns, device fingerprints, account age/risk indicators.  
-- **Network Features**: Graph-based entity relationships (shared IPs, merchants, accounts).  
-- **Temporal Features**: Time-series analysis (sliding windows, session duration, peak-time anomalies).
-
----
-
-### 3. API Services
-Enterprise-grade **RESTful APIs** providing low-latency endpoints for **real-time scoring** and **large-scale data ingestion**.  
-All APIs are implemented using [FastAPI](https://fastapi.tiangolo.com/), leveraging [OpenAPI/Swagger](https://swagger.io/specification/) for documentation and schema validation.
-
-- **Fraud Scoring API**: Real-time fraud detection endpoint.  
-  - Built on [FastAPI](https://fastapi.tiangolo.com/) for async performance.  
-  - Supports **REST** and optionally **gRPC** for low-latency scenarios.  
-  - Designed for **sub-50ms** response times with Redis caching.  
-
-- **Batch Processing API**: Bulk scoring and data ingestion.  
-  - Optimized for large datasets with [Dask](https://www.dask.org/) / [Apache Spark](https://spark.apache.org/) integration.  
-  - Used for offline analysis, backfills, reporting, and model monitoring.  
-  - Supports scheduled jobs (via [Apache Airflow](https://airflow.apache.org/)).  
-
-- **Model Management API**: Centralized model lifecycle control.  
-  - Provides endpoints for **deployment**, **versioning**, and **rollback** of fraud detection models.  
-  - Integrates with object storage ([MinIO](https://min.io/) / [Amazon S3](https://aws.amazon.com/s3/)) for model registry.  
-  - Secured with [OAuth2](https://oauth.net/2/) / [JWT](https://jwt.io/) for enterprise compliance.  
-
-
----
-
-### 4. Enterprise Infrastructure
-A **cloud-native, microservices-based foundation**, optimized for scalability and observability.
-
-- **Containerization**: [Docker](https://www.docker.com/) multi-stage builds for lightweight, reproducible services ([Podman](https://docs.podman.io/en/latest/) is another option).  
-- **Orchestration**: [Kubernetes](https://kubernetes.io/) with [Helm](https://helm.sh/) charts for deployment, scaling, and service discovery.  
-- **Monitoring**: [Prometheus](https://prometheus.io/) (metrics), [Grafana](https://grafana.com/) (dashboards), [Jaeger](https://www.jaegertracing.io/) (distributed tracing).  
-- **Security**: [OAuth2](https://oauth.net/2/) / [JWT](https://jwt.io/) authentication, **RBAC policies**, and API key management for multi-tenant enterprise compliance.
-
-
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -828,6 +768,66 @@ fraud_rings = analyzer.detect_fraud_networks(
 )
 ```
 
+## 🏗️ Architecture
+
+### High-Level Architecture
+
+![High-Level Architecture](docs/assets/High-level-architecture.drawio.png)
+
+## Core Components
+
+### 1. Fraud Detection Service (`/fraud_detection/`)
+The main fraud detection microservice with **end-to-end ML capabilities**, exposed via **FastAPI** for real-time and batch use cases.
+
+- **Anomaly Detection**: [Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html) for unsupervised fraud detection and anomaly scoring.  
+- **Sequence Models**: [LSTM (Long Short-Term Memory)](https://en.wikipedia.org/wiki/Long_short-term_memory) and [GRU (Gated Recurrent Unit)](https://en.wikipedia.org/wiki/Gated_recurrent_unit) models for temporal/behavioral pattern recognition.  
+- **Ensemble Methods**: [XGBoost](https://xgboost.readthedocs.io/en/stable/) and [Random Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html) for robust, tree-based predictions.  
+- **Neural Networks**: [Deep learning models](https://www.tensorflow.org/guide/keras/sequential_model) (via TensorFlow/Keras) for complex nonlinear fraud patterns.  
+- **Rules Engine**: Extensible **business rules** for configurable thresholds, velocity checks, and custom scoring strategies.
+
+---
+
+### 2. Feature Engineering Pipeline
+A **modular preprocessing and feature extraction pipeline** designed for **real-time** and **offline** analytics.
+
+- **Transaction Features**: Amount distributions, frequency of transactions, merchant category profiling.  
+- **User Features**: Historical behavioral patterns, device fingerprints, account age/risk indicators.  
+- **Network Features**: Graph-based entity relationships (shared IPs, merchants, accounts).  
+- **Temporal Features**: Time-series analysis (sliding windows, session duration, peak-time anomalies).
+
+---
+
+### 3. API Services
+Enterprise-grade **RESTful APIs** providing low-latency endpoints for **real-time scoring** and **large-scale data ingestion**.  
+All APIs are implemented using [FastAPI](https://fastapi.tiangolo.com/), leveraging [OpenAPI/Swagger](https://swagger.io/specification/) for documentation and schema validation.
+
+- **Fraud Scoring API**: Real-time fraud detection endpoint.  
+  - Built on [FastAPI](https://fastapi.tiangolo.com/) for async performance.  
+  - Supports **REST** and optionally **gRPC** for low-latency scenarios.  
+  - Designed for **sub-50ms** response times with Redis caching.  
+
+- **Batch Processing API**: Bulk scoring and data ingestion.  
+  - Optimized for large datasets with [Dask](https://www.dask.org/) / [Apache Spark](https://spark.apache.org/) integration.  
+  - Used for offline analysis, backfills, reporting, and model monitoring.  
+  - Supports scheduled jobs (via [Apache Airflow](https://airflow.apache.org/)).  
+
+- **Model Management API**: Centralized model lifecycle control.  
+  - Provides endpoints for **deployment**, **versioning**, and **rollback** of fraud detection models.  
+  - Integrates with object storage ([MinIO](https://min.io/) / [Amazon S3](https://aws.amazon.com/s3/)) for model registry.  
+  - Secured with [OAuth2](https://oauth.net/2/) / [JWT](https://jwt.io/) for enterprise compliance.  
+
+
+---
+
+### 4. Enterprise Infrastructure
+A **cloud-native, microservices-based foundation**, optimized for scalability and observability.
+
+- **Containerization**: [Docker](https://www.docker.com/) multi-stage builds for lightweight, reproducible services ([Podman](https://docs.podman.io/en/latest/) is another option).  
+- **Orchestration**: [Kubernetes](https://kubernetes.io/) with [Helm](https://helm.sh/) charts for deployment, scaling, and service discovery.  
+- **Monitoring**: [Prometheus](https://prometheus.io/) (metrics), [Grafana](https://grafana.com/) (dashboards), [Jaeger](https://www.jaegertracing.io/) (distributed tracing).  
+- **Security**: [OAuth2](https://oauth.net/2/) / [JWT](https://jwt.io/) authentication, **RBAC policies**, and API key management for multi-tenant enterprise compliance.
+
+
 ## 🔧 Configuration and Customization
 
 ### Environment Configuration
@@ -1145,6 +1145,50 @@ jobs:
             fraud-detection=masterfabric/dafu:latest
 ```
 
+## 🤝 Contributing
+
+### Development Setup
+
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Install development dependencies**
+   ```bash
+   cd fraud_detection
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt  # If available
+   ```
+4. **Run tests and linting**
+   ```bash
+   pytest tests/
+   black src/ tests/
+   flake8 src/ tests/
+   ```
+5. **Submit a pull request**
+
+### Code Standards
+
+- **Python Style**: PEP 8 compliance with Black formatting
+- **Type Hints**: Comprehensive type annotations
+- **Documentation**: Google-style docstrings
+- **Testing**: 90%+ test coverage required
+- **ASCII Only**: No non-ASCII characters in code (enforced by pre-commit hooks)
+
+### Commit Convention
+
+Follow the conventional commit format:
+```
+type(scope): description
+
+[optional body]
+
+[optional footer]
+```
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+
 ## 📚 API Documentation
 
 ### Fraud Scoring API
@@ -1205,110 +1249,6 @@ Deploy a new model version.
 
 #### GET `/dafu/v1/models/{model_id}/performance`
 Get model performance metrics.
-
-## 🤝 Contributing
-
-### Development Setup
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. **Install development dependencies**
-   ```bash
-   cd fraud_detection
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt  # If available
-   ```
-4. **Run tests and linting**
-   ```bash
-   pytest tests/
-   black src/ tests/
-   flake8 src/ tests/
-   ```
-5. **Submit a pull request**
-
-### Code Standards
-
-- **Python Style**: PEP 8 compliance with Black formatting
-- **Type Hints**: Comprehensive type annotations
-- **Documentation**: Google-style docstrings
-- **Testing**: 90%+ test coverage required
-- **ASCII Only**: No non-ASCII characters in code (enforced by pre-commit hooks)
-
-### Commit Convention
-
-Follow the conventional commit format:
-```
-type(scope): description
-
-[optional body]
-
-[optional footer]
-```
-
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-
-## 📄 License
-
-This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
-
-### License Summary
-
-- **Commercial Use**: ✅ Allowed with restrictions
-- **Modification**: ✅ Allowed
-- **Distribution**: ✅ Allowed with source code disclosure
-- **Patent Use**: ✅ Allowed
-- **Private Use**: ✅ Allowed
-- **Sublicensing**: ❌ Not allowed
-
-### Key Requirements
-
-1. **Source Code Disclosure**: Any distribution of the software must include the complete source code
-2. **Network Interaction**: If you run the software on a server and provide services over a network, you must make the source code available to users
-3. **License Compatibility**: Any derivative works must be licensed under the same AGPL-3.0 license
-4. **Attribution**: You must retain all copyright notices and license text
-
-### Full License Text
-
-The complete license text is available in the [LICENSE](LICENSE) file in this repository.
-
-### Enterprise Licensing
-
-For commercial enterprises requiring different licensing terms, please contact MasterFabric for enterprise licensing options.
-
-**MasterFabric** - Enterprise-level fraud detection and e-commerce analytics solutions.
-
-## 🆘 Support and Community
-
-### Getting Help
-
-- **Documentation**: Comprehensive guides and API documentation
-- **GitHub Issues**: Bug reports and feature requests
-- **Community Forum**: Discussions and Q&A
-- **Enterprise Support**: Contact the platform support team
-
-### Resources
-
-- **API Documentation**: [Swagger UI](https://api.masterfabric.co/dafu/docs)
-- **Architecture Guide**: [docs/architecture.md](docs/architecture.md)
-- **Deployment Guide**: [docs/deployment.md](docs/deployment.md)
-- **Performance Tuning**: [docs/performance.md](docs/performance.md)
-
-### Common Issues
-
-1. **High Memory Usage**: Configure chunked processing for large datasets
-2. **Slow Predictions**: Enable model caching and optimize feature engineering
-3. **False Positives**: Adjust risk score thresholds and retrain models
-4. **API Rate Limiting**: Configure appropriate rate limits for your use case
-
----
-
-**DAFU Enterprise Fraud Detection Platform v1.0.0**  
-*Built with ❤️ for secure, scalable, and intelligent fraud detection*
-
----
 
 ## 🏆 Current Implementation Status
 
@@ -1401,6 +1341,66 @@ For commercial enterprises requiring different licensing terms, please contact M
 ---
 
 ## 📊 Current Test Results
+
+## 🆘 Support and Community
+
+### Getting Help
+
+- **Documentation**: Comprehensive guides and API documentation
+- **GitHub Issues**: Bug reports and feature requests
+- **Community Forum**: Discussions and Q&A
+- **Enterprise Support**: Contact the platform support team
+
+### Resources
+
+- **API Documentation**: [Swagger UI](https://api.masterfabric.co/dafu/docs)
+- **Architecture Guide**: [docs/architecture.md](docs/architecture.md)
+- **Deployment Guide**: [docs/deployment.md](docs/deployment.md)
+- **Performance Tuning**: [docs/performance.md](docs/performance.md)
+
+### Common Issues
+
+1. **High Memory Usage**: Configure chunked processing for large datasets
+2. **Slow Predictions**: Enable model caching and optimize feature engineering
+3. **False Positives**: Adjust risk score thresholds and retrain models
+4. **API Rate Limiting**: Configure appropriate rate limits for your use case
+
+---
+
+**DAFU Enterprise Fraud Detection Platform v1.0.0**  
+*Built with ❤️ for secure, scalable, and intelligent fraud detection*
+
+---
+
+## 📄 License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+### License Summary
+
+- **Commercial Use**: ✅ Allowed with restrictions
+- **Modification**: ✅ Allowed
+- **Distribution**: ✅ Allowed with source code disclosure
+- **Patent Use**: ✅ Allowed
+- **Private Use**: ✅ Allowed
+- **Sublicensing**: ❌ Not allowed
+
+### Key Requirements
+
+1. **Source Code Disclosure**: Any distribution of the software must include the complete source code
+2. **Network Interaction**: If you run the software on a server and provide services over a network, you must make the source code available to users
+3. **License Compatibility**: Any derivative works must be licensed under the same AGPL-3.0 license
+4. **Attribution**: You must retain all copyright notices and license text
+
+### Full License Text
+
+The complete license text is available in the [LICENSE](LICENSE) file in this repository.
+
+### Enterprise Licensing
+
+For commercial enterprises requiring different licensing terms, please contact MasterFabric for enterprise licensing options.
+
+**MasterFabric** - Enterprise-level fraud detection and e-commerce analytics solutions.
 
 Based on the existing test results in the project:
 
