@@ -9,8 +9,8 @@ supervised_test_results/
 # Generated visualization files
 fraud_detection_analysis_*.png
 *.png
-!images/
-!images/*.png
+!docs/
+!docs/**
 
 # Sample test data files
 sample_fraud_data_*.csv
