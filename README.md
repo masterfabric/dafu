@@ -53,7 +53,6 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 - [Use Cases and Scenarios](#-use-cases-and-scenarios)
 
 ### 🏗️ Architecture & Components
-- [High-Level Architecture](#-architecture)
  - [High-Level Architecture](#high-level-architecture)
 - [Core Components](#core-components)
   - [Fraud Detection Service](#1-fraud-detection-service-fraud_detection)
