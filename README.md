@@ -14,6 +14,7 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 
 ### Current Capabilities (Implemented)
 
+- 🎯 **Unified Model Interface**: Single entry point for all fraud detection models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 🧠 **Advanced ML Algorithms**: Isolation Forest and LSTM/GRU sequence models fully implemented
 - 📡 **Stream Processing**: Real-time data stream processing with pre-trained models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 💾 **Model Persistence**: Save and load trained models for production deployment ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
@@ -23,6 +24,7 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 - 🚀 **Production-Ready Core**: Complete fraud detection pipeline with evaluation
 - 🕵️‍♀️🎯 **Flexible Detection**: Classic and risk-score based detection methods
 - 🧹 **Data Processing**: Automatic preprocessing with missing value handling
+- ⚡ **Fast Startup**: Lazy loading for instant model selection interface ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
 
 ### Planned Capabilities ![ROADMAP](https://img.shields.io/badge/ROADMAP-blue)
@@ -49,6 +51,7 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [First-Time User Guide](#first-time-user-guide)
+  - [Unified Model Interface](#-unified-model-interface) ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - [Supported Data Formats](#-supported-data-formats)
 - [Use Cases and Scenarios](#-use-cases-and-scenarios)
 
@@ -152,53 +155,71 @@ python -c "from src.models.anomaly_detection import IsolationForestFraudDetector
 # ✅ Installation successful!
 ```
 
-**Step 4: Run Interactive Demo**
+**Step 4: Run Unified Model Interface**
 
 ```bash
-# Run the comprehensive test suite
-python test_anomaly_detection.py
+# Run the unified model selection interface
+cd fraud_detection/src/models
+python main.py
 
 # Expected terminal interaction:
 # ========================================
-# 🚀 DAFU Fraud Detection System - Interactive Demo
+# 🔍 ENTERPRISE FRAUD DETECTION PLATFORM
+# ========================================
+# Advanced Machine Learning Models for Fraud Detection
+# Version: 1.0.0
 # ========================================
 # 
-# 📊 Data Analysis Results:
-# - Dataset shape: (1000, 8)
-# - Missing values: 0
-# - Fraud rate: 5.0%
+# This platform offers multiple fraud detection approaches:
+# • Traditional ML: Isolation Forest with Risk Score analysis
+# • Deep Learning: LSTM and GRU sequence-based models
+# • Both supervised and unsupervised learning modes
+# • Real-time streaming and batch processing capabilities
+# ========================================
 # 
-# 🎯 Learning Mode Selection:
-# 1. Supervised Learning (with fraud labels)
-# 2. Unsupervised Learning (anomaly detection)
+# ⚡ Fast startup - models load only when selected!
 # 
-# Please select learning mode (1 or 2): 1
+# ============================================================
+# 🎯 SELECT FRAUD DETECTION MODEL
+# ============================================================
+# Choose the type of fraud detection model you want to use:
 # 
-# ✅ Selected: Supervised Learning
+# 1. 🔍 ISOLATION FOREST & RISK SCORE
+#    • Traditional machine learning approach
+#    • Excellent for tabular data with numerical features
+#    • Supports both supervised and unsupervised learning
+#    • Risk score based anomaly detection
+#    • Fast training and prediction
 # 
-# 🔧 Detection Method Selection:
-# 1. Classic Detection (binary classification)
-# 2. Risk Score Detection (custom thresholds)
+# 2. 🧠 SEQUENCE MODELS (LSTM & GRU)
+#    • Deep learning approach for sequential data
+#    • Captures temporal patterns and dependencies
+#    • Autoencoder architecture for anomaly detection
+#    • Best for time-series and transaction sequences
+#    • More complex but potentially more accurate
 # 
-# Please select detection method (1 or 2): 1
+# 3. ℹ️  MODEL COMPARISON
+#    • Compare different models on the same dataset
+#    • Get recommendations based on your data
 # 
-# ✅ Selected: Classic Detection
+# 4. ❓ HELP & INFORMATION
+#    • Detailed information about each model
+#    • Data requirements and recommendations
 # 
-# 📈 Training Models...
-# - Training Isolation Forest with contamination=0.01
-# - Training Isolation Forest with contamination=0.05
-# - Training Isolation Forest with contamination=0.1
+# 5. 🚪 EXIT
+#    • Exit the application
+# ============================================================
 # 
-# ✅ Models trained successfully!
-# 
-# 📊 Evaluation Results:
-# - Accuracy: 94.2%
-# - Precision: 89.1%
-# - Recall: 87.3%
-# - F1-Score: 88.2%
-# 
-# 📈 Generating visualizations...
-# ✅ Analysis complete! Results saved to: fraud_detection_results/
+# Enter your choice (1-5): 
+```
+
+**Alternative: Run Individual Model Tests**
+
+```bash
+# Run individual model tests (legacy method)
+cd fraud_detection
+python test_anomaly_detection.py
+python test_sequence_models_interactive.py
 ```
 
 #### Option 2: Docker Setup (Containerized)
@@ -284,45 +305,65 @@ kubectl get pods -l app=dafu-fraud-detection
 
 #### 🎯 Quick Demo (5 minutes)
 
-**1. Run the Interactive Test Suite**
+**1. Run the Unified Model Interface**
 
 ```bash
-cd fraud_detection
-python test_anomaly_detection.py
+cd fraud_detection/src/models
+python main.py
 ```
 
-**Expected Terminal Questions:**
+**Expected Terminal Interface:**
 ```
-🎯 Learning Mode Selection:
-1. Supervised Learning (with fraud labels)
-2. Unsupervised Learning (anomaly detection)
+🔍 ENTERPRISE FRAUD DETECTION PLATFORM
+========================================
+Advanced Machine Learning Models for Fraud Detection
+Version: 1.0.0
+========================================
 
-Please select learning mode (1 or 2): 
+This platform offers multiple fraud detection approaches:
+• Traditional ML: Isolation Forest with Risk Score analysis
+• Deep Learning: LSTM and GRU sequence-based models
+• Both supervised and unsupervised learning modes
+• Real-time streaming and batch processing capabilities
+========================================
+
+⚡ Fast startup - models load only when selected!
+
+============================================================
+🎯 SELECT FRAUD DETECTION MODEL
+============================================================
+Choose the type of fraud detection model you want to use:
+
+1. 🔍 ISOLATION FOREST & RISK SCORE
+2. 🧠 SEQUENCE MODELS (LSTM & GRU)
+3. ℹ️  MODEL COMPARISON
+4. ❓ HELP & INFORMATION
+5. 🚪 EXIT
+
+Enter your choice (1-5): 
 ```
 
-**2. Choose Detection Method**
+**2. Select Your Model**
 
-```
-🔧 Detection Method Selection:
-1. Classic Detection (binary classification)
-2. Risk Score Detection (custom thresholds)
-
-Please select detection method (1 or 2): 
-```
+Choose option 1 for Isolation Forest or option 2 for Sequence Models. The system will:
+- Load the selected model (with progress indicator)
+- Guide you through configuration
+- Handle all setup automatically
 
 **3. View Results**
 
-After completion, you'll see:
-```
-📊 Evaluation Results:
-- Accuracy: 94.2%
-- Precision: 89.1%
-- Recall: 87.3%
-- F1-Score: 88.2%
+After completion, you'll see comprehensive results with visualizations and exported data.
 
-📈 Generating visualizations...
-✅ Analysis complete! Results saved to: fraud_detection_results/
-```
+#### 🔄 Unified Model Interface ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+
+The new unified interface provides:
+
+- **Single Entry Point**: One command to access all fraud detection models
+- **Smart Model Selection**: Interactive guidance for choosing the right model
+- **Fast Startup**: Lazy loading ensures instant interface response
+- **Model Comparison**: Built-in comparison tools and recommendations
+- **Help System**: Comprehensive information and decision trees
+- **Seamless Navigation**: Easy switching between models and options
 
 #### 🔄 Stream Processing Demo (NEW!)
 
@@ -462,7 +503,21 @@ docker build --no-cache -f deployment/Dockerfile -t dafu-fraud-detection .
 
 ### Basic Usage
 
-#### 1. Fraud Detection Service
+#### 1. Unified Model Interface (Recommended)
+
+```bash
+# Start the unified interface
+cd fraud_detection/src/models
+python main.py
+
+# Follow the interactive prompts:
+# 1. Choose your model (Isolation Forest or Sequence Models)
+# 2. Select prediction mode (Batch or Stream)
+# 3. Configure parameters
+# 4. Run analysis
+```
+
+#### 2. Direct Model Usage (Advanced)
 
 ```python
 from fraud_detection.src.models.anomaly_detection import IsolationForestFraudDetector
@@ -494,7 +549,7 @@ detector.create_visualizations(save_plots=True)
 detector.export_results('fraud_analysis_results')
 ```
 
-#### 2. Run Interactive Test Suite
+#### 3. Run Individual Model Tests (Legacy)
 
 ```bash
 # Run comprehensive anomaly detection tests
@@ -505,9 +560,9 @@ python test_anomaly_detection.py
 python test_sequence_models_interactive.py
 ```
 
-**Note**: Real-time API endpoints are currently in development. The core ML functionality is fully implemented and can be used through the Python classes directly.
+**Note**: The unified interface (`main.py`) is now the recommended way to access all fraud detection capabilities. Individual model tests are still available for advanced users.
 
-#### 3. Sequence Model Analysis (NEW! Enhanced)
+#### 4. Sequence Model Analysis (NEW! Enhanced)
 
 ```python
 from fraud_detection.src.models.sequence_models import SequenceFraudDetector
@@ -558,7 +613,7 @@ elif sequence_detector.prediction_mode == 'stream':
     sequence_detector.export_stream_results(stream_data, predictions)
 ```
 
-#### 4. Stream Prediction with Isolation Forest (NEW!)
+#### 5. Stream Prediction with Isolation Forest (NEW!)
 
 ```python
 from fraud_detection.src.models.anomaly_detection import IsolationForestFraudDetector
@@ -613,7 +668,25 @@ timestamp,user_id,transaction_count,daily_amount,risk_score
 
 ## 🎯 Use Cases and Scenarios
 
-### 1. Real-time E-commerce Fraud Detection
+### 1. Unified Model Selection and Analysis
+
+**Scenario**: Choose the right fraud detection model for your data
+**Solution**: Interactive model selection interface
+
+```bash
+# Start the unified interface
+cd fraud_detection/src/models
+python main.py
+
+# Interactive model selection:
+# 1. 🔍 ISOLATION FOREST & RISK SCORE - For tabular data
+# 2. 🧠 SEQUENCE MODELS (LSTM & GRU) - For sequential data
+# 3. ℹ️  MODEL COMPARISON - Compare different approaches
+# 4. ❓ HELP & INFORMATION - Get detailed guidance
+# 5. 🚪 EXIT - Exit the application
+```
+
+### 2. Real-time E-commerce Fraud Detection
 
 **Scenario**: Detect fraudulent transactions in real-time during checkout
 **Solution**: Risk Score API with sub-50ms response time
@@ -634,7 +707,7 @@ fraud_score = response.json()['risk_score']
 is_fraud = fraud_score > 0.7  # Custom threshold
 ```
 
-### 2. Batch Fraud Analysis
+### 3. Batch Fraud Analysis
 
 **Scenario**: Analyze historical data for fraud patterns and model retraining
 **Solution**: Batch Processing API with large-scale data handling
@@ -651,7 +724,7 @@ batch_request = {
 response = requests.post('https://api.masterfabric.co/dafu/v1/batch/analyze', json=batch_request)
 ```
 
-### 3. User Behavior Analysis
+### 4. User Behavior Analysis
 
 **Scenario**: Detect anomalous user behavior patterns over time
 **Solution**: Sequence models with LSTM/GRU for temporal pattern recognition
@@ -670,7 +743,7 @@ anomalies = analyzer.detect_behavioral_anomalies(
 )
 ```
 
-### 4. Merchant Risk Assessment
+### 5. Merchant Risk Assessment
 
 **Scenario**: Evaluate merchant risk profiles for payment processing
 **Solution**: Multi-model ensemble with business rules
@@ -687,7 +760,7 @@ merchant_risk = processor.assess_merchant_risk(
 )
 ```
 
-### 5. Real-time Stream Processing (NEW!)
+### 6. Real-time Stream Processing (NEW!)
 
 **Scenario**: Process incoming transactions in real-time using pre-trained models
 **Solution**: Stream prediction mode with model persistence
@@ -719,7 +792,7 @@ while True:
         approve_transaction(new_transaction)
 ```
 
-### 6. Model Training and Deployment Pipeline (NEW!)
+### 7. Model Training and Deployment Pipeline (NEW!)
 
 **Scenario**: Train models on historical data and deploy for production use
 **Solution**: Batch training with model persistence
@@ -751,7 +824,7 @@ deployer.load_model_package('production_lstm_model')
 print("✅ Models loaded and ready for stream processing")
 ```
 
-### 7. Network Analysis and Graph-based Detection
+### 8. Network Analysis and Graph-based Detection
 
 **Scenario**: Detect fraud rings and coordinated attacks
 **Solution**: Network features with graph analysis
@@ -1256,6 +1329,7 @@ Get model performance metrics.
 
 | Feature | Description | Status | Implementation Level |
 |---------|-------------|--------|---------------------|
+| **Unified Model Interface** | Single entry point for all models | ✅ **NEW! Fully Implemented** | Complete with interactive selection |
 | **Isolation Forest Detection** | Core anomaly detection algorithm | ✅ **Fully Implemented** | Complete with evaluation & visualization |
 | **Sequence Models (LSTM/GRU)** | Time-series fraud detection | ✅ **Fully Implemented** | Complete with TensorFlow implementation |
 | **Stream Prediction Mode** | Real-time data stream processing | ✅ **NEW! Fully Implemented** | Complete with model persistence |
@@ -1267,6 +1341,7 @@ Get model performance metrics.
 | **Comprehensive Evaluation** | Performance metrics & visualization | ✅ **Fully Implemented** | Complete with 4-panel analysis |
 | **Enhanced Result Export** | CSV, JSON output with stream support | ✅ **Enhanced** | Complete with stream & batch exports |
 | **Docker Support** | Containerization | ✅ **Fully Implemented** | Dockerfile with multi-stage build |
+| **Fast Startup Interface** | Lazy loading for instant response | ✅ **NEW! Fully Implemented** | Complete with optimized imports |
 
 ### 🚧 **Partially Implemented (In Development)**
 
