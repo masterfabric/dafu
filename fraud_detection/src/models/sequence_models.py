@@ -1340,13 +1340,15 @@ class SequenceFraudDetector:
         
         return self.results
 
-    def save_model(self, model_path: str = None) -> str:
+    def save_model(self, model_name: str = None) -> str:
         """
         Save trained models and preprocessing objects to disk as a joblib package.
         Keras models are saved to .h5 files and referenced in the package.
         
         Args:
-            model_path: Path to save the joblib package (optional)
+            model_name: Name for the model package (without extension). If None, auto-generates name.
+                       If extension provided, uses that extension; otherwise defaults to .joblib
+            
         Returns:
             Path where the package was saved
         """
@@ -1354,8 +1356,16 @@ class SequenceFraudDetector:
             raise ValueError("No trained models found. Please train models first.")
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        if model_path is None:
+        if model_name is None:
             model_path = f"sequence_fraud_detection_model_{timestamp}.joblib"
+        else:
+            # Check if user provided extension
+            if '.' in model_name:
+                # User provided extension, use as-is
+                model_path = model_name
+            else:
+                # No extension provided, add .joblib
+                model_path = f"{model_name}.joblib"
         
         # Save keras models to .h5 and collect paths
         model_files = {}
@@ -1630,12 +1640,13 @@ class SequenceFraudDetector:
             json.dump(summary, f, indent=2)
         logger.info(f"Stream summary exported to: {summary_file}")
     
-    def create_visualizations(self, save_plots: bool = True) -> None:
+    def create_visualizations(self, save_plots: bool = True, show_interactive: bool = True) -> None:
         """
         Create comprehensive visualizations for the fraud detection results.
         
         Args:
             save_plots: Whether to save plots as PNG files
+            show_interactive: Whether to show interactive plots (can block terminal)
         """
         logger.info("Creating visualizations...")
         
@@ -1655,7 +1666,32 @@ class SequenceFraudDetector:
         
         # 3. Confusion Matrix (if supervised)
         if self.is_supervised and self.results:
-            self._plot_confusion_matrices(axes[1, 0])
+            # Check if we have both LSTM and GRU confusion matrices
+            has_lstm_cm = 'LSTM' in self.results and 'confusion_matrix' in self.results['LSTM']
+            has_gru_cm = 'GRU' in self.results and 'confusion_matrix' in self.results['GRU']
+            
+            if has_lstm_cm and has_gru_cm:
+                # Both models - show side by side
+                # LSTM on the left
+                lstm_cm = self.results['LSTM']['confusion_matrix']
+                sns.heatmap(lstm_cm, annot=True, fmt='d', cmap='Blues', ax=axes[1, 0], cbar=False)
+                axes[1, 0].set_title('LSTM Confusion Matrix')
+                axes[1, 0].set_xlabel('Predicted')
+                axes[1, 0].set_ylabel('Actual')
+                
+                # GRU on the right (we'll use the ROC curve space for this)
+                # Create a small subplot for GRU confusion matrix
+                from mpl_toolkits.axes_grid1 import make_axes_locatable
+                divider = make_axes_locatable(axes[1, 0])
+                ax_gru = divider.append_axes("right", size="100%", pad=0.1)
+                gru_cm = self.results['GRU']['confusion_matrix']
+                sns.heatmap(gru_cm, annot=True, fmt='d', cmap='Reds', ax=ax_gru)
+                ax_gru.set_title('GRU Confusion Matrix')
+                ax_gru.set_xlabel('Predicted')
+                ax_gru.set_ylabel('Actual')
+            else:
+                # Single model or use the original function
+                self._plot_confusion_matrices(axes[1, 0])
         else:
             axes[1, 0].text(0.5, 0.5, 'No supervised evaluation\n(Unsupervised mode)', 
                            ha='center', va='center', transform=axes[1, 0].transAxes)
@@ -1676,8 +1712,13 @@ class SequenceFraudDetector:
             plot_path = f"sequence_fraud_detection_analysis_{timestamp}.png"
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             logger.info(f"Plot saved as: {plot_path}")
+            print(f"📊 Visualization saved as: {plot_path}")
         
-        plt.show()
+        if show_interactive:
+            plt.show()
+        else:
+            plt.close(fig)
+            print("📊 Visualization created and saved (interactive display skipped)")
     
     def _plot_model_comparison(self, ax) -> None:
         """Plot model performance comparison."""
@@ -1756,25 +1797,16 @@ class SequenceFraudDetector:
         
         # Determine number of subplots needed
         if has_lstm_cm and has_gru_cm:
-            # Both models
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-            
-            # LSTM Confusion Matrix
+            # Both models - show side by side in the main plot
+            # LSTM Confusion Matrix (left side)
             lstm_cm = self.results['LSTM']['confusion_matrix']
-            sns.heatmap(lstm_cm, annot=True, fmt='d', cmap='Blues', ax=ax1)
-            ax1.set_title('LSTM Confusion Matrix')
-            ax1.set_xlabel('Predicted')
-            ax1.set_ylabel('Actual')
+            sns.heatmap(lstm_cm, annot=True, fmt='d', cmap='Blues', ax=ax, cbar=False)
+            ax.set_title('LSTM Confusion Matrix')
+            ax.set_xlabel('Predicted')
+            ax.set_ylabel('Actual')
             
-            # GRU Confusion Matrix
-            gru_cm = self.results['GRU']['confusion_matrix']
-            sns.heatmap(gru_cm, annot=True, fmt='d', cmap='Reds', ax=ax2)
-            ax2.set_title('GRU Confusion Matrix')
-            ax2.set_xlabel('Predicted')
-            ax2.set_ylabel('Actual')
-            
-            plt.tight_layout()
-            plt.show()
+            # Note: For side-by-side confusion matrices, we'll show them in separate subplots
+            # This is handled in the main visualization function
         else:
             # Single model
             if has_lstm_cm:
@@ -2065,27 +2097,50 @@ def main():
             print("\n🤖 Training LSTM and GRU models...")
             detector.train_models()
             
-            # Evaluate and visualize
+            # Evaluate models
             print("\n📊 Evaluating models...")
             detector.evaluate_models()
-            print("\n📈 Creating visualizations...")
-            detector.create_visualizations(save_plots=True)
             
             # Export results
             print("\n💾 Exporting results...")
             detector.export_results()
             
             # Ask to save model
-            save_model = input("\n💾 Save trained model for future stream use? (y/n): ").lower().strip()
+            print("\n" + "="*60)
+            print("💾 MODEL SAVING OPTIONS")
+            print("="*60)
+            save_model = input("Save trained model for future stream use? (y/n): ").lower().strip()
             if save_model in ['y', 'yes']:
-                model_path = input("Enter model save path (or press Enter for auto-generated name): ").strip()
-                if not model_path:
-                    model_path = None
-                detector.save_model(model_path)
+                print("\n📝 Model naming options:")
+                print("   • Enter just a name (e.g., 'my_lstm_model') → saves as 'my_lstm_model.joblib'")
+                print("   • Enter name with extension (e.g., 'my_model.pkl') → saves as 'my_model.pkl'")
+                print("   • Press Enter → auto-generated name with timestamp")
+                
+                model_name = input("Enter model name (or press Enter for auto-generated): ").strip()
+                if not model_name:
+                    model_name = None
+                
+                saved_path = detector.save_model(model_name)
+                print(f"✅ Model saved successfully as: {saved_path}")
+            else:
+                print("📝 Model not saved. You can always retrain when needed.")
             
             # Summary
             detector.print_summary()
             print("\n✅ Sequence fraud detection analysis completed successfully!")
+            
+            # Create visualizations (LAST STEP - program will exit after this)
+            print("\n📈 Creating visualizations...")
+            
+            # Ask user if they want to see interactive plots
+            show_plots = input("Show interactive plots? (y/n - default: n): ").lower().strip()
+            show_interactive = show_plots in ['y', 'yes']
+            
+            detector.create_visualizations(save_plots=True, show_interactive=show_interactive)
+            
+            print("\n🎉 Analysis complete! Program will now exit.")
+            if not show_interactive:
+                print("📈 Visualizations have been saved as PNG files")
         else:
             print("\n" + "="*60)
             print("🌊 STREAM PREDICTION MODE")
