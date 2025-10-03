@@ -1640,12 +1640,13 @@ class SequenceFraudDetector:
             json.dump(summary, f, indent=2)
         logger.info(f"Stream summary exported to: {summary_file}")
     
-    def create_visualizations(self, save_plots: bool = True) -> None:
+    def create_visualizations(self, save_plots: bool = True, show_interactive: bool = True) -> None:
         """
         Create comprehensive visualizations for the fraud detection results.
         
         Args:
             save_plots: Whether to save plots as PNG files
+            show_interactive: Whether to show interactive plots (can block terminal)
         """
         logger.info("Creating visualizations...")
         
@@ -1665,7 +1666,32 @@ class SequenceFraudDetector:
         
         # 3. Confusion Matrix (if supervised)
         if self.is_supervised and self.results:
-            self._plot_confusion_matrices(axes[1, 0])
+            # Check if we have both LSTM and GRU confusion matrices
+            has_lstm_cm = 'LSTM' in self.results and 'confusion_matrix' in self.results['LSTM']
+            has_gru_cm = 'GRU' in self.results and 'confusion_matrix' in self.results['GRU']
+            
+            if has_lstm_cm and has_gru_cm:
+                # Both models - show side by side
+                # LSTM on the left
+                lstm_cm = self.results['LSTM']['confusion_matrix']
+                sns.heatmap(lstm_cm, annot=True, fmt='d', cmap='Blues', ax=axes[1, 0], cbar=False)
+                axes[1, 0].set_title('LSTM Confusion Matrix')
+                axes[1, 0].set_xlabel('Predicted')
+                axes[1, 0].set_ylabel('Actual')
+                
+                # GRU on the right (we'll use the ROC curve space for this)
+                # Create a small subplot for GRU confusion matrix
+                from mpl_toolkits.axes_grid1 import make_axes_locatable
+                divider = make_axes_locatable(axes[1, 0])
+                ax_gru = divider.append_axes("right", size="100%", pad=0.1)
+                gru_cm = self.results['GRU']['confusion_matrix']
+                sns.heatmap(gru_cm, annot=True, fmt='d', cmap='Reds', ax=ax_gru)
+                ax_gru.set_title('GRU Confusion Matrix')
+                ax_gru.set_xlabel('Predicted')
+                ax_gru.set_ylabel('Actual')
+            else:
+                # Single model or use the original function
+                self._plot_confusion_matrices(axes[1, 0])
         else:
             axes[1, 0].text(0.5, 0.5, 'No supervised evaluation\n(Unsupervised mode)', 
                            ha='center', va='center', transform=axes[1, 0].transAxes)
@@ -1686,8 +1712,13 @@ class SequenceFraudDetector:
             plot_path = f"sequence_fraud_detection_analysis_{timestamp}.png"
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             logger.info(f"Plot saved as: {plot_path}")
+            print(f"📊 Visualization saved as: {plot_path}")
         
-        plt.show()
+        if show_interactive:
+            plt.show()
+        else:
+            plt.close(fig)
+            print("📊 Visualization created and saved (interactive display skipped)")
     
     def _plot_model_comparison(self, ax) -> None:
         """Plot model performance comparison."""
@@ -1766,25 +1797,16 @@ class SequenceFraudDetector:
         
         # Determine number of subplots needed
         if has_lstm_cm and has_gru_cm:
-            # Both models
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-            
-            # LSTM Confusion Matrix
+            # Both models - show side by side in the main plot
+            # LSTM Confusion Matrix (left side)
             lstm_cm = self.results['LSTM']['confusion_matrix']
-            sns.heatmap(lstm_cm, annot=True, fmt='d', cmap='Blues', ax=ax1)
-            ax1.set_title('LSTM Confusion Matrix')
-            ax1.set_xlabel('Predicted')
-            ax1.set_ylabel('Actual')
+            sns.heatmap(lstm_cm, annot=True, fmt='d', cmap='Blues', ax=ax, cbar=False)
+            ax.set_title('LSTM Confusion Matrix')
+            ax.set_xlabel('Predicted')
+            ax.set_ylabel('Actual')
             
-            # GRU Confusion Matrix
-            gru_cm = self.results['GRU']['confusion_matrix']
-            sns.heatmap(gru_cm, annot=True, fmt='d', cmap='Reds', ax=ax2)
-            ax2.set_title('GRU Confusion Matrix')
-            ax2.set_xlabel('Predicted')
-            ax2.set_ylabel('Actual')
-            
-            plt.tight_layout()
-            plt.show()
+            # Note: For side-by-side confusion matrices, we'll show them in separate subplots
+            # This is handled in the main visualization function
         else:
             # Single model
             if has_lstm_cm:
@@ -2075,11 +2097,9 @@ def main():
             print("\n🤖 Training LSTM and GRU models...")
             detector.train_models()
             
-            # Evaluate and visualize
+            # Evaluate models
             print("\n📊 Evaluating models...")
             detector.evaluate_models()
-            print("\n📈 Creating visualizations...")
-            detector.create_visualizations(save_plots=True)
             
             # Export results
             print("\n💾 Exporting results...")
@@ -2108,6 +2128,19 @@ def main():
             # Summary
             detector.print_summary()
             print("\n✅ Sequence fraud detection analysis completed successfully!")
+            
+            # Create visualizations (LAST STEP - program will exit after this)
+            print("\n📈 Creating visualizations...")
+            
+            # Ask user if they want to see interactive plots
+            show_plots = input("Show interactive plots? (y/n - default: n): ").lower().strip()
+            show_interactive = show_plots in ['y', 'yes']
+            
+            detector.create_visualizations(save_plots=True, show_interactive=show_interactive)
+            
+            print("\n🎉 Analysis complete! Program will now exit.")
+            if not show_interactive:
+                print("📈 Visualizations have been saved as PNG files")
         else:
             print("\n" + "="*60)
             print("🌊 STREAM PREDICTION MODE")

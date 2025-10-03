@@ -1630,20 +1630,11 @@ def main():
                 print("\n📊 Evaluating models...")
                 detector.evaluate_models()
             
-            # Step 8: Create visualizations
-            print("\n📈 Creating visualizations...")
-            
-            # Ask user if they want to see interactive plots
-            show_plots = input("Show interactive plots? (y/n - default: n): ").lower().strip()
-            show_interactive = show_plots in ['y', 'yes']
-            
-            detector.create_visualizations(save_plots=True, show_interactive=show_interactive)
-            
-            # Step 9: Export results
+            # Step 8: Export results
             print("\n💾 Exporting results...")
             detector.export_results()
             
-            # Step 10: Ask if user wants to save model (for both classic and risk score methods)
+            # Step 9: Ask if user wants to save model (for both classic and risk score methods)
             print("\n" + "="*60)
             print("💾 MODEL SAVING OPTIONS")
             print("="*60)
@@ -1663,11 +1654,22 @@ def main():
             else:
                 print("📝 Model not saved. You can always retrain when needed.")
             
-            # Step 11: Print summary
+            # Step 10: Print summary
             detector.print_summary()
             
             print("\n✅ Batch fraud detection analysis completed successfully!")
             print("📊 Results have been exported to the fraud_detection_results folder")
+            
+            # Step 11: Create visualizations (LAST STEP - program will exit after this)
+            print("\n📈 Creating visualizations...")
+            
+            # Ask user if they want to see interactive plots
+            show_plots = input("Show interactive plots? (y/n - default: n): ").lower().strip()
+            show_interactive = show_plots in ['y', 'yes']
+            
+            detector.create_visualizations(save_plots=True, show_interactive=show_interactive)
+            
+            print("\n🎉 Analysis complete! Program will now exit.")
             if not show_interactive:
                 print("📈 Visualizations have been saved as PNG files")
             
