@@ -609,15 +609,29 @@ class IsolationForestFraudDetector:
         print("\n" + "="*60)
         print("🔍 ANOMALY DETECTION METHOD SETUP")
         print("="*60)
+        print("Choose your anomaly detection approach:")
+        print("1. Classic Method - Use Isolation Forest's built-in contamination parameter")
+        print("   • Train multiple models with different contamination levels")
+        print("   • Compare performance across different thresholds")
+        print("   • Good for exploring optimal contamination levels")
+        print()
+        print("2. Risk Score Method - Use custom risk score threshold")
+        print("   • Train single model with fixed contamination (0.1)")
+        print("   • Apply custom threshold to risk scores (0.0-1.0)")
+        print("   • More control over false positive/negative rates")
+        print("   • Better for production environments")
         
         while True:
-            method = input("Choose anomaly detection method:\n1. Classic (Isolation Forest predictions)\n2. Risk Score based (custom threshold)\nEnter choice (1 or 2): ").strip()
+            method = input("\nEnter choice (1 or 2): ").strip()
             if method == '1':
                 self.use_risk_score_threshold = False
                 print("✅ Classic method selected - using Isolation Forest predictions")
+                print("   Will train multiple models with different contamination levels for comparison")
                 break
             elif method == '2':
                 self.use_risk_score_threshold = True
+                print("✅ Risk Score method selected - using custom threshold")
+                print("   Will train single model and apply custom risk score threshold")
                 self._setup_risk_score_threshold()
                 break
             else:
@@ -626,24 +640,46 @@ class IsolationForestFraudDetector:
     def _setup_risk_score_threshold(self) -> None:
         """Setup risk score threshold for anomaly detection."""
         print("\n🎯 RISK SCORE THRESHOLD SETUP")
-        print("="*40)
+        print("="*50)
         print("Risk score ranges from 0.0 to 1.0:")
         print("  - 0.0 = Lowest risk (most normal)")
         print("  - 1.0 = Highest risk (most anomalous)")
         print("  - Values above threshold will be classified as anomalies")
+        print("\nCommon threshold values:")
+        print("  - 0.5 = Moderate sensitivity (default)")
+        print("  - 0.3 = High sensitivity (more anomalies detected)")
+        print("  - 0.7 = Low sensitivity (fewer false positives)")
+        print("  - 0.9 = Very strict (only extreme anomalies)")
         
         while True:
             try:
-                threshold = float(input("\nEnter risk score threshold (0.0 - 1.0): ").strip())
+                threshold_input = input("\nEnter risk score threshold (0.0-1.0) or 'default' for 0.5: ").strip()
+                
+                if threshold_input.lower() in ['default', 'd']:
+                    threshold = 0.5
+                else:
+                    threshold = float(threshold_input)
+                
                 if 0.0 <= threshold <= 1.0:
                     self.risk_score_threshold = threshold
                     print(f"✅ Risk score threshold set to: {threshold}")
                     print(f"   Records with risk_score >= {threshold} will be classified as anomalies")
+                    
+                    # Provide guidance on threshold choice
+                    if threshold <= 0.3:
+                        print("   💡 High sensitivity: Will detect more anomalies but may have more false positives")
+                    elif threshold <= 0.5:
+                        print("   💡 Balanced sensitivity: Good balance between detection and false positives")
+                    elif threshold <= 0.7:
+                        print("   💡 Conservative: Fewer false positives but may miss some anomalies")
+                    else:
+                        print("   💡 Very conservative: Very strict, only extreme anomalies will be detected")
+                    
                     break
                 else:
-                    print("Please enter a value between 0.0 and 1.0")
+                    print("❌ Please enter a value between 0.0 and 1.0")
             except ValueError:
-                print("Please enter a valid number")
+                print("❌ Please enter a valid number or 'default'")
     
     def preprocess_data(self) -> pd.DataFrame:
         """
@@ -1238,12 +1274,13 @@ class IsolationForestFraudDetector:
         
         return self.results
     
-    def create_visualizations(self, save_plots: bool = True) -> None:
+    def create_visualizations(self, save_plots: bool = True, show_interactive: bool = True) -> None:
         """
         Create comprehensive visualizations for the fraud detection results.
         
         Args:
             save_plots: Whether to save plots as PNG files
+            show_interactive: Whether to show interactive plots (can block terminal)
         """
         logger.info("Creating visualizations...")
         
@@ -1290,8 +1327,13 @@ class IsolationForestFraudDetector:
             plot_path = f"fraud_detection_analysis_{timestamp}.png"
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             logger.info(f"Plot saved as: {plot_path}")
+            print(f"📊 Visualization saved as: {plot_path}")
         
-        plt.show()
+        if show_interactive:
+            plt.show()
+        else:
+            plt.close(fig)
+            print("📊 Visualization created and saved (interactive display skipped)")
     
     def _plot_feature_importance(self, ax) -> None:
         """Plot feature importance based on variance."""
@@ -1581,24 +1623,38 @@ def main():
             
             # Step 8: Create visualizations
             print("\n📈 Creating visualizations...")
-            detector.create_visualizations(save_plots=True)
+            
+            # Ask user if they want to see interactive plots
+            show_plots = input("Show interactive plots? (y/n - default: n): ").lower().strip()
+            show_interactive = show_plots in ['y', 'yes']
+            
+            detector.create_visualizations(save_plots=True, show_interactive=show_interactive)
             
             # Step 9: Export results
             print("\n💾 Exporting results...")
             detector.export_results()
             
-            # Step 10: Ask if user wants to save model
-            save_model = input("\n💾 Save trained model for future use? (y/n): ").lower().strip()
+            # Step 10: Ask if user wants to save model (for both classic and risk score methods)
+            print("\n" + "="*60)
+            print("💾 MODEL SAVING OPTIONS")
+            print("="*60)
+            save_model = input("Save trained model for future use? (y/n): ").lower().strip()
             if save_model in ['y', 'yes']:
                 model_path = input("Enter model save path (or press Enter for auto-generated name): ").strip()
                 if not model_path:
                     model_path = None
                 detector.save_model(model_path)
+                print("✅ Model saved successfully!")
+            else:
+                print("📝 Model not saved. You can always retrain when needed.")
             
             # Step 11: Print summary
             detector.print_summary()
             
             print("\n✅ Batch fraud detection analysis completed successfully!")
+            print("📊 Results have been exported to the fraud_detection_results folder")
+            if not show_interactive:
+                print("📈 Visualizations have been saved as PNG files")
             
         elif detector.prediction_mode == 'stream':
             # STREAM PREDICTION MODE
