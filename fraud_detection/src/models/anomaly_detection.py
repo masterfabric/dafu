@@ -851,12 +851,13 @@ class IsolationForestFraudDetector:
         
         return self.models
     
-    def save_model(self, model_path: str = None) -> str:
+    def save_model(self, model_name: str = None) -> str:
         """
         Save the trained model and preprocessing objects to disk.
         
         Args:
-            model_path: Path to save the model (optional)
+            model_name: Name for the model file (without extension). If None, auto-generates name.
+                       If extension provided, uses that extension; otherwise defaults to .joblib
             
         Returns:
             Path where the model was saved
@@ -864,9 +865,17 @@ class IsolationForestFraudDetector:
         if not self.models:
             raise ValueError("No trained models found. Please train models first.")
         
-        if model_path is None:
+        if model_name is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             model_path = f"fraud_detection_model_{timestamp}.joblib"
+        else:
+            # Check if user provided extension
+            if '.' in model_name:
+                # User provided extension, use as-is
+                model_path = model_name
+            else:
+                # No extension provided, add .joblib
+                model_path = f"{model_name}.joblib"
         
         # Create model package
         model_package = {
@@ -1640,11 +1649,17 @@ def main():
             print("="*60)
             save_model = input("Save trained model for future use? (y/n): ").lower().strip()
             if save_model in ['y', 'yes']:
-                model_path = input("Enter model save path (or press Enter for auto-generated name): ").strip()
-                if not model_path:
-                    model_path = None
-                detector.save_model(model_path)
-                print("✅ Model saved successfully!")
+                print("\n📝 Model naming options:")
+                print("   • Enter just a name (e.g., 'my_model') → saves as 'my_model.joblib'")
+                print("   • Enter name with extension (e.g., 'my_model.pkl') → saves as 'my_model.pkl'")
+                print("   • Press Enter → auto-generated name with timestamp")
+                
+                model_name = input("Enter model name (or press Enter for auto-generated): ").strip()
+                if not model_name:
+                    model_name = None
+                
+                saved_path = detector.save_model(model_name)
+                print(f"✅ Model saved successfully as: {saved_path}")
             else:
                 print("📝 Model not saved. You can always retrain when needed.")
             

@@ -1340,13 +1340,15 @@ class SequenceFraudDetector:
         
         return self.results
 
-    def save_model(self, model_path: str = None) -> str:
+    def save_model(self, model_name: str = None) -> str:
         """
         Save trained models and preprocessing objects to disk as a joblib package.
         Keras models are saved to .h5 files and referenced in the package.
         
         Args:
-            model_path: Path to save the joblib package (optional)
+            model_name: Name for the model package (without extension). If None, auto-generates name.
+                       If extension provided, uses that extension; otherwise defaults to .joblib
+            
         Returns:
             Path where the package was saved
         """
@@ -1354,8 +1356,16 @@ class SequenceFraudDetector:
             raise ValueError("No trained models found. Please train models first.")
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        if model_path is None:
+        if model_name is None:
             model_path = f"sequence_fraud_detection_model_{timestamp}.joblib"
+        else:
+            # Check if user provided extension
+            if '.' in model_name:
+                # User provided extension, use as-is
+                model_path = model_name
+            else:
+                # No extension provided, add .joblib
+                model_path = f"{model_name}.joblib"
         
         # Save keras models to .h5 and collect paths
         model_files = {}
@@ -2076,12 +2086,24 @@ def main():
             detector.export_results()
             
             # Ask to save model
-            save_model = input("\n💾 Save trained model for future stream use? (y/n): ").lower().strip()
+            print("\n" + "="*60)
+            print("💾 MODEL SAVING OPTIONS")
+            print("="*60)
+            save_model = input("Save trained model for future stream use? (y/n): ").lower().strip()
             if save_model in ['y', 'yes']:
-                model_path = input("Enter model save path (or press Enter for auto-generated name): ").strip()
-                if not model_path:
-                    model_path = None
-                detector.save_model(model_path)
+                print("\n📝 Model naming options:")
+                print("   • Enter just a name (e.g., 'my_lstm_model') → saves as 'my_lstm_model.joblib'")
+                print("   • Enter name with extension (e.g., 'my_model.pkl') → saves as 'my_model.pkl'")
+                print("   • Press Enter → auto-generated name with timestamp")
+                
+                model_name = input("Enter model name (or press Enter for auto-generated): ").strip()
+                if not model_name:
+                    model_name = None
+                
+                saved_path = detector.save_model(model_name)
+                print(f"✅ Model saved successfully as: {saved_path}")
+            else:
+                print("📝 Model not saved. You can always retrain when needed.")
             
             # Summary
             detector.print_summary()
