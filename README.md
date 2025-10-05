@@ -1424,6 +1424,7 @@ Get model performance metrics.
 - **Documentation**: Comprehensive guides and API documentation
 - **GitHub Issues**: Bug reports and feature requests
 - **Community Forum**: Discussions and Q&A
+- **Feedback & Support**: dafu@masterfabric.co
 - **Enterprise Support**: Contact the platform support team
 
 ### Resources
@@ -1476,6 +1477,8 @@ The complete license text is available in the [LICENSE](LICENSE) file in this re
 For commercial enterprises requiring different licensing terms, please contact MasterFabric for enterprise licensing options.
 
 **MasterFabric** - Enterprise-level fraud detection and e-commerce analytics solutions.
+
+**Contact**: dafu@masterfabric.co
 
 Based on the existing test results in the project:
 
