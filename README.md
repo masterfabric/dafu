@@ -19,6 +19,8 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 - 📡 **Stream Processing**: Real-time data stream processing with pre-trained models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 💾 **Model Persistence**: Save and load trained models for production deployment ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 🔀 **Dual Prediction Modes**: Both batch and stream prediction capabilities ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🐳 **Docker Compose Setup**: Complete microservices orchestration with 9 services ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🌐 **FastAPI Production API**: Enterprise REST API with OpenAPI documentation ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 🧪🎓 **Dual Learning Modes**: Both supervised and unsupervised learning approaches
 - 📊📈 **Comprehensive Analysis**: 4-panel visualization with detailed performance metrics
 - 🚀 **Production-Ready Core**: Complete fraud detection pipeline with evaluation
@@ -51,9 +53,9 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [First-Time User Guide](#first-time-user-guide)
-  - [Unified Model Interface](#unified-model-interface)
-- [Supported Data Formats](#supported-data-formats)
-- [Use Cases and Scenarios](#use-cases-and-scenarios)
+  - [Unified Model Interface](#-unified-model-interface)
+- [Supported Data Formats](#-supported-data-formats)
+- [Use Cases and Scenarios](#-use-cases-and-scenarios)
 
 ### 🏗️ Architecture & Components
 - [High-Level Architecture](#architecture)
@@ -222,9 +224,9 @@ python test_anomaly_detection.py
 python test_sequence_models_interactive.py
 ```
 
-#### Option 2: Docker Compose Setup (Recommended for Full Platform)
+#### Option 2: Docker Compose Setup (Recommended for Full Platform) ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
-**🚀 NEW! Complete platform with all services in one command**
+**🚀 Complete platform with all services in one command**
 
 **Step 1: Quick Start**
 
@@ -277,7 +279,7 @@ open http://localhost:9090
 open http://localhost:15672  # Login: dafu/dafu_rabbitmq_password
 ```
 
-**What's Included:**
+**What's Included:** ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - ✅ Fraud Detection API (FastAPI)
 - ✅ PostgreSQL Database (with schema)
 - ✅ Redis Cache
@@ -1390,6 +1392,8 @@ Get model performance metrics.
 | **Risk Score Detection** | Custom threshold-based detection | ✅ **Fully Implemented** | Complete with business interpretation |
 | **Comprehensive Evaluation** | Performance metrics & visualization | ✅ **Fully Implemented** | Complete with 4-panel analysis |
 | **Enhanced Result Export** | CSV, JSON output with stream support | ✅ **Enhanced** | Complete with stream & batch exports |
+| **Docker Compose Setup** | Complete microservices orchestration | ✅ **NEW! Fully Implemented** | 9 services with monitoring & databases ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
+| **FastAPI Production API** | Enterprise-grade REST API | ✅ **NEW! Fully Implemented** | Complete with OpenAPI docs & health checks ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
 | **Docker Support** | Containerization | ✅ **Fully Implemented** | Dockerfile with multi-stage build |
 | **Fast Startup Interface** | Lazy loading for instant response | ✅ **NEW! Fully Implemented** | Complete with optimized imports |
 
