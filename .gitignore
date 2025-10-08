@@ -1,173 +1,73 @@
-# Fraud Detection System - Generated Files
-# ===============================================
-
-# Fraud detection analysis results
-fraud_detection_results/
-unsupervised_test_results/
-supervised_test_results/
-
-# Generated visualization files
-fraud_detection_analysis_*.png
-*.png
-!docs/
-!docs/**
-
-# Sample test data files
-sample_fraud_data_*.csv
-
-# Python cache and compiled files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-# Distribution / packaging
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
+dist/
+build/
 *.egg
-MANIFEST
 
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
+# Virtual environments
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
-fraud_detection/fraud_detection_env/
+fraud_detection_env/
+dafu_env/
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# Environment files
+.env
+.env.local
+.env.*.local
 
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# IDE and Editor files
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# OS generated files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+.cursor/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Results and outputs
+fraud_detection_results/
+sequence_fraud_detection_results/
+supervised_test_results/
+unsupervised_test_results/
+test_classic_results/
+test_risk_score_results/
+stream_results/
+stream_prediction_results/
+sequence_stream_results/
+*.png
+*.csv
+!sample_fraud_data.csv
+!stream_data.csv
+
+# Models (large files)
+*.joblib
+*.h5
+*.pkl
+*.model
 
 # Logs
 *.log
 logs/
 
-# Temporary files
-*.tmp
-*.temp
-temp/
-tmp/
-
-# Data files (if they contain sensitive information)
-*.csv
-*.json
-*.xlsx
-*.xls
-!requirements.txt
-!package.json
-!package-lock.json
-
-# Model files (can be large)
-*.pkl
-*.joblib
-*.h5
-*.hdf5
-*.model
-
-# Configuration files with sensitive data
-config.json
-secrets.json
-.env.local
-.env.production
-
 # Docker
 .dockerignore
-Dockerfile.local
 
-# Kubernetes
-*.kubeconfig
+# Backups
+backups/
 
-# Monitoring and metrics
-prometheus_data/
-grafana_data/
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Backup files
-*.bak
-*.backup
+# OS files
+Thumbs.db
+.DS_Store

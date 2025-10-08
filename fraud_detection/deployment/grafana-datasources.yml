@@ -1,0 +1,31 @@
+# Grafana Datasources Configuration
+# ===================================
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+    version: 1
+
+  - name: PostgreSQL
+    type: postgres
+    url: postgres:5432
+    database: dafu
+    user: dafu
+    secureJsonData:
+      password: dafu_secure_password
+    jsonData:
+      sslmode: "disable"
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 300
+    editable: true
+    version: 1

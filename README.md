@@ -3,7 +3,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.95%2B-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-In%20Development-orange.svg)](https://www.docker.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-brightgreen.svg)](https://www.docker.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-Planned-yellow.svg)](https://kubernetes.io/)
 
 **DAFU** is a comprehensive fraud detection and e-commerce analytics platform designed for enterprise deployment. Currently in active development, it provides advanced machine learning-based fraud detection capabilities with a focus on anomaly detection and sequence analysis.
@@ -222,52 +222,102 @@ python test_anomaly_detection.py
 python test_sequence_models_interactive.py
 ```
 
-#### Option 2: Docker Setup (Containerized)
+#### Option 2: Docker Compose Setup (Recommended for Full Platform)
 
-**Step 1: Build Docker Image**
+**🚀 NEW! Complete platform with all services in one command**
+
+**Step 1: Quick Start**
+
+```bash
+# Clone and navigate
+git clone https://github.com/MasterFabric/dafu.git
+cd dafu
+
+# Option A: Using Make (Easiest)
+make setup
+
+# Option B: Using start script
+./start.sh up
+
+# Option C: Using docker-compose directly
+cp .env.example .env
+docker-compose up -d
+```
+
+**Step 2: Verify Services**
+
+```bash
+# Check all services
+docker-compose ps
+
+# Expected output:
+# NAME                    STATUS              PORTS
+# dafu-fraud-api          Up (healthy)        0.0.0.0:8000->8000/tcp
+# dafu-postgres           Up (healthy)        0.0.0.0:5432->5432/tcp
+# dafu-redis              Up (healthy)        0.0.0.0:6379->6379/tcp
+# dafu-rabbitmq           Up                  0.0.0.0:5672->5672/tcp
+# dafu-celery-worker      Up                  
+# dafu-prometheus         Up                  0.0.0.0:9090->9090/tcp
+# dafu-grafana            Up                  0.0.0.0:3000->3000/tcp
+```
+
+**Step 3: Access Services**
+
+```bash
+# API Documentation
+open http://localhost:8000/docs
+
+# Grafana Dashboards
+open http://localhost:3000  # Login: admin/admin
+
+# Prometheus Metrics
+open http://localhost:9090
+
+# RabbitMQ Management
+open http://localhost:15672  # Login: dafu/dafu_rabbitmq_password
+```
+
+**What's Included:**
+- ✅ Fraud Detection API (FastAPI)
+- ✅ PostgreSQL Database (with schema)
+- ✅ Redis Cache
+- ✅ RabbitMQ Message Broker
+- ✅ Celery Workers (for batch processing)
+- ✅ Prometheus Monitoring
+- ✅ Grafana Dashboards
+
+**Quick Commands:**
+```bash
+# View logs
+make logs
+
+# Stop services
+make stop
+
+# Restart services
+make restart
+
+# Full documentation
+cat DOCKER_SETUP.md
+```
+
+#### Option 3: Individual Docker Container (Development)
+
+**For testing individual components:**
 
 ```bash
 # Build the fraud detection service
 cd fraud_detection
 docker build -f deployment/Dockerfile -t dafu-fraud-detection .
 
-# Expected output:
-# Sending build context to Docker daemon  45.2MB
-# Step 1/8 : FROM python:3.9-slim
-#  ---> 2c4c8b8b8b8b
-# Step 2/8 : WORKDIR /app
-#  ---> Running in 1234567890ab
-#  ---> 1234567890ab
-# Step 3/8 : COPY requirements.txt .
-#  ---> 1234567890ab
-# Step 4/8 : RUN pip install --no-cache-dir -r requirements.txt
-#  ---> Running in 1234567890ab
-# Collecting numpy>=1.21.0
-# ...
-# Successfully built 1234567890ab
-# Successfully tagged dafu-fraud-detection:latest
+# Run with sample data
+docker run -it --rm \
+  -v $(pwd)/sample_fraud_data.csv:/app/data.csv \
+  dafu-fraud-detection \
+  python test_anomaly_detection.py
 ```
 
-**Step 2: Run Container**
-
-```bash
-# Run the service with sample data
-docker run -it --rm -v $(pwd)/sample_fraud_data.csv:/app/data.csv dafu-fraud-detection python test_anomaly_detection.py
-
-# Expected output:
-# ========================================
-# 🚀 DAFU Fraud Detection System - Docker Demo
-# ========================================
-# 
-# 📊 Loading data from: /app/data.csv
-# - Dataset shape: (1000, 8)
-# - Fraud rate: 5.0%
-# 
-# 🎯 Running unsupervised anomaly detection...
-# ✅ Analysis complete! Results saved to: /app/fraud_detection_results/
-```
-
-#### Option 3: Kubernetes Deployment (Production)
+#### Option 4: Kubernetes Deployment (Production)
 
 **Step 1: Deploy with Helm**
 
