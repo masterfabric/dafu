@@ -3,7 +3,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.95%2B-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-brightgreen.svg)](https://www.docker.com/)
+[![Docker](https://img.shields.io/badge/Docker-Infrastructure%20Ready-yellow.svg)](https://www.docker.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-Planned-yellow.svg)](https://kubernetes.io/)
 
 **DAFU** is a comprehensive fraud detection and e-commerce analytics platform designed for enterprise deployment. Currently in active development, it provides advanced machine learning-based fraud detection capabilities with a focus on anomaly detection and sequence analysis.
@@ -19,8 +19,8 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 - 📡 **Stream Processing**: Real-time data stream processing with pre-trained models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 💾 **Model Persistence**: Save and load trained models for production deployment ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 🔀 **Dual Prediction Modes**: Both batch and stream prediction capabilities ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
-- 🐳 **Docker Compose Setup**: Complete microservices orchestration with 9 services ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
-- 🌐 **FastAPI Production API**: Enterprise REST API with OpenAPI documentation ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🐳 **Docker Infrastructure**: Complete configuration ready (services not integrated yet) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
+- 🌐 **FastAPI Structure**: Basic API framework prepared (ML integration pending) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
 - 🧪🎓 **Dual Learning Modes**: Both supervised and unsupervised learning approaches
 - 📊📈 **Comprehensive Analysis**: 4-panel visualization with detailed performance metrics
 - 🚀 **Production-Ready Core**: Complete fraud detection pipeline with evaluation
@@ -223,84 +223,42 @@ python test_anomaly_detection.py
 python test_sequence_models_interactive.py
 ```
 
-#### Option 2: Docker Compose Setup (Recommended for Full Platform) ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+#### Option 2: Docker Compose Setup ⚠️ ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
 
-**🚀 Complete platform with all services in one command**
+**Status**: Infrastructure prepared, services not integrated yet
 
-**Step 1: Quick Start**
+**What's Ready:**
+- ✅ Docker configuration files
+- ✅ Database schemas
+- ✅ Service definitions
+- ⚠️ ML models NOT integrated with API yet
 
+**Current Limitation:**
+Docker Compose services are commented out until API-ML integration is complete. For now, use **Option 1** (Local Development) to run ML models.
+
+**Future Setup** (when ready):
 ```bash
 # Clone and navigate
 git clone https://github.com/MasterFabric/dafu.git
 cd dafu
 
-# Option A: Using Make (Easiest)
-make setup
-
-# Option B: Using start script
-./start.sh up
-
-# Option C: Using docker-compose directly
-cp .env.example .env
+# Uncomment services in docker-compose.yml
+# Then start services
 docker-compose up -d
 ```
 
-**Step 2: Verify Services**
+**Why Services Are Commented Out:**
 
-```bash
-# Check all services
-docker-compose ps
+The ML models (Isolation Forest, LSTM/GRU) work perfectly standalone, but the FastAPI endpoints need ML integration. All infrastructure (database schemas, service configs, monitoring) is prepared and ready to be activated once the integration is complete.
 
-# Expected output:
-# NAME                    STATUS              PORTS
-# dafu-fraud-api          Up (healthy)        0.0.0.0:8000->8000/tcp
-# dafu-postgres           Up (healthy)        0.0.0.0:5432->5432/tcp
-# dafu-redis              Up (healthy)        0.0.0.0:6379->6379/tcp
-# dafu-rabbitmq           Up                  0.0.0.0:5672->5672/tcp
-# dafu-celery-worker      Up                  
-# dafu-prometheus         Up                  0.0.0.0:9090->9090/tcp
-# dafu-grafana            Up                  0.0.0.0:3000->3000/tcp
-```
+**What You Can Do Now:**
+- ✅ Use all ML models via Python (Option 1)
+- ✅ Train and save models
+- ✅ Stream and batch processing
+- ✅ See `DOCKER_STATUS.md` for integration roadmap
 
-**Step 3: Access Services**
-
-```bash
-# API Documentation
-open http://localhost:8000/docs
-
-# Grafana Dashboards
-open http://localhost:3000  # Login: admin/admin
-
-# Prometheus Metrics
-open http://localhost:9090
-
-# RabbitMQ Management
-open http://localhost:15672  # Login: dafu/dafu_rabbitmq_password
-```
-
-**What's Included:** ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
-- ✅ Fraud Detection API (FastAPI)
-- ✅ PostgreSQL Database (with schema)
-- ✅ Redis Cache
-- ✅ RabbitMQ Message Broker
-- ✅ Celery Workers (for batch processing)
-- ✅ Prometheus Monitoring
-- ✅ Grafana Dashboards
-
-**Quick Commands:**
-```bash
-# View logs
-make logs
-
-# Stop services
-make stop
-
-# Restart services
-make restart
-
-# Full documentation
-cat DOCKER_SETUP.md
-```
+**Next Step:**
+Integrate ML models with FastAPI, then uncomment services in `docker-compose.yml`.
 
 #### Option 3: Individual Docker Container (Development)
 
@@ -1187,43 +1145,50 @@ logger.info(
 
 ## 🚀 Deployment
 
-### Production Deployment
+### Current Deployment Options
 
-#### Docker Compose (Development)
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  fraud-detection:
-    build: ./fraud_detection
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/dafu
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - db
-      - redis
-  
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: dafu
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-  
-  redis:
-    image: redis:6-alpine
-  
-  prometheus:
-    image: prom/prometheus
-    ports:
-      - "9090:9090"
-  
-  grafana:
-    image: grafana/grafana
-    ports:
-      - "3000:3000"
+#### Local Python Deployment (Active Now) ✅
+
+**Best for:** Development, testing, ML model training
+
+```bash
+# Clone repository
+git clone https://github.com/MasterFabric/dafu.git
+cd dafu/fraud_detection
+
+# Setup environment
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Run ML models
+cd src/models
+python main.py  # Interactive model selection
+```
+
+**Features Available:**
+- ✅ All ML models (Isolation Forest, LSTM, GRU)
+- ✅ Training and prediction
+- ✅ Stream/batch processing
+- ✅ Model persistence
+- ✅ Visualization and export
+
+#### Docker Compose (Infrastructure Ready) ⚠️
+
+**Status:** Configuration complete, services commented out until API-ML integration
+
+The complete Docker Compose setup is prepared in `docker-compose.yml` but all services are currently commented out. See `DOCKER_STATUS.md` for details.
+
+**What's Prepared:**
+- Complete service definitions (API, PostgreSQL, Redis, RabbitMQ, Celery, Prometheus, Grafana)
+- Database schemas
+- Network and volume configuration
+- Health checks and monitoring
+
+**When Active** (after integration):
+```bash
+# Uncomment services in docker-compose.yml
+docker-compose up -d
 ```
 
 #### Kubernetes Production
@@ -1391,19 +1356,22 @@ Get model performance metrics.
 | **Risk Score Detection** | Custom threshold-based detection | ✅ **Fully Implemented** | Complete with business interpretation |
 | **Comprehensive Evaluation** | Performance metrics & visualization | ✅ **Fully Implemented** | Complete with 4-panel analysis |
 | **Enhanced Result Export** | CSV, JSON output with stream support | ✅ **Enhanced** | Complete with stream & batch exports |
-| **Docker Compose Setup** | Complete microservices orchestration | ✅ **NEW! Fully Implemented** | 9 services with monitoring & databases ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
-| **FastAPI Production API** | Enterprise-grade REST API | ✅ **NEW! Fully Implemented** | Complete with OpenAPI docs & health checks ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
+| **Docker Infrastructure** | Docker Compose configuration | 📋 **Prepared** | All services configured, not integrated yet |
+| **FastAPI Basic Structure** | REST API framework | 📋 **Prepared** | Basic endpoints exist, ML integration pending |
+| **Database Schema** | PostgreSQL schema design | 📋 **Prepared** | Complete schema ready, not connected yet |
 | **Docker Support** | Containerization | ✅ **Fully Implemented** | Dockerfile with multi-stage build |
 | **Fast Startup Interface** | Lazy loading for instant response | ✅ **NEW! Fully Implemented** | Complete with optimized imports |
 
-### 🚧 **Partially Implemented (In Development)**
+### 🚧 **In Development (Infrastructure Ready, Integration Pending)**
 
 | Feature | Description | Status | Implementation Level |
 |---------|-------------|--------|---------------------|
-| **API Endpoints** | REST API for real-time scoring | 🚧 **Basic Structure** | API files exist but need implementation |
+| **API-ML Integration** | Connect ML models to FastAPI | 🚧 **Next Priority** | API structure ready, needs ML integration |
+| **Database Integration** | PostgreSQL connection | 🚧 **In Development** | Schema ready, ORM integration pending |
+| **Redis Caching** | Performance optimization | 🚧 **In Development** | Config ready, not implemented |
+| **Celery Tasks** | Background job processing | 🚧 **In Development** | Not implemented yet |
 | **Feature Engineering Pipeline** | Advanced feature extraction | 🚧 **Basic Structure** | Framework exists, needs implementation |
 | **Rules Engine** | Business rule processing | 🚧 **Basic Structure** | Framework exists, needs implementation |
-| **Kubernetes Manifests** | Production deployment configs | 🚧 **Basic Structure** | K8s files exist but need testing |
 | **Ensemble Models** | XGBoost, Random Forest | 🚧 **Basic Structure** | Framework exists, needs implementation |
 
 ### 📋 **Planned Features (Roadmap)**

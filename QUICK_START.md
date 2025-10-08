@@ -1,99 +1,85 @@
 # 🚀 DAFU - Quick Start Guide
 
-Get DAFU - Data Analytics Functional Utilities running in **5 minutes**!
+⚠️ **IMPORTANT: Docker services are not active yet**
+
+Get DAFU - Data Analytics Functional Utilities ML models running in **5 minutes**!
 
 ## Prerequisites
 
+**For ML Models (Current Method):**
+- Python 3.8+ ([Install Python](https://www.python.org/downloads/))
+- 4GB RAM (minimum)
+- 2GB free disk space
+
+**For Future Docker Setup:**
 - Docker 20.10+ ([Install Docker](https://docs.docker.com/get-docker/))
-- Docker Compose 2.0+ ([Install Compose](https://docs.docker.com/compose/install/))
-- 8GB RAM (minimum)
-- 10GB free disk space
+- Docker Compose 2.0+ (Docker services commented out until ready)
 
 ## Quick Start
 
-### Option 1: Using Make (Recommended)
+### ✅ Current Method: Direct Python Execution
 
 ```bash
-# Clone and setup
+# 1. Clone and setup
 git clone https://github.com/MasterFabric/dafu.git
-cd dafu
+cd dafu/fraud_detection
 
-# Start everything
-make setup
+# 2. Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# That's it! 🎉
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Run ML models
+cd src/models
+python main.py  # Interactive model selection
+
+# That's it! 🎉 All ML features work!
 ```
 
-### Option 2: Using Start Script
+### ⚠️ Docker Method (Not Active Yet)
+
+Docker infrastructure is prepared but services are commented out until API-ML integration is complete.
 
 ```bash
-# Clone repository
-git clone https://github.com/MasterFabric/dafu.git
-cd dafu
-
-# Create environment file
-cp .env.example .env
-
-# Start services
-./start.sh up
-
-# Done! 🎉
-```
-
-### Option 3: Using Docker Compose Directly
-
-```bash
-# Clone repository
-git clone https://github.com/MasterFabric/dafu.git
-cd dafu
-
-# Create environment file
-cp .env.example .env
-
-# Start services
-docker-compose up -d
-
-# Check status
-docker-compose ps
+# Future usage (when ready):
+# 1. Uncomment services in docker-compose.yml
+# 2. Run: docker-compose up -d
 ```
 
 ## Verify Installation
 
-Once started, access these URLs:
-
-- **API Documentation**: http://localhost:8000/docs
-- **API Health Check**: http://localhost:8000/health
-- **Grafana**: http://localhost:3000 (admin/admin)
-- **Prometheus**: http://localhost:9090
-- **RabbitMQ**: http://localhost:15672 (dafu/dafu_rabbitmq_password)
-
-### Test the API
+### Test ML Models (Current Method)
 
 ```bash
-# Health check
-curl http://localhost:8000/health
-
-# Expected response:
-# {
-#   "status": "healthy",
-#   "version": "1.0.0",
-#   ...
-# }
+# After running python main.py, you'll see:
+# 🔍 ENTERPRISE FRAUD DETECTION PLATFORM
+# ========================================
+# 
+# 1. 🔍 ISOLATION FOREST & RISK SCORE
+# 2. 🧠 SEQUENCE MODELS (LSTM & GRU)
+# 3. ℹ️  MODEL COMPARISON
+# 4. ❓ HELP & INFORMATION
+# 5. 🚪 EXIT
+#
+# Choose an option and follow the interactive prompts!
 ```
 
-### Test Fraud Detection
+### Test Individual Models
 
 ```bash
-# Score a transaction
-curl -X POST http://localhost:8000/api/v1/score \
-  -H "Content-Type: application/json" \
-  -d '{
-    "transaction_id": "tx_123",
-    "amount": 150.00,
-    "user_id": "user_456",
-    "merchant_id": "merchant_789",
-    "timestamp": "2024-01-15T10:30:00Z"
-  }'
+# From fraud_detection directory
+python test_anomaly_detection.py  # Isolation Forest
+python test_sequence_models_interactive.py  # LSTM/GRU
+```
+
+### Future API Testing (When Docker is Active)
+
+```bash
+# These will work once services are uncommented:
+# curl http://localhost:8000/health
+# curl http://localhost:8000/docs
 ```
 
 ## Common Commands

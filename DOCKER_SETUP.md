@@ -1,6 +1,19 @@
 # 🐳 DAFU - Docker Setup Guide
 
-Complete Docker setup guide for DAFU - Data Analytics Functional Utilities.
+⚠️ **STATUS: Infrastructure Prepared - Services Not Active Yet**
+
+This guide documents the Docker infrastructure prepared for DAFU. **All services are currently commented out** in docker-compose.yml until ML model integration with the API is complete.
+
+**What Works Now:**
+- ML Models (Isolation Forest, LSTM/GRU) via direct Python execution
+- Model training, prediction, and persistence
+- All fraud detection capabilities work without Docker
+
+**Docker Status:**
+- ✅ Configuration files ready
+- ✅ Database schemas prepared
+- ✅ Service definitions complete
+- ⚠️ Services commented out until API-ML integration
 
 ## 📋 Table of Contents
 
@@ -18,27 +31,35 @@ Complete Docker setup guide for DAFU - Data Analytics Functional Utilities.
 
 ## 🚀 Quick Start
 
-Get the entire DAFU platform running in under 5 minutes:
+⚠️ **Docker services are not active yet.** Use local Python execution instead:
+
+### Current Way to Use DAFU:
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/MasterFabric/dafu.git
-cd dafu
+cd dafu/fraud_detection
 
-# 2. Create environment file
-cp .env.example .env
+# 2. Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# 3. Start all services
-docker-compose up -d
+# 3. Install dependencies
+pip install -r requirements.txt
 
-# 4. Check service status
-docker-compose ps
-
-# 5. View API documentation
-open http://localhost:8000/docs
+# 4. Run ML models
+cd src/models
+python main.py  # Interactive model selection
 ```
 
-**That's it! 🎉** The platform is now running with all services.
+### Future Docker Setup (When Ready):
+
+```bash
+# Uncomment services in docker-compose.yml first
+docker-compose up -d
+```
+
+**Current Status:** Infrastructure ready, integration pending 🔄
 
 ---
 

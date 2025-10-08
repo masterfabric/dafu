@@ -4,6 +4,15 @@
 # DAFU - Data Analytics Functional Utilities
 # Docker Compose Startup Script
 # ============================================================================
+# 
+# ⚠️  WARNING: Docker services are currently commented out
+# 
+# All services in docker-compose.yml are commented out until API-ML
+# integration is complete. Use direct Python execution for ML models.
+# 
+# For current usage: cd fraud_detection && python src/models/main.py
+# 
+# ============================================================================
 
 set -e
 
@@ -119,22 +128,27 @@ case $ACTION in
         wait_for_service "Fraud Detection API" "http://localhost:8000/health" || true
         
         echo ""
-        echo -e "${GREEN}============================================================${NC}"
-        echo -e "${GREEN}  DAFU Platform Started Successfully!${NC}"
-        echo -e "${GREEN}============================================================${NC}"
+        echo -e "${YELLOW}============================================================${NC}"
+        echo -e "${YELLOW}  ⚠️  Docker Services Are Currently Commented Out${NC}"
+        echo -e "${YELLOW}============================================================${NC}"
         echo ""
-        echo "Services available at:"
-        echo -e "  ${BLUE}API Documentation:${NC}    http://localhost:8000/docs"
-        echo -e "  ${BLUE}API Health Check:${NC}     http://localhost:8000/health"
-        echo -e "  ${BLUE}Grafana Dashboards:${NC}   http://localhost:3000 (admin/admin)"
-        echo -e "  ${BLUE}Prometheus:${NC}           http://localhost:9090"
-        echo -e "  ${BLUE}RabbitMQ Management:${NC}  http://localhost:15672 (dafu/dafu_rabbitmq_password)"
+        echo -e "${RED}All services in docker-compose.yml are commented out.${NC}"
         echo ""
-        echo "View logs:"
-        echo -e "  ${YELLOW}docker-compose logs -f${NC}"
+        echo -e "${GREEN}To use DAFU ML models NOW:${NC}"
         echo ""
-        echo "Stop services:"
-        echo -e "  ${YELLOW}./start.sh down${NC}"
+        echo "  cd fraud_detection"
+        echo "  python3 -m venv venv"
+        echo "  source venv/bin/activate"
+        echo "  pip install -r requirements.txt"
+        echo "  cd src/models"
+        echo "  python main.py"
+        echo ""
+        echo -e "${YELLOW}To activate Docker services:${NC}"
+        echo "  1. Uncomment services in docker-compose.yml"
+        echo "  2. Complete API-ML integration"
+        echo "  3. Run: ./start.sh up"
+        echo ""
+        echo "See DOCKER_STATUS.md for details."
         echo ""
         ;;
         

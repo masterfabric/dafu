@@ -119,21 +119,24 @@ db-restore: ## Restore PostgreSQL database (provide BACKUP=filename)
 
 ##@ Setup
 
-setup: ## Initial setup - create .env and start services
-	@echo "$(BLUE)Setting up DAFU platform...$(NC)"
-	@if [ ! -f .env ]; then \
-		if [ -f .env.example ]; then \
-			cp .env.example .env; \
-			echo "$(GREEN)✓ Created .env file$(NC)"; \
-		else \
-			echo "$(YELLOW)Creating minimal .env file...$(NC)"; \
-			echo "FRAUD_DETECTION_ENV=development" > .env; \
-			echo "POSTGRES_USER=dafu" >> .env; \
-			echo "POSTGRES_PASSWORD=dafu_secure_password" >> .env; \
-			echo "$(GREEN)✓ Created .env file$(NC)"; \
-		fi; \
-	fi
-	@make start
+setup: ## Initial setup - create .env (Docker services commented out)
+	@echo "$(YELLOW)============================================================$(NC)"
+	@echo "$(YELLOW)  ⚠️  Docker Services Are Currently Commented Out$(NC)"
+	@echo "$(YELLOW)============================================================$(NC)"
+	@echo ""
+	@echo "$(RED)All services in docker-compose.yml are commented out.$(NC)"
+	@echo ""
+	@echo "$(GREEN)To use DAFU ML models NOW:$(NC)"
+	@echo "  cd fraud_detection"
+	@echo "  python3 -m venv venv"
+	@echo "  source venv/bin/activate"
+	@echo "  pip install -r requirements.txt"
+	@echo "  cd src/models"
+	@echo "  python main.py"
+	@echo ""
+	@echo "$(YELLOW)Docker services will be activated after API-ML integration.$(NC)"
+	@echo "See DOCKER_STATUS.md for details."
+	@echo ""
 
 ##@ Monitoring
 
@@ -157,19 +160,21 @@ docs: ## Display quick reference
 	@echo "  DAFU Quick Reference"
 	@echo "============================================================"
 	@echo "$(NC)"
-	@echo "Service URLs:"
-	@echo "  API Documentation:    http://localhost:8000/docs"
-	@echo "  Grafana:              http://localhost:3000 (admin/admin)"
-	@echo "  Prometheus:           http://localhost:9090"
-	@echo "  RabbitMQ:             http://localhost:15672"
+	@echo "$(YELLOW)⚠️  Docker services are commented out$(NC)"
 	@echo ""
-	@echo "Common Commands:"
-	@echo "  make start           - Start all services"
-	@echo "  make stop            - Stop all services"
-	@echo "  make logs            - View logs"
-	@echo "  make status          - Check status"
+	@echo "$(GREEN)Use ML models NOW (no Docker needed):$(NC)"
+	@echo "  cd fraud_detection"
+	@echo "  python3 -m venv venv && source venv/bin/activate"
+	@echo "  pip install -r requirements.txt"
+	@echo "  cd src/models && python main.py"
+	@echo ""
+	@echo "$(BLUE)Future Service URLs (when Docker is active):$(NC)"
+	@echo "  API Documentation:    http://localhost:8000/docs"
+	@echo "  Grafana:              http://localhost:3000"
+	@echo "  Prometheus:           http://localhost:9090"
 	@echo ""
 	@echo "For full help: make help"
+	@echo "For Docker status: cat DOCKER_STATUS.md"
 
 version: ## Display version information
 	@echo "DAFU Platform v1.0.0"

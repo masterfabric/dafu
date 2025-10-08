@@ -1,43 +1,64 @@
 # 🐳 Docker Deployment Overview
 
-DAFU - Data Analytics Functional Utilities - Docker & Docker Compose Setup
+⚠️ **STATUS: Infrastructure Prepared - Services Not Active**
+
+DAFU - Data Analytics Functional Utilities - Docker Configuration Documentation
 
 ## 📚 Documentation Index
 
-1. **[QUICK_START.md](QUICK_START.md)** - Get started in 5 minutes
-2. **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Complete Docker documentation
+1. **[QUICK_START.md](QUICK_START.md)** - Get ML models running in 5 minutes
+2. **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Docker infrastructure documentation
 3. **[README.md](README.md)** - Main project documentation
 
-## 🚀 Quick Start (30 seconds)
+## ⚠️ Important Notice
+
+**Docker services are currently commented out** in `docker-compose.yml` until API-ML integration is complete.
+
+## ✅ What Works Now (No Docker Needed)
 
 ```bash
 git clone https://github.com/MasterFabric/dafu.git
-cd dafu
+cd dafu/fraud_detection
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cd src/models
+python main.py  # All ML features work!
+```
+
+## 🔄 Future Docker Setup (When Ready)
+
+```bash
+# After uncommenting services in docker-compose.yml:
 make setup
 ```
 
-**That's it!** Access at http://localhost:8000/docs
+## 📦 What's Prepared (Not Active Yet)
 
-## 📦 What's Included
+### Configured Services (Commented Out)
+- 🔄 **Fraud Detection API** - FastAPI structure ready
+- 🔄 **PostgreSQL** - Schema prepared
+- 🔄 **Redis** - Configuration ready
+- 🔄 **RabbitMQ** - Configuration ready
+- 🔄 **Celery Workers** - Not implemented
+- 🔄 **Prometheus** - Configuration ready
+- 🔄 **Grafana** - Configuration ready
 
-### Services
-- **Fraud Detection API** (Port 8000) - FastAPI application
-- **PostgreSQL** (Port 5432) - Database with schema
-- **Redis** (Port 6379) - Cache and session storage
-- **RabbitMQ** (Ports 5672, 15672) - Message broker
-- **Celery Workers** - Background task processing
-- **Prometheus** (Port 9090) - Metrics and monitoring
-- **Grafana** (Port 3000) - Dashboards and visualization
+### Infrastructure Ready
+- ✅ Docker Compose configuration complete
+- ✅ Database schemas designed
+- ✅ Service definitions prepared
+- ✅ Network configuration ready
+- ✅ Volume management configured
+- ⚠️ Awaiting API-ML integration
 
-### Features
-- ✅ Complete microservices architecture
-- ✅ Auto-scaling ready
-- ✅ Health checks for all services
-- ✅ Persistent data volumes
-- ✅ Production-ready configuration
-- ✅ Monitoring and logging
-- ✅ Network isolation
-- ✅ Security best practices
+### What Works Without Docker
+- ✅ All ML models (Isolation Forest, LSTM, GRU)
+- ✅ Model training and prediction
+- ✅ Stream and batch processing
+- ✅ Model persistence
+- ✅ Data visualization
+- ✅ Result export
 
 ## 📋 Files Created
 
