@@ -416,7 +416,7 @@ The new unified interface provides:
 - **Help System**: Comprehensive information and decision trees
 - **Seamless Navigation**: Easy switching between models and options
 
-#### 🔄 Stream Processing Demo (NEW!)
+#### 🔄 Stream Processing Demo ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
 **1. Train a Model First**
 
@@ -664,7 +664,7 @@ elif sequence_detector.prediction_mode == 'stream':
     sequence_detector.export_stream_results(stream_data, predictions)
 ```
 
-#### 5. Stream Prediction with Isolation Forest (NEW!)
+#### 5. Stream Prediction with Isolation Forest ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
 ```python
 from fraud_detection.src.models.anomaly_detection import IsolationForestFraudDetector
@@ -811,7 +811,7 @@ merchant_risk = processor.assess_merchant_risk(
 )
 ```
 
-### 6. Real-time Stream Processing (NEW!)
+### 6. Real-time Stream Processing ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
 **Scenario**: Process incoming transactions in real-time using pre-trained models
 **Solution**: Stream prediction mode with model persistence
@@ -843,7 +843,7 @@ while True:
         approve_transaction(new_transaction)
 ```
 
-### 7. Model Training and Deployment Pipeline (NEW!)
+### 7. Model Training and Deployment Pipeline ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
 **Scenario**: Train models on historical data and deploy for production use
 **Solution**: Batch training with model persistence
@@ -1540,17 +1540,17 @@ Based on the existing test results in the project:
 - **Detection Methods**: Both classic and risk-score based detection working
 - **Contamination Levels**: Multiple levels (0.01, 0.05, 0.1) tested successfully
 - **Visualization**: 4-panel analysis plots generated successfully
-- **Stream Processing**: 100,000 records processed successfully (NEW!)
+- **Stream Processing**: 100,000 records processed successfully ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
-### **Sequence Model Performance (NEW! Enhanced)**
+### **Sequence Model Performance** ![NEW](https://img.shields.io/badge/Enhanced-blue)
 - **LSTM/GRU Models**: Successfully trained and evaluated
 - **Time-series Analysis**: User behavior patterns detected
 - **Model Architecture**: Configurable sequence length and hidden units
 - **Training**: TensorFlow-based implementation with early stopping
-- **Stream Prediction**: 10,000 sequence records processed in stream mode (NEW!)
-- **Model Persistence**: Models saved and loaded successfully (NEW!)
+- **Stream Prediction**: 10,000 sequence records processed in stream mode ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- **Model Persistence**: Models saved and loaded successfully ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
-### **Stream Processing Capabilities (NEW!)**
+### **Stream Processing Capabilities** ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - **Real-time Processing**: Stream data processed with pre-trained models
 - **Model Loading**: Pre-trained models loaded successfully for prediction
 - **Data Preprocessing**: Stream data preprocessed using saved transformers
@@ -1562,4 +1562,4 @@ Based on the existing test results in the project:
 - **Preprocessing**: Missing value handling, categorical encoding, scaling
 - **Export Formats**: CSV and JSON outputs with timestamps
 - **Large Datasets**: Efficient processing of substantial data volumes
-- **Batch vs Stream**: Both processing modes working efficiently (NEW!)
+- **Batch vs Stream**: Both processing modes working efficiently ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
