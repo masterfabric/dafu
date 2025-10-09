@@ -1355,25 +1355,21 @@ class SequenceFraudDetector:
         if (self.lstm_model is None and self.gru_model is None) or not self.selected_models:
             raise ValueError("No trained models found. Please train models first.")
         
-        # Create models directory if it doesn't exist
-        models_dir = "models"
-        os.makedirs(models_dir, exist_ok=True)
-        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         if model_name is None:
-            model_path = os.path.join(models_dir, f"sequence_fraud_detection_model_{timestamp}.joblib")
+            model_path = f"sequence_fraud_detection_model_{timestamp}.joblib"
         else:
             # Check if user provided extension
             if '.' in model_name:
                 # User provided extension, use as-is
-                model_path = os.path.join(models_dir, model_name)
+                model_path = model_name
             else:
                 # No extension provided, add .joblib
-                model_path = os.path.join(models_dir, f"{model_name}.joblib")
+                model_path = f"{model_name}.joblib"
         
         # Save keras models to .h5 and collect paths
         model_files = {}
-        base_dir = os.path.dirname(model_path) or models_dir
+        base_dir = os.path.dirname(model_path) or '.'
         os.makedirs(base_dir, exist_ok=True)
         
         if 'LSTM' in self.selected_models and self.lstm_model is not None:
@@ -1423,16 +1419,7 @@ class SequenceFraudDetector:
         
         joblib.dump(package, model_path)
         self.model_save_path = model_path
-        
-        print(f"\n{'='*80}")
-        print(f"💾 MODEL SAVED")
-        print(f"{'='*80}")
-        print(f"✅ Model file: {os.path.abspath(model_path)}")
-        if model_files:
-            for model_type, path in model_files.items():
-                print(f"✅ {model_type} weights: {os.path.abspath(path)}")
-        print(f"{'='*80}\n")
-        
+        print(f"✅ Model package saved to: {model_path}")
         return model_path
 
     def load_model(self, model_path: str) -> None:
@@ -1607,17 +1594,11 @@ class SequenceFraudDetector:
         return results
 
     def export_stream_results(self, stream_data: pd.DataFrame, results: Dict, 
-                              output_dir: str = "results/sequence_models/stream") -> None:
+                              output_dir: str = "sequence_stream_results") -> None:
         """Export stream prediction results to CSV files."""
         logger.info(f"Exporting stream results to: {output_dir}")
         os.makedirs(output_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
-        print(f"\n{'='*80}")
-        print(f"📁 RESULTS SAVE LOCATION")
-        print(f"{'='*80}")
-        print(f"💾 Results directory: {os.path.abspath(output_dir)}")
-        print(f"{'='*80}\n")
         
         results_df = stream_data.copy()
         # Fill with NaN for initial rows that cannot form sequences
@@ -1646,7 +1627,6 @@ class SequenceFraudDetector:
         filepath = os.path.join(output_dir, filename)
         results_df.to_csv(filepath, index=False)
         logger.info(f"Stream results exported to: {filepath}")
-        print(f"✅ Predictions saved: {os.path.abspath(filepath)}\n")
         
         summary = {
             'timestamp': timestamp,
@@ -1729,13 +1709,10 @@ class SequenceFraudDetector:
         
         if save_plots:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            # Save plot to results directory
-            plot_dir = "results/sequence_models/batch"
-            os.makedirs(plot_dir, exist_ok=True)
-            plot_path = os.path.join(plot_dir, f"sequence_fraud_detection_analysis_{timestamp}.png")
+            plot_path = f"sequence_fraud_detection_analysis_{timestamp}.png"
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             logger.info(f"Plot saved as: {plot_path}")
-            print(f"✅ Visualization: {os.path.abspath(plot_path)}")
+            print(f"📊 Visualization saved as: {plot_path}")
         
         if show_interactive:
             plt.show()
@@ -1893,24 +1870,18 @@ class SequenceFraudDetector:
         ax.legend(loc="lower right")
         ax.grid(True, alpha=0.3)
     
-    def export_results(self, output_dir: str = "results/sequence_models/batch") -> None:
+    def export_results(self, output_dir: str = "sequence_fraud_detection_results") -> None:
         """
         Export results to CSV files and save additional metrics.
         
         Args:
-            output_dir: Directory to save results (default: results/sequence_models/batch)
+            output_dir: Directory to save results
         """
         logger.info(f"Exporting results to: {output_dir}")
         
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
-        print(f"\n{'='*80}")
-        print(f"📁 RESULTS SAVE LOCATION")
-        print(f"{'='*80}")
-        print(f"💾 Results directory: {os.path.abspath(output_dir)}")
-        print(f"{'='*80}\n")
         
         # Export main results
         results_df = self.data.copy()
@@ -1948,7 +1919,6 @@ class SequenceFraudDetector:
         filepath = os.path.join(output_dir, filename)
         results_df.to_csv(filepath, index=False)
         logger.info(f"Results exported to: {filepath}")
-        print(f"✅ Predictions saved: {os.path.abspath(filepath)}")
         
         # Export evaluation metrics
         if self.results:
@@ -1967,7 +1937,6 @@ class SequenceFraudDetector:
             metrics_file = os.path.join(output_dir, f"sequence_evaluation_metrics_{timestamp}.csv")
             metrics_df.to_csv(metrics_file, index=False)
             logger.info(f"Metrics exported to: {metrics_file}")
-            print(f"✅ Evaluation metrics: {os.path.abspath(metrics_file)}")
         
         # Export configuration
         config = {
@@ -2000,7 +1969,6 @@ class SequenceFraudDetector:
         with open(config_file, 'w') as f:
             json.dump(config, f, indent=2, default=str)
         logger.info(f"Configuration exported to: {config_file}")
-        print(f"✅ Configuration: {os.path.abspath(config_file)}\n")
     
     def print_summary(self) -> None:
         """Print comprehensive summary of the fraud detection analysis."""

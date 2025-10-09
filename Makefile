@@ -32,21 +32,6 @@ start: ## Start all services with docker-compose
 	@chmod +x start.sh
 	@./start.sh up
 
-start-cli: ## Start CLI tool interactively
-	@echo "$(BLUE)Starting DAFU CLI Tool...$(NC)"
-	@docker-compose --profile cli up -d
-	@echo "$(GREEN)✓ CLI started. Connect with: docker exec -it dafu-cli dafu fraud-detection$(NC)"
-
-start-api: ## Start API server
-	@echo "$(BLUE)Starting DAFU API Server...$(NC)"
-	@docker-compose --profile api up -d
-	@echo "$(GREEN)✓ API started at http://localhost:8000$(NC)"
-
-start-all: ## Start all services (CLI, API, Monitoring)
-	@echo "$(BLUE)Starting full DAFU stack...$(NC)"
-	@docker-compose --profile cli --profile api --profile monitoring up -d
-	@echo "$(GREEN)✓ All services started$(NC)"
-
 start-tools: ## Start all services including management tools
 	@echo "$(BLUE)Starting DAFU platform with tools...$(NC)"
 	@chmod +x start.sh
@@ -100,9 +85,6 @@ health: ## Check health of all services
 
 ##@ Development
 
-shell-cli: ## Open interactive DAFU CLI
-	@docker exec -it dafu-cli dafu fraud-detection
-
 shell-api: ## Open shell in API container
 	@docker-compose exec fraud-detection-api bash
 
@@ -111,12 +93,6 @@ shell-db: ## Open PostgreSQL shell
 
 shell-redis: ## Open Redis CLI
 	@docker-compose exec redis redis-cli
-
-cli-connect: ## Connect to running CLI container
-	@docker exec -it dafu-cli bash
-
-dafu: ## Run DAFU CLI command (usage: make dafu CMD="fraud-detection")
-	@docker exec -it dafu-cli dafu $(CMD)
 
 test: ## Run tests in API container
 	@docker-compose exec fraud-detection-api pytest tests/ -v
@@ -184,26 +160,21 @@ docs: ## Display quick reference
 	@echo "  DAFU Quick Reference"
 	@echo "============================================================"
 	@echo "$(NC)"
-	@echo "$(GREEN)🚀 Quick Start with CLI:$(NC)"
-	@echo "  make start-cli              # Start CLI tool"
-	@echo "  make shell-cli              # Run fraud detection"
-	@echo "  make start-api              # Start API server"
-	@echo "  make start-all              # Start everything"
+	@echo "$(YELLOW)⚠️  Docker services are commented out$(NC)"
 	@echo ""
-	@echo "$(GREEN)📊 Available Commands:$(NC)"
-	@echo "  dafu fraud-detection        # Interactive fraud detection"
-	@echo "  dafu models                 # List available models"
-	@echo "  dafu api                    # Start API server"
-	@echo "  dafu info                   # Platform information"
+	@echo "$(GREEN)Use ML models NOW (no Docker needed):$(NC)"
+	@echo "  cd fraud_detection"
+	@echo "  python3 -m venv venv && source venv/bin/activate"
+	@echo "  pip install -r requirements.txt"
+	@echo "  cd src/models && python main.py"
 	@echo ""
-	@echo "$(BLUE)🌐 Service URLs:$(NC)"
+	@echo "$(BLUE)Future Service URLs (when Docker is active):$(NC)"
 	@echo "  API Documentation:    http://localhost:8000/docs"
 	@echo "  Grafana:              http://localhost:3000"
 	@echo "  Prometheus:           http://localhost:9090"
-	@echo "  RabbitMQ:             http://localhost:15672"
 	@echo ""
-	@echo "For full CLI help: cat CLI_USAGE.md"
-	@echo "For Docker setup: cat DOCKER_SETUP.md"
+	@echo "For full help: make help"
+	@echo "For Docker status: cat DOCKER_STATUS.md"
 
 version: ## Display version information
 	@echo "DAFU Platform v1.0.0"

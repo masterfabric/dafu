@@ -1,5 +1,5 @@
 # Dockerfile for DAFU - Data Analytics Functional Utilities
-# Fraud Detection Service with CLI Tool Support
+# Fraud Detection Service
 # Multi-stage build for production-ready container
 # ================================================
 
@@ -19,8 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
-COPY fraud_detection/requirements.txt .
-COPY fraud_detection/requirements-minimal.txt .
+COPY requirements.txt .
+COPY requirements-minimal.txt .
 
 # Create virtual environment and install dependencies
 RUN python -m venv /opt/venv
@@ -29,9 +29,6 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt
-
-# Install CLI-specific dependencies
-RUN pip install --no-cache-dir click>=8.0.0 rich>=13.0.0 IPython>=8.0.0
 
 # Stage 2: Runtime stage
 # ================================================
@@ -55,7 +52,6 @@ ENV PYTHONUNBUFFERED=1 \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     curl \
-    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user for security
@@ -67,33 +63,15 @@ WORKDIR /app
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 
-# Copy fraud_detection application code
-COPY --chown=appuser:appuser fraud_detection /app/fraud_detection/
+# Copy application code
+COPY --chown=appuser:appuser . /app/
 
-# Copy dafu_cli from root directory
-COPY --chown=appuser:appuser dafu_cli /app/dafu_cli/
-COPY --chown=appuser:appuser setup.py /app/
-COPY --chown=appuser:appuser pyproject.toml /app/
-
-# Copy entrypoint script
-COPY fraud_detection/deployment/entrypoint.sh /app/entrypoint.sh
-
-# Change to root user temporarily for pip install
-USER root
-
-# Install DAFU CLI in editable mode
-RUN pip install -e /app/
-
-# Create necessary directories and make entrypoint executable
-RUN mkdir -p /app/fraud_detection/models /app/fraud_detection/results /app/fraud_detection/logs && \
-    chmod +x /app/entrypoint.sh && \
+# Create necessary directories
+RUN mkdir -p /app/models /app/results /app/logs && \
     chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
-
-# Add fraud_detection to Python path
-ENV PYTHONPATH="${PYTHONPATH}:/app/fraud_detection:/app/fraud_detection/src"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
@@ -102,8 +80,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 # Expose port
 EXPOSE 8000
 
-# Set entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
-
-# Default command - CLI interactive mode
-CMD ["dafu", "fraud-detection"]
+# Default command - can be overridden in docker-compose
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
