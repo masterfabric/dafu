@@ -61,6 +61,15 @@ cryptography>=38.0.0
 python-jose[cryptography]>=3.3.0
 
 # ======================================
+# CLI TOOL DEPENDENCIES
+# ======================================
+
+# Command-line interface
+click>=8.0.0
+rich>=13.0.0
+IPython>=8.0.0
+
+# ======================================
 # DEVELOPMENT AND TESTING (OPTIONAL)
 # ======================================
 

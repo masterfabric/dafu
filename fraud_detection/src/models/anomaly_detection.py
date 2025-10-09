@@ -865,17 +865,21 @@ class IsolationForestFraudDetector:
         if not self.models:
             raise ValueError("No trained models found. Please train models first.")
         
+        # Create models directory if it doesn't exist
+        models_dir = "models"
+        os.makedirs(models_dir, exist_ok=True)
+        
         if model_name is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            model_path = f"fraud_detection_model_{timestamp}.joblib"
+            model_path = os.path.join(models_dir, f"fraud_detection_model_{timestamp}.joblib")
         else:
             # Check if user provided extension
             if '.' in model_name:
                 # User provided extension, use as-is
-                model_path = model_name
+                model_path = os.path.join(models_dir, model_name)
             else:
                 # No extension provided, add .joblib
-                model_path = f"{model_name}.joblib"
+                model_path = os.path.join(models_dir, f"{model_name}.joblib")
         
         # Create model package
         model_package = {
@@ -911,7 +915,11 @@ class IsolationForestFraudDetector:
         self.model_save_path = model_path
         
         logger.info(f"Model saved successfully to: {model_path}")
-        print(f"✅ Model saved to: {model_path}")
+        print(f"\n{'='*80}")
+        print(f"💾 MODEL SAVED")
+        print(f"{'='*80}")
+        print(f"✅ Model file: {os.path.abspath(model_path)}")
+        print(f"{'='*80}\n")
         
         return model_path
     
@@ -1160,20 +1168,26 @@ class IsolationForestFraudDetector:
         return (normalized_risk_scores >= self.risk_score_threshold).astype(int)
     
     def export_stream_results(self, stream_data: pd.DataFrame, results: Dict, 
-                            output_dir: str = "stream_prediction_results") -> None:
+                            output_dir: str = "results/isolation_forest/stream") -> None:
         """
         Export stream prediction results to CSV files.
         
         Args:
             stream_data: Original stream data
             results: Prediction results from predict_stream
-            output_dir: Directory to save results
+            output_dir: Directory to save results (default: results/isolation_forest/stream)
         """
         logger.info(f"Exporting stream results to: {output_dir}")
         
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        print(f"\n{'='*80}")
+        print(f"📁 RESULTS SAVE LOCATION")
+        print(f"{'='*80}")
+        print(f"💾 Results directory: {os.path.abspath(output_dir)}")
+        print(f"{'='*80}\n")
         
         # Create results DataFrame
         results_df = stream_data.copy()
@@ -1187,6 +1201,7 @@ class IsolationForestFraudDetector:
         filepath = os.path.join(output_dir, filename)
         results_df.to_csv(filepath, index=False)
         logger.info(f"Stream results exported to: {filepath}")
+        print(f"✅ Predictions saved: {os.path.abspath(filepath)}")
         
         # Save summary
         summary = {
@@ -1205,6 +1220,7 @@ class IsolationForestFraudDetector:
         with open(summary_file, 'w') as f:
             json.dump(summary, f, indent=2)
         logger.info(f"Stream summary exported to: {summary_file}")
+        print(f"✅ Summary saved: {os.path.abspath(summary_file)}\n")
     
     def _get_risk_score_predictions(self, contamination: float) -> np.ndarray:
         """
@@ -1333,10 +1349,13 @@ class IsolationForestFraudDetector:
         
         if save_plots:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            plot_path = f"fraud_detection_analysis_{timestamp}.png"
+            # Save plot to results directory
+            plot_dir = "results/isolation_forest/batch"
+            os.makedirs(plot_dir, exist_ok=True)
+            plot_path = os.path.join(plot_dir, f"fraud_detection_analysis_{timestamp}.png")
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             logger.info(f"Plot saved as: {plot_path}")
-            print(f"📊 Visualization saved as: {plot_path}")
+            print(f"✅ Visualization: {os.path.abspath(plot_path)}")
         
         if show_interactive:
             plt.show()
@@ -1422,18 +1441,24 @@ class IsolationForestFraudDetector:
         ax.legend(loc="lower right")
         ax.grid(True, alpha=0.3)
     
-    def export_results(self, output_dir: str = "fraud_detection_results") -> None:
+    def export_results(self, output_dir: str = "results/isolation_forest/batch") -> None:
         """
         Export results to CSV files and save additional metrics.
         
         Args:
-            output_dir: Directory to save results
+            output_dir: Directory to save results (default: results/isolation_forest/batch)
         """
         logger.info(f"Exporting results to: {output_dir}")
         
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        print(f"\n{'='*80}")
+        print(f"📁 RESULTS SAVE LOCATION")
+        print(f"{'='*80}")
+        print(f"💾 Results directory: {os.path.abspath(output_dir)}")
+        print(f"{'='*80}\n")
         
         # Export main results
         for contamination, predictions in self.predictions.items():
@@ -1455,6 +1480,7 @@ class IsolationForestFraudDetector:
             filepath = os.path.join(output_dir, filename)
             results_df.to_csv(filepath, index=False)
             logger.info(f"Results exported to: {filepath}")
+            print(f"✅ Predictions (contamination={contamination}): {os.path.abspath(filepath)}")
         
         # Export evaluation metrics
         if self.results:
@@ -1473,6 +1499,7 @@ class IsolationForestFraudDetector:
             metrics_file = os.path.join(output_dir, f"evaluation_metrics_{timestamp}.csv")
             metrics_df.to_csv(metrics_file, index=False)
             logger.info(f"Metrics exported to: {metrics_file}")
+            print(f"✅ Evaluation metrics: {os.path.abspath(metrics_file)}")
         
         # Export configuration
         config = {
@@ -1500,6 +1527,7 @@ class IsolationForestFraudDetector:
         with open(config_file, 'w') as f:
             json.dump(config, f, indent=2, default=str)
         logger.info(f"Configuration exported to: {config_file}")
+        print(f"✅ Configuration: {os.path.abspath(config_file)}\n")
     
     def print_summary(self) -> None:
         """Print comprehensive summary of the fraud detection analysis."""
