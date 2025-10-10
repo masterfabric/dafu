@@ -54,6 +54,8 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [First-Time User Guide](#first-time-user-guide)
+- [Interactive CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md) 📘
+- [CLI Demo & Examples](./docs/cli/DAFU_CLI_DEMO.md) 🎬
 - [Supported Data Formats](#-supported-data-formats)
 - [Use Cases and Scenarios](#-use-cases-and-scenarios)
 
@@ -86,6 +88,12 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 - [Performance Metrics](#-current-performance-metrics)
 - [Development Roadmap](#-development-roadmap)
 - [Test Results](#-current-test-results)
+
+### 📚 Documentation
+- [Complete Documentation](./docs/) - All documentation organized by category
+  - [CLI Documentation](./docs/cli/) - Interactive CLI guides
+  - [Docker Documentation](./docs/docker/) - Docker setup and deployment
+  - [General Guides](./docs/guides/) - Quick start and implementation guides
 
 ### 🆘 Support
 - [Support and Community](#-support-and-community)
@@ -153,14 +161,22 @@ dafu> fraud-detection
 ```
 
 **Available CLI Commands:**
-- `fraud-detection` / `models` / `ml` - Run fraud detection models
-- `status` - Show platform status
-- `info` - Show system information
-- `version` - Show version
-- `help` - Show all commands
-- `exit` - Exit CLI
 
-📖 **See [DAFU_CLI_GUIDE.md](./DAFU_CLI_GUIDE.md) for complete CLI documentation**
+| Category | Command | Description |
+|----------|---------|-------------|
+| **ML Models** | `fraud-detection`, `models`, `ml` | Run fraud detection models |
+| **Docker** | `docker up/down/restart/status/logs` | Manage Docker services |
+| **System** | `status`, `info`, `version` | Show system information |
+| **Utilities** | `help`, `clear`, `exit` | Utility commands |
+
+**Key Features:**
+- ✅ **Persistent Session** - Run multiple commands without restarting
+- ✅ **Auto-Setup** - Automatically creates virtual environment and installs dependencies
+- ✅ **Error Resilient** - CLI stays active even when commands fail
+- ✅ **User-Friendly** - Color-coded output and helpful messages
+- ✅ **Scriptable** - Use in automation with single command mode
+
+📖 **Documentation:** [CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md) • [CLI Demo](./docs/cli/DAFU_CLI_DEMO.md) • [All Docs](./docs/)
 
 #### Option 2: Local Development Setup
 
@@ -308,7 +324,7 @@ The ML models (Isolation Forest, LSTM/GRU) work perfectly standalone, but the Fa
 - ✅ Use all ML models via Python (Option 1)
 - ✅ Train and save models
 - ✅ Stream and batch processing
-- ✅ See `DOCKER_STATUS.md` for integration roadmap
+- ✅ See [Docker Status](./docs/docker/DOCKER_STATUS.md) for integration roadmap
 
 **Next Step:**
 Integrate ML models with FastAPI, then uncomment services in `docker-compose.yml`.
@@ -1230,7 +1246,7 @@ python main.py  # Interactive model selection
 
 **Status:** Configuration complete, services commented out until API-ML integration
 
-The complete Docker Compose setup is prepared in `docker-compose.yml` but all services are currently commented out. See `DOCKER_STATUS.md` for details.
+The complete Docker Compose setup is prepared in `docker-compose.yml` but all services are currently commented out. See [Docker Status](./docs/docker/DOCKER_STATUS.md) for details.
 
 **What's Prepared:**
 - Complete service definitions (API, PostgreSQL, Redis, RabbitMQ, Celery, Prometheus, Grafana)
@@ -1503,10 +1519,13 @@ Get model performance metrics.
 
 ### Resources
 
-- **API Documentation**: [Swagger UI](https://api.masterfabric.co/dafu/docs)
-- **Architecture Guide**: [docs/architecture.md](docs/architecture.md)
-- **Deployment Guide**: [docs/deployment.md](docs/deployment.md)
-- **Performance Tuning**: [docs/performance.md](docs/performance.md)
+- **📚 All Documentation**: [Complete Docs](./docs/)
+  - [CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md) - Interactive CLI reference
+  - [CLI Demo](./docs/cli/DAFU_CLI_DEMO.md) - Usage examples
+  - [Quick Start](./docs/guides/QUICK_START.md) - Get started guide
+  - [Docker Status](./docs/docker/DOCKER_STATUS.md) - Docker deployment info
+- **API Documentation**: [Swagger UI](https://api.masterfabric.co/dafu/docs) (Coming Soon)
+- **Architecture**: [High-Level Architecture](./docs/assets/High-level-architecture.drawio.png)
 
 ### Common Issues
 

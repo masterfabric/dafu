@@ -135,7 +135,7 @@ check_active_services() {
         echo "  cd src/models"
         echo "  python main.py"
         echo ""
-        echo "See DOCKER_STATUS.md for details."
+        echo "See docs/docker/DOCKER_STATUS.md for details."
         exit 1
     fi
     
