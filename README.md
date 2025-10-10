@@ -3,7 +3,7 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.95%2B-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/Docker-In%20Development-orange.svg)](https://www.docker.com/)
+[![Docker](https://img.shields.io/badge/Docker-Infrastructure%20Ready-yellow.svg)](https://www.docker.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-Planned-yellow.svg)](https://kubernetes.io/)
 
 **DAFU** is a comprehensive fraud detection and e-commerce analytics platform designed for enterprise deployment. Currently in active development, it provides advanced machine learning-based fraud detection capabilities with a focus on anomaly detection and sequence analysis.
@@ -14,11 +14,14 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 
 ### Current Capabilities (Implemented)
 
+- 🚀 **Interactive CLI**: Beautiful command-line interface for all operations ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 🎯 **Unified Model Interface**: Single entry point for all fraud detection models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 🧠 **Advanced ML Algorithms**: Isolation Forest and LSTM/GRU sequence models fully implemented
 - 📡 **Stream Processing**: Real-time data stream processing with pre-trained models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 💾 **Model Persistence**: Save and load trained models for production deployment ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 🔀 **Dual Prediction Modes**: Both batch and stream prediction capabilities ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🐳 **Docker Infrastructure**: Complete configuration ready (services not integrated yet) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
+- 🌐 **FastAPI Structure**: Basic API framework prepared (ML integration pending) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
 - 🧪🎓 **Dual Learning Modes**: Both supervised and unsupervised learning approaches
 - 📊📈 **Comprehensive Analysis**: 4-panel visualization with detailed performance metrics
 - 🚀 **Production-Ready Core**: Complete fraud detection pipeline with evaluation
@@ -51,12 +54,13 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [First-Time User Guide](#first-time-user-guide)
-  - [Unified Model Interface](#-unified-model-interface) ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- [Interactive CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md) 📘
+- [CLI Demo & Examples](./docs/cli/DAFU_CLI_DEMO.md) 🎬
 - [Supported Data Formats](#-supported-data-formats)
 - [Use Cases and Scenarios](#-use-cases-and-scenarios)
 
 ### 🏗️ Architecture & Components
- - [High-Level Architecture](#high-level-architecture)
+- [Architecture](#-architecture)
 - [Core Components](#core-components)
   - [Fraud Detection Service](#1-fraud-detection-service-fraud_detection)
   - [Feature Engineering Pipeline](#2-feature-engineering-pipeline)
@@ -85,6 +89,12 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 - [Development Roadmap](#-development-roadmap)
 - [Test Results](#-current-test-results)
 
+### 📚 Documentation
+- [Complete Documentation](./docs/) - All documentation organized by category
+  - [CLI Documentation](./docs/cli/) - Interactive CLI guides
+  - [Docker Documentation](./docs/docker/) - Docker setup and deployment
+  - [General Guides](./docs/guides/) - Quick start and implementation guides
+
 ### 🆘 Support
 - [Support and Community](#-support-and-community)
 - [License](#-license)
@@ -108,7 +118,67 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 
 ### Installation
 
-#### Option 1: Local Development Setup (Recommended)
+#### Option 1: Interactive CLI (Easiest - Recommended) ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+
+**The fastest way to get started with DAFU!**
+
+```bash
+# Clone the repository
+git clone https://github.com/MasterFabric/dafu.git
+cd dafu
+
+# Make CLI executable
+chmod +x dafu
+
+# Start interactive CLI
+./dafu
+
+# You'll see:
+# ╔════════════════════════════════════════════════════════════╗
+# ║  ____    _    _____ _   _                                  ║
+# ║ |  _ \  / \  |  ___| | | |                                 ║
+# ║ | | | |/ _ \ | |_  | | | |                                 ║
+# ║ | |_| / ___ \|  _| | |_| |                                 ║
+# ║ |____/_/   \_\_|    \___/                                  ║
+# ║                                                            ║
+# ║ Data Analytics Functional Utilities - Interactive CLI     ║
+# ║ Enterprise Fraud Detection & Analytics Platform           ║
+# ╚════════════════════════════════════════════════════════════╝
+# 
+# Welcome to DAFU Interactive CLI!
+# Type 'help' for available commands or 'exit' to quit
+# 
+# dafu> 
+
+# Now run fraud detection
+dafu> fraud-detection
+
+# The CLI will:
+# ✓ Auto-create virtual environment if needed
+# ✓ Auto-install dependencies
+# ✓ Launch fraud detection models
+# ✓ Return to CLI when done (no need to restart)
+```
+
+**Available CLI Commands:**
+
+| Category | Command | Description |
+|----------|---------|-------------|
+| **ML Models** | `fraud-detection`, `models`, `ml` | Run fraud detection models |
+| **Docker** | `docker up/down/restart/status/logs` | Manage Docker services |
+| **System** | `status`, `info`, `version` | Show system information |
+| **Utilities** | `help`, `clear`, `exit` | Utility commands |
+
+**Key Features:**
+- ✅ **Persistent Session** - Run multiple commands without restarting
+- ✅ **Auto-Setup** - Automatically creates virtual environment and installs dependencies
+- ✅ **Error Resilient** - CLI stays active even when commands fail
+- ✅ **User-Friendly** - Color-coded output and helpful messages
+- ✅ **Scriptable** - Use in automation with single command mode
+
+📖 **Documentation:** [CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md) • [CLI Demo](./docs/cli/DAFU_CLI_DEMO.md) • [All Docs](./docs/)
+
+#### Option 2: Local Development Setup
 
 **Step 1: Clone and Setup Environment**
 
@@ -222,52 +292,60 @@ python test_anomaly_detection.py
 python test_sequence_models_interactive.py
 ```
 
-#### Option 2: Docker Setup (Containerized)
+#### Option 2: Docker Compose Setup ⚠️ ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
 
-**Step 1: Build Docker Image**
+**Status**: Infrastructure prepared, services not integrated yet
+
+**What's Ready:**
+- ✅ Docker configuration files
+- ✅ Database schemas
+- ✅ Service definitions
+- ⚠️ ML models NOT integrated with API yet
+
+**Current Limitation:**
+Docker Compose services are commented out until API-ML integration is complete. For now, use **Option 1** (Local Development) to run ML models.
+
+**Future Setup** (when ready):
+```bash
+# Clone and navigate
+git clone https://github.com/MasterFabric/dafu.git
+cd dafu
+
+# Uncomment services in docker-compose.yml
+# Then start services
+docker-compose up -d
+```
+
+**Why Services Are Commented Out:**
+
+The ML models (Isolation Forest, LSTM/GRU) work perfectly standalone, but the FastAPI endpoints need ML integration. All infrastructure (database schemas, service configs, monitoring) is prepared and ready to be activated once the integration is complete.
+
+**What You Can Do Now:**
+- ✅ Use all ML models via Python (Option 1)
+- ✅ Train and save models
+- ✅ Stream and batch processing
+- ✅ See [Docker Status](./docs/docker/DOCKER_STATUS.md) for integration roadmap
+
+**Next Step:**
+Integrate ML models with FastAPI, then uncomment services in `docker-compose.yml`.
+
+#### Option 3: Docker Deployment (Coming Soon) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
+
+**For testing individual components:**
 
 ```bash
 # Build the fraud detection service
 cd fraud_detection
 docker build -f deployment/Dockerfile -t dafu-fraud-detection .
 
-# Expected output:
-# Sending build context to Docker daemon  45.2MB
-# Step 1/8 : FROM python:3.9-slim
-#  ---> 2c4c8b8b8b8b
-# Step 2/8 : WORKDIR /app
-#  ---> Running in 1234567890ab
-#  ---> 1234567890ab
-# Step 3/8 : COPY requirements.txt .
-#  ---> 1234567890ab
-# Step 4/8 : RUN pip install --no-cache-dir -r requirements.txt
-#  ---> Running in 1234567890ab
-# Collecting numpy>=1.21.0
-# ...
-# Successfully built 1234567890ab
-# Successfully tagged dafu-fraud-detection:latest
+# Run with sample data
+docker run -it --rm \
+  -v $(pwd)/sample_fraud_data.csv:/app/data.csv \
+  dafu-fraud-detection \
+  python test_anomaly_detection.py
 ```
 
-**Step 2: Run Container**
-
-```bash
-# Run the service with sample data
-docker run -it --rm -v $(pwd)/sample_fraud_data.csv:/app/data.csv dafu-fraud-detection python test_anomaly_detection.py
-
-# Expected output:
-# ========================================
-# 🚀 DAFU Fraud Detection System - Docker Demo
-# ========================================
-# 
-# 📊 Loading data from: /app/data.csv
-# - Dataset shape: (1000, 8)
-# - Fraud rate: 5.0%
-# 
-# 🎯 Running unsupervised anomaly detection...
-# ✅ Analysis complete! Results saved to: /app/fraud_detection_results/
-```
-
-#### Option 3: Kubernetes Deployment (Production)
+#### Option 4: Kubernetes Deployment (Production)
 
 **Step 1: Deploy with Helm**
 
@@ -365,7 +443,7 @@ The new unified interface provides:
 - **Help System**: Comprehensive information and decision trees
 - **Seamless Navigation**: Easy switching between models and options
 
-#### 🔄 Stream Processing Demo (NEW!)
+#### 🔄 Stream Processing Demo ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
 **1. Train a Model First**
 
@@ -613,7 +691,7 @@ elif sequence_detector.prediction_mode == 'stream':
     sequence_detector.export_stream_results(stream_data, predictions)
 ```
 
-#### 5. Stream Prediction with Isolation Forest (NEW!)
+#### 5. Stream Prediction with Isolation Forest ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
 ```python
 from fraud_detection.src.models.anomaly_detection import IsolationForestFraudDetector
@@ -760,7 +838,7 @@ merchant_risk = processor.assess_merchant_risk(
 )
 ```
 
-### 6. Real-time Stream Processing (NEW!)
+### 6. Real-time Stream Processing ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
 **Scenario**: Process incoming transactions in real-time using pre-trained models
 **Solution**: Stream prediction mode with model persistence
@@ -792,7 +870,7 @@ while True:
         approve_transaction(new_transaction)
 ```
 
-### 7. Model Training and Deployment Pipeline (NEW!)
+### 7. Model Training and Deployment Pipeline ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
 **Scenario**: Train models on historical data and deploy for production use
 **Solution**: Batch training with model persistence
@@ -1136,43 +1214,50 @@ logger.info(
 
 ## 🚀 Deployment
 
-### Production Deployment
+### Current Deployment Options
 
-#### Docker Compose (Development)
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  fraud-detection:
-    build: ./fraud_detection
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/dafu
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - db
-      - redis
-  
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: dafu
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-  
-  redis:
-    image: redis:6-alpine
-  
-  prometheus:
-    image: prom/prometheus
-    ports:
-      - "9090:9090"
-  
-  grafana:
-    image: grafana/grafana
-    ports:
-      - "3000:3000"
+#### Local Python Deployment (Active Now) ✅
+
+**Best for:** Development, testing, ML model training
+
+```bash
+# Clone repository
+git clone https://github.com/MasterFabric/dafu.git
+cd dafu/fraud_detection
+
+# Setup environment
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Run ML models
+cd src/models
+python main.py  # Interactive model selection
+```
+
+**Features Available:**
+- ✅ All ML models (Isolation Forest, LSTM, GRU)
+- ✅ Training and prediction
+- ✅ Stream/batch processing
+- ✅ Model persistence
+- ✅ Visualization and export
+
+#### Docker Compose (Infrastructure Ready) ⚠️
+
+**Status:** Configuration complete, services commented out until API-ML integration
+
+The complete Docker Compose setup is prepared in `docker-compose.yml` but all services are currently commented out. See [Docker Status](./docs/docker/DOCKER_STATUS.md) for details.
+
+**What's Prepared:**
+- Complete service definitions (API, PostgreSQL, Redis, RabbitMQ, Celery, Prometheus, Grafana)
+- Database schemas
+- Network and volume configuration
+- Health checks and monitoring
+
+**When Active** (after integration):
+```bash
+# Uncomment services in docker-compose.yml
+docker-compose up -d
 ```
 
 #### Kubernetes Production
@@ -1340,17 +1425,22 @@ Get model performance metrics.
 | **Risk Score Detection** | Custom threshold-based detection | ✅ **Fully Implemented** | Complete with business interpretation |
 | **Comprehensive Evaluation** | Performance metrics & visualization | ✅ **Fully Implemented** | Complete with 4-panel analysis |
 | **Enhanced Result Export** | CSV, JSON output with stream support | ✅ **Enhanced** | Complete with stream & batch exports |
+| **Docker Infrastructure** | Docker Compose configuration | 📋 **Prepared** | All services configured, not integrated yet |
+| **FastAPI Basic Structure** | REST API framework | 📋 **Prepared** | Basic endpoints exist, ML integration pending |
+| **Database Schema** | PostgreSQL schema design | 📋 **Prepared** | Complete schema ready, not connected yet |
 | **Docker Support** | Containerization | ✅ **Fully Implemented** | Dockerfile with multi-stage build |
 | **Fast Startup Interface** | Lazy loading for instant response | ✅ **NEW! Fully Implemented** | Complete with optimized imports |
 
-### 🚧 **Partially Implemented (In Development)**
+### 🚧 **In Development (Infrastructure Ready, Integration Pending)**
 
 | Feature | Description | Status | Implementation Level |
 |---------|-------------|--------|---------------------|
-| **API Endpoints** | REST API for real-time scoring | 🚧 **Basic Structure** | API files exist but need implementation |
+| **API-ML Integration** | Connect ML models to FastAPI | 🚧 **Next Priority** | API structure ready, needs ML integration |
+| **Database Integration** | PostgreSQL connection | 🚧 **In Development** | Schema ready, ORM integration pending |
+| **Redis Caching** | Performance optimization | 🚧 **In Development** | Config ready, not implemented |
+| **Celery Tasks** | Background job processing | 🚧 **In Development** | Not implemented yet |
 | **Feature Engineering Pipeline** | Advanced feature extraction | 🚧 **Basic Structure** | Framework exists, needs implementation |
 | **Rules Engine** | Business rule processing | 🚧 **Basic Structure** | Framework exists, needs implementation |
-| **Kubernetes Manifests** | Production deployment configs | 🚧 **Basic Structure** | K8s files exist but need testing |
 | **Ensemble Models** | XGBoost, Random Forest | 🚧 **Basic Structure** | Framework exists, needs implementation |
 
 ### 📋 **Planned Features (Roadmap)**
@@ -1429,10 +1519,13 @@ Get model performance metrics.
 
 ### Resources
 
-- **API Documentation**: [Swagger UI](https://api.masterfabric.co/dafu/docs)
-- **Architecture Guide**: [docs/architecture.md](docs/architecture.md)
-- **Deployment Guide**: [docs/deployment.md](docs/deployment.md)
-- **Performance Tuning**: [docs/performance.md](docs/performance.md)
+- **📚 All Documentation**: [Complete Docs](./docs/)
+  - [CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md) - Interactive CLI reference
+  - [CLI Demo](./docs/cli/DAFU_CLI_DEMO.md) - Usage examples
+  - [Quick Start](./docs/guides/QUICK_START.md) - Get started guide
+  - [Docker Status](./docs/docker/DOCKER_STATUS.md) - Docker deployment info
+- **API Documentation**: [Swagger UI](https://api.masterfabric.co/dafu/docs) (Coming Soon)
+- **Architecture**: [High-Level Architecture](./docs/assets/High-level-architecture.drawio.png)
 
 ### Common Issues
 
@@ -1487,17 +1580,17 @@ Based on the existing test results in the project:
 - **Detection Methods**: Both classic and risk-score based detection working
 - **Contamination Levels**: Multiple levels (0.01, 0.05, 0.1) tested successfully
 - **Visualization**: 4-panel analysis plots generated successfully
-- **Stream Processing**: 100,000 records processed successfully (NEW!)
+- **Stream Processing**: 100,000 records processed successfully ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
-### **Sequence Model Performance (NEW! Enhanced)**
+### **Sequence Model Performance** ![NEW](https://img.shields.io/badge/Enhanced-blue)
 - **LSTM/GRU Models**: Successfully trained and evaluated
 - **Time-series Analysis**: User behavior patterns detected
 - **Model Architecture**: Configurable sequence length and hidden units
 - **Training**: TensorFlow-based implementation with early stopping
-- **Stream Prediction**: 10,000 sequence records processed in stream mode (NEW!)
-- **Model Persistence**: Models saved and loaded successfully (NEW!)
+- **Stream Prediction**: 10,000 sequence records processed in stream mode ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- **Model Persistence**: Models saved and loaded successfully ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
-### **Stream Processing Capabilities (NEW!)**
+### **Stream Processing Capabilities** ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - **Real-time Processing**: Stream data processed with pre-trained models
 - **Model Loading**: Pre-trained models loaded successfully for prediction
 - **Data Preprocessing**: Stream data preprocessed using saved transformers
@@ -1509,4 +1602,4 @@ Based on the existing test results in the project:
 - **Preprocessing**: Missing value handling, categorical encoding, scaling
 - **Export Formats**: CSV and JSON outputs with timestamps
 - **Large Datasets**: Efficient processing of substantial data volumes
-- **Batch vs Stream**: Both processing modes working efficiently (NEW!)
+- **Batch vs Stream**: Both processing modes working efficiently ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
