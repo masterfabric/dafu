@@ -1,0 +1,16 @@
+{
+  "authors": [
+    {
+      "full_name": "Gurkan Fikret Gunak",
+      "github": "https://github.com/gurkanfikretgunak",
+      "linkedin": "https://www.linkedin.com/in/gurkanfikretgunak/",
+      "bio": "Full-stack developer focused on modern web, mobile, and cloud architectures. Passionate about Next.js, TypeScript, Flutter, and NestJS."
+    },
+    {
+      "full_name": "M. Furkan Cankaya",
+      "github": "https://github.com/cankaya96",
+      "linkedin": "https://www.linkedin.com/in/furkancankaya/",
+      "bio": "Data and ML engineer working on anomaly detection, OCR and time-series systems."
+    }
+  ]
+}

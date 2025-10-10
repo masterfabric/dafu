@@ -1,0 +1,97 @@
+/* Import font */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset shadows globally */
+* {
+  box-shadow: none !important;
+}
+
+html {
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #111827; /* gray-900 */
+  font-family: 'Fira Code', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code, pre, .font-mono {
+  font-family: 'Fira Code', monospace;
+}
+
+/* Centered page layout */
+.centered-page {
+  min-height: 100vh;
+  max-width: 720px; /* ~prose width */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.25rem; /* px-5 */
+  padding-right: 1.25rem;
+  padding-top: 4rem; /* pt-16 */
+  padding-bottom: 4rem; /* pb-16 */
+  text-align: center;
+}
+
+/* Typography scale */
+.h1 { font-size: 2.75rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; }
+.h2 { font-size: 2rem; line-height: 1.2; font-weight: 700; }
+.h3 { font-size: 1.25rem; line-height: 1.4; font-weight: 600; }
+.lead { font-size: 1.125rem; color: #4b5563; /* gray-600 */ }
+.muted { color: #6b7280; }
+
+/* Simple lists centered */
+ul.center-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+}
+
+ul.center-list li {
+  margin: 0.5rem 0;
+}
+
+/* Simple dividers */
+.hr { height: 1px; background: #e5e7eb; margin: 2rem 0; }
+
+/* Custom utility classes */
+.btn-primary {
+  padding: 1rem 2rem;
+  background-color: #1e40af;
+  color: #ffffff;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #1e3a8a;
+}
+
+.btn-secondary {
+  padding: 1rem 2rem;
+  background-color: #ffffff;
+  color: #1e40af;
+  border: 2px solid #1e40af;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #eff6ff;
+}
+
+.card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
