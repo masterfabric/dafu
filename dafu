@@ -1,0 +1,381 @@
+#!/bin/bash
+
+# ============================================================================
+# DAFU - Data Analytics Functional Utilities
+# Interactive Command-Line Interface
+# ============================================================================
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+NC='\033[0m' # No Color
+BOLD='\033[1m'
+
+# Get script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FRAUD_DETECTION_DIR="$SCRIPT_DIR/fraud_detection"
+
+# Banner
+show_banner() {
+    echo -e "${BLUE}${BOLD}"
+    cat << "EOF"
+╔════════════════════════════════════════════════════════════╗
+║  ____    _    _____ _   _                                  ║
+║ |  _ \  / \  |  ___| | | |                                 ║
+║ | | | |/ _ \ | |_  | | | |                                 ║
+║ | |_| / ___ \|  _| | |_| |                                 ║
+║ |____/_/   \_\_|    \___/                                  ║
+║                                                            ║
+║ Data Analytics Functional Utilities - Interactive CLI     ║
+║ Enterprise Fraud Detection & Analytics Platform           ║
+╚════════════════════════════════════════════════════════════╝
+EOF
+    echo -e "${NC}"
+}
+
+# Welcome message
+show_welcome() {
+    echo -e "${CYAN}Welcome to DAFU Interactive CLI!${NC}"
+    echo -e "${YELLOW}Type 'help' for available commands or 'exit' to quit${NC}"
+    echo ""
+}
+
+# Help message
+show_help() {
+    echo ""
+    echo -e "${BOLD}${BLUE}Available Commands:${NC}"
+    echo -e "${CYAN}══════════════════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "${GREEN}Fraud Detection & ML Models:${NC}"
+    echo -e "  ${BOLD}fraud-detection${NC}     - Run fraud detection models (interactive)"
+    echo -e "  ${BOLD}models${NC}              - Alias for fraud-detection"
+    echo -e "  ${BOLD}ml${NC}                  - Alias for fraud-detection"
+    echo ""
+    echo -e "${GREEN}Docker Services:${NC}"
+    echo -e "  ${BOLD}docker up${NC}           - Start Docker services"
+    echo -e "  ${BOLD}docker down${NC}         - Stop Docker services"
+    echo -e "  ${BOLD}docker restart${NC}      - Restart Docker services"
+    echo -e "  ${BOLD}docker status${NC}       - Show Docker service status"
+    echo -e "  ${BOLD}docker logs${NC}         - View Docker logs"
+    echo -e "  ${BOLD}docker rebuild${NC}      - Rebuild and restart services"
+    echo ""
+    echo -e "${GREEN}System Information:${NC}"
+    echo -e "  ${BOLD}status${NC}              - Show platform status"
+    echo -e "  ${BOLD}version${NC}             - Show version information"
+    echo -e "  ${BOLD}info${NC}                - Show system information"
+    echo ""
+    echo -e "${GREEN}Utilities:${NC}"
+    echo -e "  ${BOLD}help${NC}                - Show this help message"
+    echo -e "  ${BOLD}clear${NC}               - Clear the screen"
+    echo -e "  ${BOLD}exit${NC}                - Exit DAFU CLI"
+    echo -e "  ${BOLD}quit${NC}                - Alias for exit"
+    echo ""
+    echo -e "${CYAN}══════════════════════════════════════════════════════════${NC}"
+}
+
+# Show version
+show_version() {
+    echo ""
+    echo -e "${BOLD}DAFU Platform Version Information${NC}"
+    echo -e "${CYAN}──────────────────────────────────────────────${NC}"
+    echo -e "Version:     ${GREEN}1.0.0${NC}"
+    echo -e "Build:       ${GREEN}Production${NC}"
+    echo -e "Platform:    ${GREEN}Fraud Detection & Analytics${NC}"
+    echo -e "Python:      ${GREEN}$(python3 --version 2>/dev/null || echo 'Not found')${NC}"
+    echo -e "Docker:      ${GREEN}$(docker --version 2>/dev/null || echo 'Not installed')${NC}"
+    echo ""
+}
+
+# Show system info
+show_info() {
+    echo ""
+    echo -e "${BOLD}DAFU System Information${NC}"
+    echo -e "${CYAN}══════════════════════════════════════════════════════════${NC}"
+    echo -e "Installation Path: ${GREEN}$SCRIPT_DIR${NC}"
+    echo -e "Fraud Detection:   ${GREEN}$FRAUD_DETECTION_DIR${NC}"
+    echo ""
+    
+    if [ -d "$FRAUD_DETECTION_DIR/venv" ]; then
+        echo -e "Python Virtual Env: ${GREEN}✓ Configured${NC}"
+    else
+        echo -e "Python Virtual Env: ${YELLOW}✗ Not configured${NC}"
+    fi
+    
+    if [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
+        echo -e "Docker Compose:     ${GREEN}✓ Available${NC}"
+    else
+        echo -e "Docker Compose:     ${YELLOW}✗ Not found${NC}"
+    fi
+    
+    echo ""
+    echo -e "${BOLD}Available Components:${NC}"
+    echo -e "  • Isolation Forest Fraud Detection"
+    echo -e "  • LSTM/GRU Sequence Models"
+    echo -e "  • Risk Score Analysis"
+    echo -e "  • Real-time Stream Processing"
+    echo -e "  • Batch Processing"
+    echo ""
+}
+
+# Show status
+show_status() {
+    echo ""
+    echo -e "${BOLD}DAFU Platform Status${NC}"
+    echo -e "${CYAN}══════════════════════════════════════════════════════════${NC}"
+    
+    # Check Python
+    if command -v python3 &> /dev/null; then
+        echo -e "Python 3:          ${GREEN}✓ Available${NC} ($(python3 --version))"
+    else
+        echo -e "Python 3:          ${RED}✗ Not found${NC}"
+    fi
+    
+    # Check Docker
+    if command -v docker &> /dev/null; then
+        echo -e "Docker:            ${GREEN}✓ Available${NC} ($(docker --version))"
+        
+        # Check if Docker is running
+        if docker ps &> /dev/null; then
+            echo -e "Docker Daemon:     ${GREEN}✓ Running${NC}"
+            
+            # Check Docker Compose services
+            if [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
+                cd "$SCRIPT_DIR"
+                local running_containers=$(docker-compose ps -q 2>/dev/null | wc -l | tr -d ' ')
+                if [ "$running_containers" -gt 0 ]; then
+                    echo -e "Docker Services:   ${GREEN}✓ $running_containers container(s) running${NC}"
+                else
+                    echo -e "Docker Services:   ${YELLOW}○ No containers running${NC}"
+                fi
+            fi
+        else
+            echo -e "Docker Daemon:     ${RED}✗ Not running${NC}"
+        fi
+    else
+        echo -e "Docker:            ${YELLOW}✗ Not installed${NC}"
+    fi
+    
+    # Check fraud detection directory
+    if [ -d "$FRAUD_DETECTION_DIR" ]; then
+        echo -e "Fraud Detection:   ${GREEN}✓ Available${NC}"
+        
+        # Check for models
+        if [ -d "$FRAUD_DETECTION_DIR/models" ]; then
+            local model_count=$(find "$FRAUD_DETECTION_DIR/models" -name "*.joblib" 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$model_count" -gt 0 ]; then
+                echo -e "Trained Models:    ${GREEN}✓ $model_count model(s) found${NC}"
+            else
+                echo -e "Trained Models:    ${YELLOW}○ No trained models${NC}"
+            fi
+        fi
+    else
+        echo -e "Fraud Detection:   ${RED}✗ Not found${NC}"
+    fi
+    
+    echo ""
+}
+
+# Run fraud detection
+run_fraud_detection() {
+    echo ""
+    echo -e "${BLUE}🔍 Starting Fraud Detection Models...${NC}"
+    echo ""
+    
+    if [ ! -d "$FRAUD_DETECTION_DIR" ]; then
+        echo -e "${RED}Error: Fraud detection directory not found${NC}"
+        echo -e "${YELLOW}Expected location: $FRAUD_DETECTION_DIR${NC}"
+        return 1
+    fi
+    
+    cd "$FRAUD_DETECTION_DIR"
+    
+    # Check if virtual environment exists
+    if [ ! -d "venv" ] && [ ! -d "fraud_detection_env" ]; then
+        echo -e "${YELLOW}Virtual environment not found. Creating one...${NC}"
+        python3 -m venv venv
+        echo -e "${GREEN}✓ Virtual environment created${NC}"
+        echo ""
+        echo -e "${YELLOW}Installing dependencies...${NC}"
+        source venv/bin/activate
+        pip install -q --upgrade pip
+        pip install -q -r requirements.txt
+        echo -e "${GREEN}✓ Dependencies installed${NC}"
+        echo ""
+    fi
+    
+    # Activate virtual environment
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+    elif [ -d "fraud_detection_env" ]; then
+        source fraud_detection_env/bin/activate
+    fi
+    
+    # Run the fraud detection main script
+    echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    python3 src/models/main.py
+    
+    echo ""
+    echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}✓ Fraud detection session completed${NC}"
+    echo ""
+    
+    # Deactivate virtual environment
+    deactivate 2>/dev/null || true
+    
+    cd "$SCRIPT_DIR"
+}
+
+# Execute docker commands
+execute_docker_command() {
+    local cmd=$1
+    
+    if [ ! -f "$SCRIPT_DIR/start.sh" ]; then
+        echo -e "${RED}Error: start.sh not found${NC}"
+        return 1
+    fi
+    
+    cd "$SCRIPT_DIR"
+    
+    case $cmd in
+        up)
+            echo -e "${BLUE}Starting Docker services...${NC}"
+            echo ""
+            # Run start.sh and capture exit code but don't exit CLI on error
+            if ./start.sh up 2>&1; then
+                echo ""
+                echo -e "${GREEN}✓ Docker services started successfully${NC}"
+            else
+                local exit_code=$?
+                echo ""
+                echo -e "${YELLOW}⚠️  Docker service start returned exit code: $exit_code${NC}"
+                echo -e "${CYAN}💡 You can still use other CLI commands${NC}"
+            fi
+            ;;
+        down)
+            echo -e "${BLUE}Stopping Docker services...${NC}"
+            ./start.sh down || echo -e "${YELLOW}⚠️  Error stopping services${NC}"
+            ;;
+        restart)
+            echo -e "${BLUE}Restarting Docker services...${NC}"
+            ./start.sh restart || echo -e "${YELLOW}⚠️  Error restarting services${NC}"
+            ;;
+        status)
+            echo -e "${BLUE}Docker service status:${NC}"
+            ./start.sh status || echo -e "${YELLOW}⚠️  Error getting status${NC}"
+            ;;
+        logs)
+            echo -e "${BLUE}Showing Docker logs...${NC}"
+            echo -e "${YELLOW}Press Ctrl+C to exit logs view${NC}"
+            ./start.sh logs || echo -e "${YELLOW}⚠️  Error viewing logs${NC}"
+            ;;
+        rebuild)
+            echo -e "${BLUE}Rebuilding Docker services...${NC}"
+            ./start.sh rebuild || echo -e "${YELLOW}⚠️  Error rebuilding services${NC}"
+            ;;
+        *)
+            echo -e "${RED}Unknown docker command: $cmd${NC}"
+            echo -e "${YELLOW}Available: up, down, restart, status, logs, rebuild${NC}"
+            return 1
+            ;;
+    esac
+    
+    # Always return success to keep CLI running
+    return 0
+}
+
+# Process command
+process_command() {
+    local cmd=$1
+    shift
+    local args=("$@")
+    
+    case $cmd in
+        "help"|"h"|"?")
+            show_help
+            ;;
+        "fraud-detection"|"models"|"ml")
+            run_fraud_detection
+            ;;
+        "docker")
+            if [ ${#args[@]} -gt 0 ]; then
+                execute_docker_command "${args[0]}"
+            else
+                echo -e "${YELLOW}Usage: docker {up|down|restart|status|logs|rebuild}${NC}"
+            fi
+            ;;
+        "status")
+            show_status
+            ;;
+        "version"|"v")
+            show_version
+            ;;
+        "info"|"i")
+            show_info
+            ;;
+        "clear"|"cls")
+            clear
+            show_banner
+            ;;
+        "exit"|"quit"|"q")
+            echo ""
+            echo -e "${GREEN}👋 Thank you for using DAFU Platform!${NC}"
+            echo -e "${CYAN}Goodbye!${NC}"
+            echo ""
+            exit 0
+            ;;
+        "")
+            # Empty command, do nothing
+            ;;
+        *)
+            echo -e "${RED}Unknown command: ${BOLD}$cmd${NC}"
+            echo -e "${YELLOW}Type 'help' for available commands${NC}"
+            ;;
+    esac
+}
+
+# Main interactive loop
+interactive_mode() {
+    show_banner
+    show_welcome
+    
+    while true; do
+        echo -ne "${GREEN}${BOLD}dafu>${NC} "
+        
+        # Read command
+        read -r -a input
+        
+        if [ ${#input[@]} -eq 0 ]; then
+            continue
+        fi
+        
+        # Process command
+        process_command "${input[@]}"
+        
+        echo ""
+    done
+}
+
+# Main function
+main() {
+    # If arguments provided, execute as single command
+    if [ $# -gt 0 ]; then
+        process_command "$@"
+    else
+        # Start interactive mode
+        interactive_mode
+    fi
+}
+
+# Handle Ctrl+C gracefully
+trap 'echo -e "\n\n${YELLOW}Use ${BOLD}exit${NC}${YELLOW} command to quit gracefully${NC}"; echo ""' INT
+
+# Run main function
+main "$@"
+

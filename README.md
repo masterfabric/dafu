@@ -14,6 +14,7 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 
 ### Current Capabilities (Implemented)
 
+- 🚀 **Interactive CLI**: Beautiful command-line interface for all operations ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 🎯 **Unified Model Interface**: Single entry point for all fraud detection models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - 🧠 **Advanced ML Algorithms**: Isolation Forest and LSTM/GRU sequence models fully implemented
 - 📡 **Stream Processing**: Real-time data stream processing with pre-trained models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
@@ -109,7 +110,59 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 
 ### Installation
 
-#### Option 1: Local Development Setup (Recommended)
+#### Option 1: Interactive CLI (Easiest - Recommended) ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+
+**The fastest way to get started with DAFU!**
+
+```bash
+# Clone the repository
+git clone https://github.com/MasterFabric/dafu.git
+cd dafu
+
+# Make CLI executable
+chmod +x dafu
+
+# Start interactive CLI
+./dafu
+
+# You'll see:
+# ╔════════════════════════════════════════════════════════════╗
+# ║  ____    _    _____ _   _                                  ║
+# ║ |  _ \  / \  |  ___| | | |                                 ║
+# ║ | | | |/ _ \ | |_  | | | |                                 ║
+# ║ | |_| / ___ \|  _| | |_| |                                 ║
+# ║ |____/_/   \_\_|    \___/                                  ║
+# ║                                                            ║
+# ║ Data Analytics Functional Utilities - Interactive CLI     ║
+# ║ Enterprise Fraud Detection & Analytics Platform           ║
+# ╚════════════════════════════════════════════════════════════╝
+# 
+# Welcome to DAFU Interactive CLI!
+# Type 'help' for available commands or 'exit' to quit
+# 
+# dafu> 
+
+# Now run fraud detection
+dafu> fraud-detection
+
+# The CLI will:
+# ✓ Auto-create virtual environment if needed
+# ✓ Auto-install dependencies
+# ✓ Launch fraud detection models
+# ✓ Return to CLI when done (no need to restart)
+```
+
+**Available CLI Commands:**
+- `fraud-detection` / `models` / `ml` - Run fraud detection models
+- `status` - Show platform status
+- `info` - Show system information
+- `version` - Show version
+- `help` - Show all commands
+- `exit` - Exit CLI
+
+📖 **See [DAFU_CLI_GUIDE.md](./DAFU_CLI_GUIDE.md) for complete CLI documentation**
+
+#### Option 2: Local Development Setup
 
 **Step 1: Clone and Setup Environment**
 
@@ -260,7 +313,7 @@ The ML models (Isolation Forest, LSTM/GRU) work perfectly standalone, but the Fa
 **Next Step:**
 Integrate ML models with FastAPI, then uncomment services in `docker-compose.yml`.
 
-#### Option 3: Individual Docker Container (Development)
+#### Option 3: Docker Deployment (Coming Soon) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
 
 **For testing individual components:**
 
