@@ -121,9 +121,19 @@ chmod +x dafu
 
       <div className="hr" />
 
+      {/* Authors Tickets teaser */}
+      <section>
+        <h3 className="h3">Authors Tickets</h3>
+        <p className="lead">Read our open letter and see how you can contribute.</p>
+        <p><Link href="/tickets">View tickets →</Link></p>
+      </section>
+
+      <div className="hr" />
+
       <nav style={{ display: 'grid', gap: '0.75rem' }}>
         <Link href="/features">Features</Link>
         <Link href="/documentation">Documentation</Link>
+        <Link href="/tickets">Tickets</Link>
       </nav>
     </main>
   );

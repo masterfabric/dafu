@@ -1,0 +1,17 @@
+{
+  "tickets": [
+    {
+      "number": 1,
+      "title": "Open Letter to Contributors",
+      "author": "gurkanfikretgunak",
+      "github": "https://github.com/gurkanfikretgunak",
+      "created_at": "2025-10-10",
+      "tags": ["open-source", "contribution", "vision"],
+      "body": [
+        "DAFU is an open-source, enterprise-grade fraud detection platform. We believe powerful, privacy‑respecting fraud prevention should be accessible to everyone.",
+        "This project is built in the open to accelerate innovation across financial services, e‑commerce, payments and fintech.",
+        "Areas to help: API–ML integration, feature engineering & rules, observability, security & compliance, model monitoring (drift, CI for ML)."
+      ]
+    }
+  ]
+}
