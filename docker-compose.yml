@@ -40,17 +40,12 @@
 # 
 # ============================================================================
 
-# Minimal valid compose file - all services commented out
-services: {}
-
-# All services are commented out below
-# Uncomment when API-ML integration is complete
-
-# services:
-#   # ==========================================================================
-#   # Fraud Detection API Service
-#   # ==========================================================================
-#   fraud-detection-api:
+# All services are now active with auth, logs, reports, and product management
+services:
+  # ==========================================================================
+  # Fraud Detection API Service
+  # ==========================================================================
+  fraud-detection-api:
 #     build:
 #       context: ./fraud_detection
 #       dockerfile: deployment/Dockerfile

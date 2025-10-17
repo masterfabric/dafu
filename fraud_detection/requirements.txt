@@ -59,6 +59,9 @@ structlog>=22.3.0
 # Security (optional)
 cryptography>=38.0.0
 python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+bcrypt<4.0.0
+email-validator>=2.0.0
 
 # ======================================
 # DEVELOPMENT AND TESTING (OPTIONAL)
@@ -68,6 +71,11 @@ python-jose[cryptography]>=3.3.0
 pytest>=7.0.0
 pytest-asyncio>=0.20.0
 pytest-cov>=4.0.0
+httpx>=0.24.0
+
+# CLI and utilities
+requests>=2.31.0
+python-dotenv>=1.0.0
 
 # Development tools
 black>=22.0.0

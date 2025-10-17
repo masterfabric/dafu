@@ -208,6 +208,32 @@ async def log_requests(request: Request, call_next):
 
 
 # ============================================================================
+# Include Routers
+# ============================================================================
+
+try:
+    # Try relative imports first (when used as module)
+    from .auth_routes import router as auth_router
+    from .log_routes import router as log_router
+    from .report_routes import router as report_router
+    from .product_routes import router as product_router
+except ImportError:
+    # Fall back to absolute imports (when run directly)
+    import sys
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from api.auth_routes import router as auth_router
+    from api.log_routes import router as log_router
+    from api.report_routes import router as report_router
+    from api.product_routes import router as product_router
+
+app.include_router(auth_router)
+app.include_router(log_router)
+app.include_router(report_router)
+app.include_router(product_router)
+
+
+# ============================================================================
 # API Endpoints
 # ============================================================================
 
