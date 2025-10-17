@@ -52,6 +52,27 @@ show_help() {
     echo -e "${BOLD}${BLUE}Available Commands:${NC}"
     echo -e "${CYAN}══════════════════════════════════════════════════════════${NC}"
     echo ""
+    echo -e "${GREEN}API & Authentication:${NC}"
+    echo -e "  ${BOLD}auth login${NC}          - Login to DAFU API"
+    echo -e "  ${BOLD}auth logout${NC}         - Logout from DAFU API"
+    echo -e "  ${BOLD}auth whoami${NC}         - Show current user"
+    echo -e "  ${BOLD}auth register${NC}       - Register new user (API)"
+    echo ""
+    echo -e "${GREEN}Logs Management:${NC}"
+    echo -e "  ${BOLD}logs list${NC}           - List recent logs"
+    echo -e "  ${BOLD}logs stats${NC}          - Show log statistics"
+    echo ""
+    echo -e "${GREEN}Reports Management:${NC}"
+    echo -e "  ${BOLD}reports list${NC}        - List your reports"
+    echo -e "  ${BOLD}reports create${NC}      - Create new report"
+    echo -e "  ${BOLD}reports view <id>${NC}   - View report details"
+    echo -e "  ${BOLD}reports stats${NC}       - Show report statistics"
+    echo ""
+    echo -e "${GREEN}Products Management:${NC}"
+    echo -e "  ${BOLD}products list${NC}       - List products"
+    echo -e "  ${BOLD}products high-risk${NC}  - List high-risk products"
+    echo -e "  ${BOLD}products stats${NC}      - Show product statistics"
+    echo ""
     echo -e "${GREEN}Fraud Detection & ML Models:${NC}"
     echo -e "  ${BOLD}fraud-detection${NC}     - Run fraud detection models (interactive)"
     echo -e "  ${BOLD}models${NC}              - Alias for fraud-detection"
@@ -232,6 +253,53 @@ run_fraud_detection() {
     cd "$SCRIPT_DIR"
 }
 
+# Execute API commands
+execute_api_command() {
+    local category=$1
+    shift
+    local subcmd=$1
+    shift
+    local args=("$@")
+    
+    # Check if fraud_detection directory exists
+    if [ ! -d "$FRAUD_DETECTION_DIR" ]; then
+        echo -e "${RED}Error: Fraud detection directory not found${NC}"
+        return 1
+    fi
+    
+    cd "$FRAUD_DETECTION_DIR"
+    
+    # Activate virtual environment if exists
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+    elif [ -d "fraud_detection_env" ]; then
+        source fraud_detection_env/bin/activate
+    else
+        echo -e "${YELLOW}⚠️  Virtual environment not found${NC}"
+        echo -e "${CYAN}💡 Creating virtual environment...${NC}"
+        python3 -m venv venv
+        source venv/bin/activate
+        echo -e "${CYAN}💡 Installing dependencies...${NC}"
+        pip install -q --upgrade pip
+        pip install -q -r requirements.txt
+        echo -e "${GREEN}✓ Setup complete${NC}"
+    fi
+    
+    # Execute Python CLI command
+    if [ -n "$subcmd" ]; then
+        python -m src.api.cli "$category" "$subcmd" "${args[@]}" 2>&1 || true
+    else
+        echo -e "${YELLOW}Usage: $category <subcommand> [args]${NC}"
+        echo -e "${CYAN}Type 'help' for available commands${NC}"
+    fi
+    
+    # Deactivate virtual environment
+    deactivate 2>/dev/null || true
+    
+    cd "$SCRIPT_DIR"
+    return 0
+}
+
 # Execute docker commands
 execute_docker_command() {
     local cmd=$1
@@ -299,6 +367,18 @@ process_command() {
     case $cmd in
         "help"|"h"|"?")
             show_help
+            ;;
+        "auth")
+            execute_api_command "auth" "${args[@]}"
+            ;;
+        "logs")
+            execute_api_command "logs" "${args[@]}"
+            ;;
+        "reports")
+            execute_api_command "reports" "${args[@]}"
+            ;;
+        "products")
+            execute_api_command "products" "${args[@]}"
             ;;
         "fraud-detection"|"models"|"ml")
             run_fraud_detection

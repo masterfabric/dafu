@@ -14,20 +14,25 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 
 ### Current Capabilities (Implemented)
 
-- 🚀 **Interactive CLI**: Beautiful command-line interface for all operations ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
-- 🎯 **Unified Model Interface**: Single entry point for all fraud detection models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🚀 **Unified CLI with API Integration**: All-in-one command-line interface for authentication, logs, reports, products, and ML models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🔐 **Authentication & User Management**: JWT-based auth with role-based access control (RBAC) ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 📋 **Logging System**: Structured logging with analytics and statistics ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 📊 **Report Management**: Fraud detection report generation and tracking ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🛍️ **Product Risk Management**: E-commerce product management with fraud risk tracking ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🎯 **Unified Model Interface**: Single entry point for all fraud detection models
 - 🧠 **Advanced ML Algorithms**: Isolation Forest and LSTM/GRU sequence models fully implemented
-- 📡 **Stream Processing**: Real-time data stream processing with pre-trained models ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
-- 💾 **Model Persistence**: Save and load trained models for production deployment ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
-- 🔀 **Dual Prediction Modes**: Both batch and stream prediction capabilities ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
-- 🐳 **Docker Infrastructure**: Complete configuration ready (services not integrated yet) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
-- 🌐 **FastAPI Structure**: Basic API framework prepared (ML integration pending) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
+- 📡 **Stream Processing**: Real-time data stream processing with pre-trained models
+- 💾 **Model Persistence**: Save and load trained models for production deployment
+- 🔀 **Dual Prediction Modes**: Both batch and stream prediction capabilities
+- 🌐 **FastAPI Backend**: Complete REST API with auth, logs, reports, products endpoints ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🗄️ **Database Layer**: PostgreSQL with SQLAlchemy ORM, complete schema ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- 🐳 **Docker Infrastructure**: PostgreSQL containerization ready
 - 🧪🎓 **Dual Learning Modes**: Both supervised and unsupervised learning approaches
 - 📊📈 **Comprehensive Analysis**: 4-panel visualization with detailed performance metrics
 - 🚀 **Production-Ready Core**: Complete fraud detection pipeline with evaluation
 - 🕵️‍♀️🎯 **Flexible Detection**: Classic and risk-score based detection methods
 - 🧹 **Data Processing**: Automatic preprocessing with missing value handling
-- ⚡ **Fast Startup**: Lazy loading for instant model selection interface ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- ⚡ **Fast Startup**: Lazy loading for instant model selection interface
 
 
 ### Planned Capabilities ![ROADMAP](https://img.shields.io/badge/ROADMAP-blue)
@@ -106,15 +111,19 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 ### Prerequisites
 
 - **Python 3.8+** (Python 3.9+ recommended)
-- **Docker/Podman** (for containerized deployment)
+- **Docker** (for PostgreSQL database)
 - **Git** (for cloning the repository)
 - **8GB+ RAM** (for ML model training)
 - **2GB+ free disk space** (for models and data)
 
+**For API Features (NEW!):**
+- **PostgreSQL** (Docker container recommended)
+- **Port 8000** (for API server)
+- **Port 5432** (for PostgreSQL)
+
 **Optional (for production):**
 - Kubernetes cluster
 - Redis (for caching)
-- PostgreSQL/ClickHouse (for data storage)
 
 ### Installation
 
@@ -150,35 +159,106 @@ chmod +x dafu
 # 
 # dafu> 
 
-# Now run fraud detection
-dafu> fraud-detection
+# Try different features
+dafu> help                    # See all commands
+dafu> auth login              # Login to API (NEW!)
+dafu> logs list               # View system logs (NEW!)
+dafu> reports list            # View fraud reports (NEW!)
+dafu> products stats          # Product statistics (NEW!)
+dafu> fraud-detection         # Run ML models
+dafu> docker status           # Check Docker services
 
 # The CLI will:
 # ✓ Auto-create virtual environment if needed
 # ✓ Auto-install dependencies
-# ✓ Launch fraud detection models
-# ✓ Return to CLI when done (no need to restart)
+# ✓ Manage authentication sessions
+# ✓ Provide unified access to all features
+# ✓ Return to CLI prompt after each command
 ```
 
 **Available CLI Commands:**
 
 | Category | Command | Description |
 |----------|---------|-------------|
+| **API & Auth** | `auth login/logout/whoami/register` | User authentication & management ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
+| **Logs** | `logs list/stats` | System logging & analytics ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
+| **Reports** | `reports list/create/view/stats` | Fraud detection reports ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
+| **Products** | `products list/high-risk/stats` | Product risk management ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
 | **ML Models** | `fraud-detection`, `models`, `ml` | Run fraud detection models |
 | **Docker** | `docker up/down/restart/status/logs` | Manage Docker services |
 | **System** | `status`, `info`, `version` | Show system information |
 | **Utilities** | `help`, `clear`, `exit` | Utility commands |
 
 **Key Features:**
-- ✅ **Persistent Session** - Run multiple commands without restarting
+- ✅ **API Integration** - Full authentication, logs, reports, products management ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- ✅ **Persistent Session** - Login once, use everywhere with session management
 - ✅ **Auto-Setup** - Automatically creates virtual environment and installs dependencies
 - ✅ **Error Resilient** - CLI stays active even when commands fail
 - ✅ **User-Friendly** - Color-coded output and helpful messages
 - ✅ **Scriptable** - Use in automation with single command mode
+- ✅ **Role-Based Access** - Support for viewer, user, analyst, admin roles ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 
-📖 **Documentation:** [CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md) • [CLI Demo](./docs/cli/DAFU_CLI_DEMO.md) • [All Docs](./docs/)
+📖 **Documentation:** 
+- **[Complete Usage Guide](./docs/USAGE_GUIDE.md)** - Full platform usage ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- **[CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md)** - Interactive CLI reference
+- **[API Guide](./docs/api/API_USAGE_GUIDE.md)** - REST API documentation ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+- **[All Documentation](./docs/)** - Complete documentation library
 
-#### Option 2: Local Development Setup
+#### Option 2: With API Features (Full Platform) ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+
+**Complete platform with authentication, logging, reports, and product management**
+
+**Step 1: Start PostgreSQL**
+
+```bash
+docker run -d --name dafu-postgres \
+  -e POSTGRES_USER=dafu \
+  -e POSTGRES_PASSWORD=dafu_secure_password \
+  -e POSTGRES_DB=dafu \
+  -p 5432:5432 \
+  postgres:15-alpine
+```
+
+**Step 2: Start API Server** (in separate terminal)
+
+```bash
+cd dafu/fraud_detection
+./start_api.sh
+
+# Wait for:
+# INFO:     Uvicorn running on http://0.0.0.0:8000
+# INFO:     Application startup complete.
+```
+
+**Step 3: Use DAFU CLI**
+
+```bash
+./dafu
+
+dafu> auth register     # First time: register user
+dafu> auth login        # Login with credentials
+dafu> auth whoami       # Check your user info
+dafu> logs list         # View system logs
+dafu> reports list      # View fraud reports
+dafu> products stats    # Product statistics
+dafu> fraud-detection   # Run ML models
+```
+
+📖 **Complete Guide**: See [docs/USAGE_GUIDE.md](./docs/USAGE_GUIDE.md) for detailed instructions
+
+**Features Available:**
+- ✅ JWT authentication with RBAC
+- ✅ System logging and analytics
+- ✅ Fraud detection report generation
+- ✅ Product risk management
+- ✅ All ML models
+- ✅ RESTful API endpoints
+- ✅ Database persistence
+- ✅ Session management
+
+**API Documentation**: http://localhost:8000/docs (Swagger UI)
+
+#### Option 3: ML Models Only (Standalone)
 
 **Step 1: Clone and Setup Environment**
 
@@ -292,7 +372,7 @@ python test_anomaly_detection.py
 python test_sequence_models_interactive.py
 ```
 
-#### Option 2: Docker Compose Setup ⚠️ ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
+#### Option 4: Docker Compose Setup ⚠️ ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
 
 **Status**: Infrastructure prepared, services not integrated yet
 
@@ -329,7 +409,7 @@ The ML models (Isolation Forest, LSTM/GRU) work perfectly standalone, but the Fa
 **Next Step:**
 Integrate ML models with FastAPI, then uncomment services in `docker-compose.yml`.
 
-#### Option 3: Docker Deployment (Coming Soon) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
+#### Option 5: Docker Deployment (Coming Soon) ![PLANNED](https://img.shields.io/badge/PLANNED-yellow)
 
 **For testing individual components:**
 
@@ -345,7 +425,7 @@ docker run -it --rm \
   python test_anomaly_detection.py
 ```
 
-#### Option 4: Kubernetes Deployment (Production)
+#### Option 6: Kubernetes Deployment (Production)
 
 **Step 1: Deploy with Helm**
 
@@ -1520,11 +1600,22 @@ Get model performance metrics.
 ### Resources
 
 - **📚 All Documentation**: [Complete Docs](./docs/)
-  - [CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md) - Interactive CLI reference
-  - [CLI Demo](./docs/cli/DAFU_CLI_DEMO.md) - Usage examples
-  - [Quick Start](./docs/guides/QUICK_START.md) - Get started guide
-  - [Docker Status](./docs/docker/DOCKER_STATUS.md) - Docker deployment info
-- **API Documentation**: [Swagger UI](https://api.masterfabric.co/dafu/docs) (Coming Soon)
+  - **[Complete Usage Guide](./docs/USAGE_GUIDE.md)** - Full platform usage guide ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+  - **API Documentation**:
+    - [API Usage Guide](./docs/api/API_USAGE_GUIDE.md) - Complete API reference ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+    - [API Quick Start](./docs/api/QUICK_START_API.md) - 5-minute API setup ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+  - **CLI Documentation**:
+    - [CLI Guide](./docs/cli/DAFU_CLI_GUIDE.md) - Original CLI reference
+    - [CLI Demo](./docs/cli/DAFU_CLI_DEMO.md) - Usage examples
+    - [CLI with API](./docs/cli/DAFU_CLI_INTEGRATED.md) - API integration guide ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+    - [CLI Step-by-Step](./docs/cli/CLI_STEP_BY_STEP.md) - Detailed CLI usage ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+  - **Guides**:
+    - [Quick Start](./docs/guides/QUICK_START.md) - ML models quick start
+    - [Implementation Complete](./docs/guides/IMPLEMENTATION_COMPLETE.md) - Implementation status
+  - **Docker**:
+    - [Docker Status](./docs/docker/DOCKER_STATUS.md) - Docker deployment info
+    - [Docker Setup](./docs/docker/DOCKER_SETUP.md) - Docker configuration
+- **API Documentation**: http://localhost:8000/docs (Swagger UI when API running)
 - **Architecture**: [High-Level Architecture](./docs/assets/High-level-architecture.drawio.png)
 
 ### Common Issues
