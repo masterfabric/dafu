@@ -49,8 +49,6 @@ stream_prediction_results/
 sequence_stream_results/
 *.png
 *.csv
-!sample_fraud_data.csv
-!stream_data.csv
 
 # Models (large files)
 *.joblib
