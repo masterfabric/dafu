@@ -51,6 +51,7 @@ sequence_stream_results/
 *.csv
 !sample_fraud_data.csv
 !stream_data.csv
+!core/docs/assets/High-level-architecture.drawio.png
 
 # Models (large files)
 *.joblib
