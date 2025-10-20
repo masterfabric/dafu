@@ -10,7 +10,7 @@
 # All services in docker-compose.yml are commented out until API-ML
 # integration is complete. Use direct Python execution for ML models.
 # 
-# For current usage: cd fraud_detection && python src/models/main.py
+# For current usage: cd core/features/fraud_detection && python src/models/main.py
 # 
 # ============================================================================
 
