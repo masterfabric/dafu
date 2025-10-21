@@ -21,6 +21,7 @@ BOLD='\033[1m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FRAUD_DETECTION_DIR="$PROJECT_ROOT/core/features/fraud_detection"
+TOKEN_FILE="$HOME/.dafu_token"
 
 # Banner
 show_banner() {
@@ -203,8 +204,25 @@ show_status() {
     echo ""
 }
 
+# Check if user is authenticated
+check_auth() {
+    if [ ! -f "$TOKEN_FILE" ]; then
+        return 1
+    fi
+    return 0
+}
+
 # Run fraud detection
 run_fraud_detection() {
+    # Check authentication
+    if ! check_auth; then
+        echo ""
+        echo -e "${RED}❌ Authentication required${NC}"
+        echo -e "${YELLOW}Please login first: ${BOLD}auth login${NC}"
+        echo ""
+        return 1
+    fi
+    
     echo ""
     echo -e "${BLUE}🔍 Starting Fraud Detection Models...${NC}"
     echo ""
@@ -241,7 +259,7 @@ run_fraud_detection() {
     # Run the fraud detection main script
     echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
     echo ""
-    python3 src/models/main.py
+    python3 -m src.models.main
     
     echo ""
     echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
@@ -261,6 +279,17 @@ execute_api_command() {
     local subcmd=$1
     shift
     local args=("$@")
+    
+    # Check authentication for protected commands (except auth itself)
+    if [ "$category" != "auth" ]; then
+        if ! check_auth; then
+            echo ""
+            echo -e "${RED}❌ Authentication required${NC}"
+            echo -e "${YELLOW}Please login first: ${BOLD}auth login${NC}"
+            echo ""
+            return 1
+        fi
+    fi
     
     # Check if fraud_detection directory exists
     if [ ! -d "$FRAUD_DETECTION_DIR" ]; then

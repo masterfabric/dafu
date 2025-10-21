@@ -265,7 +265,7 @@ class FraudDetectionMain:
             # Lazy import for Isolation Forest
             if IsolationForestFraudDetector is None:
                 print("📦 Loading Isolation Forest model...")
-                from core.features.fraud_detection.src.models.anomaly_detection import IsolationForestFraudDetector
+                from src.models.anomaly_detection import IsolationForestFraudDetector
             
             # Isolation Forest & Risk Score
             self.selected_model = "Isolation Forest & Risk Score"
@@ -276,7 +276,7 @@ class FraudDetectionMain:
             # Lazy import for Sequence Models
             if SequenceFraudDetector is None:
                 print("📦 Loading Sequence Models...")
-                from core.features.fraud_detection.src.models.sequence_models import SequenceFraudDetector
+                from src.models.sequence_models import SequenceFraudDetector
             
             # Sequence Models (LSTM & GRU)
             self.selected_model = "Sequence Models (LSTM & GRU)"

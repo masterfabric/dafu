@@ -310,6 +310,7 @@ class SessionManager:
     def __init__(self, session_file: str = ".dafu_session"):
         """Initialize session manager"""
         self.session_file = os.path.expanduser(f"~/{session_file}")
+        self.token_file = os.path.expanduser("~/.dafu_token")
     
     def save_session(self, token: str, username: str, expires_in: int):
         """Save session to file"""
@@ -325,6 +326,11 @@ class SessionManager:
         
         # Set file permissions to 600 (read/write for owner only)
         os.chmod(self.session_file, 0o600)
+        
+        # Create token file for bash CLI
+        with open(self.token_file, 'w') as f:
+            f.write(token)
+        os.chmod(self.token_file, 0o600)
     
     def load_session(self) -> Optional[Dict[str, Any]]:
         """Load session from file"""
@@ -348,6 +354,10 @@ class SessionManager:
         """Clear session file"""
         if os.path.exists(self.session_file):
             os.remove(self.session_file)
+        
+        # Remove token file for bash CLI
+        if os.path.exists(self.token_file):
+            os.remove(self.token_file)
     
     def is_logged_in(self) -> bool:
         """Check if user is logged in"""
