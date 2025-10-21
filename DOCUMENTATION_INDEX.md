@@ -32,8 +32,13 @@ The single most important document - covers all DAFU features in one place:
 | **[API Usage Guide](./core/docs/api/API_USAGE_GUIDE.md)** | Complete REST API reference | Developers |
 | **[API Quick Start](./core/docs/api/QUICK_START_API.md)** | 5-minute API setup | Everyone |
 | **[API README](./core/docs/api/README.md)** | API documentation index | Everyone |
+| **[Postman Collection](./DAFU_API.postman_collection.json)** | Ready-to-use API tests | Developers |
 
 **Covers**: Authentication, Logs, Reports, Products endpoints
+
+**Tools**:
+- 📦 **[Postman Collection](./DAFU_API.postman_collection.json)** - Import & test all endpoints
+- 🌐 **[Swagger UI](http://localhost:8000/docs)** - Interactive API documentation (when API running)
 
 ---
 
@@ -102,6 +107,7 @@ The single most important document - covers all DAFU features in one place:
 | **Use the CLI** | [CLI Guide](./core/docs/cli/DAFU_CLI_GUIDE.md) |
 | **Setup the API** | [API Quick Start](./core/docs/api/QUICK_START_API.md) |
 | **Call API endpoints** | [API Usage Guide](./core/docs/api/API_USAGE_GUIDE.md) |
+| **Test API with Postman** | [Postman Collection](./DAFU_API.postman_collection.json) |
 | **Run ML models** | [ML Quick Start](./core/docs/guides/QUICK_START.md) |
 | **Deploy with Docker** | [Docker Status](./core/docs/docker/DOCKER_STATUS.md) |
 | **Authenticate users** | [CLI Step-by-Step](./core/docs/cli/CLI_STEP_BY_STEP.md) |
@@ -116,6 +122,7 @@ The single most important document - covers all DAFU features in one place:
 ```
 dafu/
 ├── README.md                           # Main project README
+├── DAFU_API.postman_collection.json    # 📦 Postman API collection
 ├── core/
 │   ├── docs/
 │   │   ├── USAGE_GUIDE.md              # ⭐ Complete usage guide (START HERE)
@@ -214,6 +221,7 @@ dafu/
 
 - **CLI Help**: `./dafu help`
 - **API Docs**: http://localhost:8000/docs
+- **Postman Collection**: [DAFU_API.postman_collection.json](./DAFU_API.postman_collection.json)
 - **GitHub**: https://github.com/MasterFabric/dafu/issues
 
 ---

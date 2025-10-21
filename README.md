@@ -87,6 +87,7 @@ DAFU is a fraud detection platform that combines multiple machine learning algor
 - [API Documentation](#-api-documentation)
   - [Fraud Scoring API](#fraud-scoring-api)
   - [Model Management API](#model-management-api)
+  - [Postman Collection](#postman-collection)
 
 ### 📊 Project Status
 - [Current Implementation Status](#-current-implementation-status)
@@ -1488,6 +1489,77 @@ Deploy a new model version.
 #### GET `/dafu/v1/models/{model_id}/performance`
 Get model performance metrics.
 
+### Postman Collection
+
+A complete Postman collection is available for testing all API endpoints:
+
+📦 **[DAFU_API.postman_collection.json](./DAFU_API.postman_collection.json)**
+
+**What's Included:**
+
+| Category | Endpoints | Description |
+|----------|-----------|-------------|
+| **1. Authentication** | 7 endpoints | Register, Login, Logout, Token refresh, Password change, API keys |
+| **2. Log Management** | 6 endpoints | CRUD operations, Statistics, Filtering |
+| **3. Report Management** | 6 endpoints | Report generation, Tracking, Statistics |
+| **4. Product Management** | 7 endpoints | Product CRUD, High-risk detection, Statistics |
+| **5. Health & System** | 3 endpoints | Health check, API info, OpenAPI schema |
+
+**Features:**
+- ✅ **Auto-save tokens**: Login automatically saves access_token to environment
+- ✅ **Complete examples**: All requests include sample data
+- ✅ **Test scripts**: Automated token management
+- ✅ **Documentation**: Each endpoint documented with descriptions
+- ✅ **Environment variables**: Pre-configured base_url and tokens
+
+**How to Use:**
+
+1. **Import into Postman**
+   ```bash
+   # Option 1: Import file directly
+   File → Import → Select DAFU_API.postman_collection.json
+   
+   # Option 2: Import from URL (if hosted)
+   File → Import → Link → Paste collection URL
+   ```
+
+2. **Create Environment** (Optional but recommended)
+   ```
+   Environment Name: DAFU Local
+   Variables:
+   - base_url: http://localhost:8000
+   - access_token: (will be set automatically after login)
+   - refresh_token: (will be set automatically after login)
+   ```
+
+3. **Start API Server**
+   ```bash
+   cd core/features/fraud_detection
+   ./start_api.sh
+   ```
+
+4. **Test Workflow**
+   ```
+   Step 1: Health Check → Verify API is running
+   Step 2: Register → Create new user account
+   Step 3: Login → Get access token (auto-saved)
+   Step 4: Try any endpoint → Use authenticated requests
+   ```
+
+**Quick Start with Postman:**
+1. Start API: `./start_api.sh`
+2. Import collection: `DAFU_API.postman_collection.json`
+3. Run "Register New User" → Create account
+4. Run "Login" → Token saved automatically ✅
+5. Try any authenticated endpoint!
+
+**Alternative: Swagger UI**
+
+If you prefer browser-based testing:
+- Start API server
+- Open http://localhost:8000/docs
+- Interactive API documentation with "Try it out" buttons
+
 ## 🏆 Current Implementation Status
 
 ### ✅ **Implemented Features (Production Ready)**
@@ -1604,6 +1676,7 @@ Get model performance metrics.
   - **API Documentation**:
     - [API Usage Guide](./core/docs/api/API_USAGE_GUIDE.md) - Complete API reference ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
     - [API Quick Start](./core/docs/api/QUICK_START_API.md) - 5-minute API setup ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+    - [Postman Collection](./DAFU_API.postman_collection.json) - Ready-to-use API tests ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
   - **CLI Documentation**:
     - [CLI Guide](./core/docs/cli/DAFU_CLI_GUIDE.md) - Original CLI reference
     - [CLI Demo](./core/docs/cli/DAFU_CLI_DEMO.md) - Usage examples
@@ -1615,7 +1688,9 @@ Get model performance metrics.
   - **Docker**:
     - [Docker Status](./core/docs/docker/DOCKER_STATUS.md) - Docker deployment info
     - [Docker Setup](./core/docs/docker/DOCKER_SETUP.md) - Docker configuration
-- **API Documentation**: http://localhost:8000/docs (Swagger UI when API running)
+- **API Testing Tools**:
+  - **Postman Collection**: [DAFU_API.postman_collection.json](./DAFU_API.postman_collection.json) - Import & test all endpoints ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
+  - **Swagger UI**: http://localhost:8000/docs (Interactive API docs when API running)
 - **Architecture**: [High-Level Architecture](./core/docs/assets/High-level-architecture.drawio.png)
 
 ### Common Issues

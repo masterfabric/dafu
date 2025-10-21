@@ -1,0 +1,1822 @@
+{
+	"info": {
+		"_postman_id": "dafu-fraud-detection-api",
+		"name": "DAFU - Fraud Detection & Analytics API",
+		"description": "Complete API collection for DAFU (Data Analytics Functional Utilities) - Enterprise fraud detection and e-commerce analytics platform.\n\n## Features\n- JWT Authentication with RBAC\n- User Management\n- Log Management & Analytics\n- Report Generation & Tracking\n- Product Risk Management\n- Fraud Detection (ML Models)\n\n## Getting Started\n1. Start the API server: `cd core/features/fraud_detection && ./start_api.sh`\n2. Register a new user (Auth > Register)\n3. Login to get access token (Auth > Login)\n4. Use the token in subsequent requests\n\n## Environment Variables\n- `base_url`: API base URL (default: http://localhost:8000)\n- `access_token`: JWT access token (set after login)\n- `refresh_token`: JWT refresh token (set after login)\n\n## Author\nMasterFabric - Enterprise Fraud Detection Platform\n\n## License\nAGPL-3.0",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Register New User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    pm.test(\"✅ User registered successfully\", function () {",
+									"        pm.response.to.have.status(201);",
+									"    });",
+									"    ",
+									"    const jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"✅ Response has user data\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"        pm.expect(jsonData).to.have.property('username');",
+									"        pm.expect(jsonData).to.have.property('email');",
+									"        pm.expect(jsonData).to.have.property('role');",
+									"        pm.expect(jsonData).to.have.property('status');",
+									"    });",
+									"    ",
+									"    pm.test(\"✅ User is active\", function () {",
+									"        pm.expect(jsonData.status).to.eql('active');",
+									"    });",
+									"    ",
+									"    // Save user ID for later use",
+									"    pm.environment.set('user_id', jsonData.id);",
+									"    console.log('✅ User registered with ID:', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"full_name\": \"Test User\",\n  \"role\": \"user\",\n  \"company\": \"Test Company\",\n  \"phone\": \"+1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "register"]
+						},
+						"description": "Register a new user account.\n\n**Required fields:**\n- username: 3-50 characters\n- email: valid email\n- password: minimum 8 characters\n\n**Optional fields:**\n- full_name\n- role: user (default), admin, analyst, viewer\n- company\n- phone"
+					},
+					"response": [
+						{
+							"name": "✅ Success - User Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"full_name\": \"Test User\",\n  \"role\": \"user\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/register",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "register"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"id\": 1,\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"full_name\": \"Test User\",\n  \"role\": \"user\",\n  \"status\": \"active\",\n  \"company\": \"Test Company\",\n  \"phone\": \"+1234567890\",\n  \"created_at\": \"2025-10-21T12:00:00Z\",\n  \"updated_at\": \"2025-10-21T12:00:00Z\"\n}"
+						},
+						{
+							"name": "❌ Error - Username Taken",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/register",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "register"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"detail\": \"Username already exists\"\n}"
+						},
+						{
+							"name": "❌ Error - Invalid Email",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"invalid-email\",\n  \"password\": \"SecurePass123!\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/register",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "register"]
+								}
+							},
+							"status": "Unprocessable Entity",
+							"code": 422,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"detail\": [\n    {\n      \"loc\": [\"body\", \"email\"],\n      \"msg\": \"value is not a valid email address\",\n      \"type\": \"value_error.email\"\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"✅ Login successful\", function () {",
+									"        pm.response.to.have.status(200);",
+									"        pm.expect(jsonData).to.have.property('access_token');",
+									"        pm.expect(jsonData).to.have.property('refresh_token');",
+									"        pm.expect(jsonData.token_type).to.eql('bearer');",
+									"    });",
+									"    ",
+									"    pm.test(\"✅ Token structure is valid\", function () {",
+									"        const parts = jsonData.access_token.split('.');",
+									"        pm.expect(parts.length).to.eql(3); // JWT has 3 parts",
+									"    });",
+									"    ",
+									"    // Save tokens to environment",
+									"    pm.environment.set('access_token', jsonData.access_token);",
+									"    pm.environment.set('refresh_token', jsonData.refresh_token);",
+									"    ",
+									"    console.log('✅ Access token saved to environment');",
+									"    console.log('✅ Token expires in:', jsonData.expires_in, 'seconds');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"SecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "login"]
+						},
+						"description": "Login with username/email and password.\n\nReturns JWT access token (24h) and refresh token (30d).\n\nThe access token is automatically saved to the environment variable `access_token`."
+					},
+					"response": [
+						{
+							"name": "✅ Success - Login",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"SecurePass123!\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/login",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "login"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImV4cCI6MTY5NzkxMjAwMH0.example_signature\",\n  \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImV4cCI6MTcwMDUwNDAwMH0.example_signature\",\n  \"token_type\": \"bearer\",\n  \"expires_in\": 86400\n}"
+						},
+						{
+							"name": "❌ Error - Invalid Credentials",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"WrongPassword!\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/login",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "login"]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"detail\": \"Incorrect username or password\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Current User (Me)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"✅ User data retrieved\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"        pm.expect(jsonData).to.have.property('username');",
+									"        pm.expect(jsonData).to.have.property('email');",
+									"        pm.expect(jsonData).to.have.property('role');",
+									"    });",
+									"    ",
+									"    pm.test(\"✅ User has valid role\", function () {",
+									"        const validRoles = ['admin', 'user', 'analyst', 'viewer'];",
+									"        pm.expect(validRoles).to.include(jsonData.role);",
+									"    });",
+									"    ",
+									"    console.log('👤 Current user:', jsonData.username);",
+									"    console.log('📧 Email:', jsonData.email);",
+									"    console.log('🔑 Role:', jsonData.role);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Check if token exists",
+									"const token = pm.environment.get('access_token');",
+									"if (!token) {",
+									"    console.error('❌ No access token found. Please login first.');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "me"]
+						},
+						"description": "Get current authenticated user information.\n\n**Requires:** Valid JWT access token"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Current User",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/me",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "me"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"id\": 1,\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"full_name\": \"Test User\",\n  \"role\": \"user\",\n  \"status\": \"active\",\n  \"company\": \"Test Company\",\n  \"phone\": \"+1234567890\",\n  \"created_at\": \"2025-10-21T12:00:00Z\",\n  \"updated_at\": \"2025-10-21T12:00:00Z\",\n  \"last_login\": \"2025-10-21T13:30:00Z\"\n}"
+						},
+						{
+							"name": "❌ Error - Unauthorized",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/me",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "me"]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"detail\": \"Not authenticated\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    ",
+									"    pm.test(\"✅ Token refreshed successfully\", function () {",
+									"        pm.expect(jsonData).to.have.property('access_token');",
+									"    });",
+									"    ",
+									"    // Update access token",
+									"    pm.environment.set('access_token', jsonData.access_token);",
+									"    console.log('✅ Access token refreshed and saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "refresh"]
+						},
+						"description": "Refresh access token using refresh token.\n\nUse when access token expires (after 24h)."
+					},
+					"response": [
+						{
+							"name": "✅ Success - Token Refreshed",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/refresh",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "refresh"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.new_token.signature\",\n  \"token_type\": \"bearer\",\n  \"expires_in\": 86400\n}"
+						}
+					]
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"✅ Logout successful\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    ",
+									"    // Clear tokens from environment",
+									"    pm.environment.unset('access_token');",
+									"    pm.environment.unset('refresh_token');",
+									"    console.log('✅ Logged out and tokens cleared');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "logout"]
+						},
+						"description": "Logout current user and invalidate tokens."
+					},
+					"response": [
+						{
+							"name": "✅ Success - Logged Out",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/logout",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "logout"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"message\": \"Successfully logged out\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Change Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"✅ Password changed successfully\", function () {",
+									"        pm.response.to.have.status(200);",
+									"    });",
+									"    console.log('✅ Password updated. Please login again with new password.');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"old_password\": \"SecurePass123!\",\n  \"new_password\": \"NewSecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/change-password",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "change-password"]
+						},
+						"description": "Change user password.\n\n**Requires:** Current password and new password"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Password Changed",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"old_password\": \"SecurePass123!\",\n  \"new_password\": \"NewSecurePass123!\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/change-password",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "change-password"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"message\": \"Password changed successfully\"\n}"
+						},
+						{
+							"name": "❌ Error - Wrong Old Password",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"old_password\": \"WrongPassword!\",\n  \"new_password\": \"NewSecurePass123!\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/change-password",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "change-password"]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"detail\": \"Incorrect old password\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Generate API Key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ API key generated\", function () {",
+									"        pm.expect(jsonData).to.have.property('api_key');",
+									"        pm.expect(jsonData).to.have.property('name');",
+									"    });",
+									"    console.log('🔑 API Key generated:', jsonData.api_key.substring(0, 20) + '...');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Production API Key\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/api-key",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "api-key"]
+						},
+						"description": "Generate a new API key for service-to-service authentication."
+					},
+					"response": [
+						{
+							"name": "✅ Success - API Key Generated",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Production API Key\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/auth/api-key",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "auth", "api-key"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"api_key\": \"dafu_ak_1234567890abcdef1234567890abcdef\",\n  \"name\": \"Production API Key\",\n  \"created_at\": \"2025-10-21T12:00:00Z\"\n}"
+						}
+					]
+				}
+			],
+			"description": "Authentication and user management endpoints.\n\n**Flow:**\n1. Register → Get user account\n2. Login → Get JWT tokens  \n3. Use access_token in subsequent requests\n4. Refresh when expired\n\n**Features:**\n- ✅ JWT-based authentication\n- ✅ Role-based access control (RBAC)\n- ✅ Token auto-save to environment\n- ✅ Automated validation tests"
+		},
+		{
+			"name": "2. Log Management",
+			"item": [
+				{
+					"name": "Create Log",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ Log created successfully\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"        pm.expect(jsonData).to.have.property('level');",
+									"        pm.expect(jsonData).to.have.property('message');",
+									"    });",
+									"    pm.environment.set('last_log_id', jsonData.id);",
+									"    console.log('📝 Log created with ID:', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"level\": \"info\",\n  \"message\": \"User login successful\",\n  \"source\": \"authentication\",\n  \"metadata\": {\n    \"ip_address\": \"192.168.1.1\",\n    \"user_agent\": \"Mozilla/5.0\",\n    \"action\": \"login\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/logs",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "logs"]
+						},
+						"description": "Create a new log entry.\n\n**Levels:** debug, info, warning, error, critical\n\n**Fields:**\n- level: Log level\n- message: Log message\n- source: Source system/module\n- metadata: Additional JSON data (optional)"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Log Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"level\": \"info\",\n  \"message\": \"User login successful\",\n  \"source\": \"authentication\",\n  \"metadata\": {\"ip\": \"192.168.1.1\"}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/logs",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "logs"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"id\": 1,\n  \"level\": \"info\",\n  \"message\": \"User login successful\",\n  \"source\": \"authentication\",\n  \"metadata\": {\"ip\": \"192.168.1.1\"},\n  \"user_id\": 1,\n  \"created_at\": \"2025-10-21T12:00:00Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "List Logs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ Logs retrieved\", function () {",
+									"        pm.expect(jsonData).to.be.an('array');",
+									"    });",
+									"    console.log('📋 Retrieved', jsonData.length, 'logs');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/logs?limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "logs"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Number of logs to return (default: 100)"
+								},
+								{
+									"key": "offset",
+									"value": "0",
+									"description": "Number of logs to skip (default: 0)"
+								},
+								{
+									"key": "level",
+									"value": "error",
+									"description": "Filter by log level",
+									"disabled": true
+								},
+								{
+									"key": "hours",
+									"value": "24",
+									"description": "Get logs from last N hours",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of logs with pagination and filtering.\n\n**Query Parameters:**\n- limit: Number of logs (1-1000)\n- offset: Skip N logs\n- level: Filter by level (debug, info, warning, error, critical)\n- hours: Last N hours (1-720)"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Logs List",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/logs?limit=20",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "logs"],
+									"query": [{"key": "limit", "value": "20"}]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "[\n  {\n    \"id\": 1,\n    \"level\": \"info\",\n    \"message\": \"User login successful\",\n    \"source\": \"authentication\",\n    \"metadata\": {\"ip\": \"192.168.1.1\"},\n    \"user_id\": 1,\n    \"created_at\": \"2025-10-21T12:00:00Z\"\n  },\n  {\n    \"id\": 2,\n    \"level\": \"error\",\n    \"message\": \"Database connection failed\",\n    \"source\": \"database\",\n    \"metadata\": {\"error\": \"Connection timeout\"},\n    \"user_id\": null,\n    \"created_at\": \"2025-10-21T12:05:00Z\"\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "Get Log by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/logs/{{last_log_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "logs", "{{last_log_id}}"]
+						},
+						"description": "Get detailed information about a specific log entry."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Log",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"message\": \"Updated log message\",\n  \"metadata\": {\n    \"updated\": true,\n    \"update_reason\": \"Adding more context\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/logs/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "logs", "1"]
+						},
+						"description": "Update an existing log entry."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Log",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/logs/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "logs", "1"]
+						},
+						"description": "Delete a log entry by ID.\n\n**Note:** Requires admin privileges"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Log Statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ Statistics retrieved\", function () {",
+									"        pm.expect(jsonData).to.have.property('total_logs');",
+									"        pm.expect(jsonData).to.have.property('by_level');",
+									"    });",
+									"    console.log('📊 Total logs:', jsonData.total_logs);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/logs/stats?hours=24",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "logs", "stats"],
+							"query": [
+								{
+									"key": "hours",
+									"value": "24",
+									"description": "Time range in hours (default: 24)"
+								}
+							]
+						},
+						"description": "Get log statistics and analytics.\n\n**Includes:**\n- Total logs count\n- Logs by level breakdown\n- Logs by source\n- Time-based distribution"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Log Statistics",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/logs/stats?hours=24",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "logs", "stats"],
+									"query": [{"key": "hours", "value": "24"}]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"total_logs\": 1250,\n  \"time_range_hours\": 24,\n  \"by_level\": {\n    \"debug\": 150,\n    \"info\": 800,\n    \"warning\": 200,\n    \"error\": 80,\n    \"critical\": 20\n  },\n  \"by_source\": {\n    \"authentication\": 450,\n    \"fraud_detection\": 350,\n    \"api\": 300,\n    \"system\": 150\n  },\n  \"recent_errors\": 15,\n  \"timestamp\": \"2025-10-21T12:00:00Z\"\n}"
+						}
+					]
+				}
+			],
+			"description": "Log management and analytics endpoints.\n\n**Features:**\n- Create structured logs\n- Query with filters\n- Get statistics\n- Track system events\n\n**Test Features:**\n- ✅ Auto-save last log ID\n- ✅ Validation tests\n- ✅ Statistics parsing",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure user is authenticated",
+							"const token = pm.environment.get('access_token');",
+							"if (!token) {",
+							"    console.error('⚠️ Warning: No access token. Please login first.');",
+							"}"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Report Management",
+			"item": [
+				{
+					"name": "Create Report",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ Report created\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"        pm.expect(jsonData).to.have.property('name');",
+									"        pm.expect(jsonData.status).to.be.oneOf(['pending', 'processing']);",
+									"    });",
+									"    pm.environment.set('last_report_id', jsonData.id);",
+									"    console.log('📊 Report created with ID:', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Daily Fraud Report\",\n  \"description\": \"Daily summary of fraud detection results\",\n  \"report_type\": \"fraud_summary\",\n  \"format\": \"pdf\",\n  \"parameters\": {\n    \"date\": \"2025-10-21\",\n    \"include_charts\": true,\n    \"include_details\": true\n  },\n  \"scheduled\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/reports",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "reports"]
+						},
+						"description": "Create a new report.\n\n**Report Types:**\n- fraud_summary: Fraud detection summary\n- transaction_analysis: Transaction analysis\n- user_behavior: User behavior report\n- risk_assessment: Risk assessment report\n\n**Formats:**\n- pdf: PDF document\n- csv: CSV file\n- excel: Excel spreadsheet\n- json: JSON data"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Report Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Daily Fraud Report\",\n  \"description\": \"Daily summary\",\n  \"report_type\": \"fraud_summary\",\n  \"format\": \"pdf\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/reports",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "reports"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"id\": 1,\n  \"name\": \"Daily Fraud Report\",\n  \"description\": \"Daily summary\",\n  \"report_type\": \"fraud_summary\",\n  \"format\": \"pdf\",\n  \"status\": \"pending\",\n  \"user_id\": 1,\n  \"created_at\": \"2025-10-21T12:00:00Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "List Reports",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ Reports retrieved\", function () {",
+									"        pm.expect(jsonData).to.be.an('array');",
+									"    });",
+									"    console.log('📊 Retrieved', jsonData.length, 'reports');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/reports?limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "reports"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "status",
+									"value": "completed",
+									"description": "Filter by status",
+									"disabled": true
+								},
+								{
+									"key": "report_type",
+									"value": "fraud_summary",
+									"description": "Filter by type",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of reports with pagination and filtering.\n\n**Status:** pending, processing, completed, failed"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Report by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/reports/{{last_report_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "reports", "{{last_report_id}}"]
+						},
+						"description": "Get detailed information about a specific report."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Report Name\",\n  \"description\": \"Updated description\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/reports/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "reports", "1"]
+						},
+						"description": "Update report information (name, description, etc.)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Report",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/reports/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "reports", "1"]
+						},
+						"description": "Delete a report by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Report Statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ Statistics retrieved\", function () {",
+									"        pm.expect(jsonData).to.have.property('total_reports');",
+									"        pm.expect(jsonData).to.have.property('by_type');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/reports/stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "reports", "stats"]
+						},
+						"description": "Get report statistics.\n\n**Includes:**\n- Total reports\n- Reports by type\n- Reports by status\n- Recent activity"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Report Statistics",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/reports/stats",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "reports", "stats"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"total_reports\": 245,\n  \"by_type\": {\n    \"fraud_summary\": 120,\n    \"transaction_analysis\": 75,\n    \"user_behavior\": 30,\n    \"risk_assessment\": 20\n  },\n  \"by_status\": {\n    \"completed\": 200,\n    \"processing\": 15,\n    \"pending\": 25,\n    \"failed\": 5\n  },\n  \"recent_reports\": 15\n}"
+						}
+					]
+				}
+			],
+			"description": "Report generation and management endpoints.\n\n**Features:**\n- Generate various report types\n- Multiple output formats\n- Track report status\n- Schedule reports\n\n**Test Features:**\n- ✅ Auto-save last report ID\n- ✅ Status validation"
+		},
+		{
+			"name": "4. Product Management",
+			"item": [
+				{
+					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ Product created\", function () {",
+									"        pm.expect(jsonData).to.have.property('id');",
+									"        pm.expect(jsonData).to.have.property('name');",
+									"        pm.expect(jsonData.risk_score).to.be.within(0, 1);",
+									"    });",
+									"    pm.environment.set('last_product_id', jsonData.id);",
+									"    console.log('🛍️ Product created with ID:', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"iPhone 15 Pro\",\n  \"description\": \"Latest iPhone model with advanced features\",\n  \"price\": 999.99,\n  \"category\": \"electronics\",\n  \"sku\": \"APPLE-IP15-PRO-256\",\n  \"stock\": 150,\n  \"risk_score\": 0.3,\n  \"metadata\": {\n    \"brand\": \"Apple\",\n    \"color\": \"Space Black\",\n    \"storage\": \"256GB\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/products",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products"]
+						},
+						"description": "Create a new product.\n\n**Fields:**\n- name: Product name\n- description: Product description\n- price: Product price\n- category: Product category\n- sku: Stock Keeping Unit (optional)\n- stock: Available quantity\n- risk_score: Fraud risk score (0.0-1.0)\n- metadata: Additional product data (JSON)"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Product Created",
+							"originalRequest": {
+								"method": "POST",
+								"header": [{"key": "Content-Type", "value": "application/json"}],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"iPhone 15 Pro\",\n  \"price\": 999.99,\n  \"category\": \"electronics\",\n  \"stock\": 150,\n  \"risk_score\": 0.3\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/products",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"id\": 1,\n  \"name\": \"iPhone 15 Pro\",\n  \"description\": \"Latest iPhone model\",\n  \"price\": 999.99,\n  \"category\": \"electronics\",\n  \"sku\": \"APPLE-IP15-PRO-256\",\n  \"stock\": 150,\n  \"risk_score\": 0.3,\n  \"created_at\": \"2025-10-21T12:00:00Z\",\n  \"updated_at\": \"2025-10-21T12:00:00Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "List Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ Products retrieved\", function () {",
+									"        pm.expect(jsonData).to.be.an('array');",
+									"    });",
+									"    console.log('🛍️ Retrieved', jsonData.length, 'products');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/products?limit=50&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "category",
+									"value": "electronics",
+									"description": "Filter by category",
+									"disabled": true
+								},
+								{
+									"key": "min_price",
+									"value": "100",
+									"description": "Minimum price",
+									"disabled": true
+								},
+								{
+									"key": "max_price",
+									"value": "1000",
+									"description": "Maximum price",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of products with pagination and filtering."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/products/{{last_product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products", "{{last_product_id}}"]
+						},
+						"description": "Get detailed information about a specific product."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"price\": 899.99,\n  \"stock\": 200,\n  \"risk_score\": 0.25\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/products/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products", "1"]
+						},
+						"description": "Update product information."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/products/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products", "1"]
+						},
+						"description": "Delete a product by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get High-Risk Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ High-risk products retrieved\", function () {",
+									"        pm.expect(jsonData).to.be.an('array');",
+									"    });",
+									"    ",
+									"    if (jsonData.length > 0) {",
+									"        pm.test(\"✅ All products have high risk scores\", function () {",
+									"            jsonData.forEach(product => {",
+									"                pm.expect(product.risk_score).to.be.at.least(0.7);",
+									"            });",
+									"        });",
+									"    }",
+									"    console.log('⚠️ Found', jsonData.length, 'high-risk products');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/products/high-risk?threshold=0.7&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products", "high-risk"],
+							"query": [
+								{
+									"key": "threshold",
+									"value": "0.7",
+									"description": "Risk score threshold (default: 0.7)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Number of products to return"
+								}
+							]
+						},
+						"description": "Get products with high fraud risk scores.\n\n**Use Case:** Identify products frequently involved in fraudulent transactions."
+					},
+					"response": [
+						{
+							"name": "✅ Success - High-Risk Products",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/high-risk?threshold=0.7",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "high-risk"],
+									"query": [{"key": "threshold", "value": "0.7"}]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "[\n  {\n    \"id\": 5,\n    \"name\": \"Luxury Watch\",\n    \"price\": 5999.99,\n    \"category\": \"jewelry\",\n    \"stock\": 10,\n    \"risk_score\": 0.85,\n    \"fraud_incidents\": 23\n  },\n  {\n    \"id\": 12,\n    \"name\": \"High-End Laptop\",\n    \"price\": 2999.99,\n    \"category\": \"electronics\",\n    \"stock\": 25,\n    \"risk_score\": 0.72,\n    \"fraud_incidents\": 15\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "Get Product Statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.test(\"✅ Statistics retrieved\", function () {",
+									"        pm.expect(jsonData).to.have.property('total_products');",
+									"        pm.expect(jsonData).to.have.property('by_category');",
+									"        pm.expect(jsonData).to.have.property('average_risk_score');",
+									"    });",
+									"    console.log('📊 Total products:', jsonData.total_products);",
+									"    console.log('📊 Avg risk score:', jsonData.average_risk_score);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/products/stats",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "products", "stats"]
+						},
+						"description": "Get product statistics.\n\n**Includes:**\n- Total products\n- Products by category\n- Average risk score\n- High-risk products count\n- Total inventory value"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Product Statistics",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/stats",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "stats"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"total_products\": 1523,\n  \"by_category\": {\n    \"electronics\": 543,\n    \"clothing\": 432,\n    \"jewelry\": 125,\n    \"home\": 312,\n    \"other\": 111\n  },\n  \"average_risk_score\": 0.35,\n  \"high_risk_count\": 85,\n  \"total_inventory_value\": 2450345.67,\n  \"timestamp\": \"2025-10-21T12:00:00Z\"\n}"
+						}
+					]
+				}
+			],
+			"description": "Product management and risk assessment endpoints.\n\n**Features:**\n- Product CRUD operations\n- Risk score tracking\n- High-risk product detection\n- Category management\n\n**Test Features:**\n- ✅ Auto-save last product ID\n- ✅ Risk score validation\n- ✅ Statistics parsing"
+		},
+		{
+			"name": "5. Health & System",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"✅ API is healthy\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql('healthy');",
+									"});",
+									"",
+									"const jsonData = pm.response.json();",
+									"console.log('🏥 API Status:', jsonData.status);",
+									"console.log('📦 Version:', jsonData.version);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						},
+						"description": "Check API health status.\n\n**No authentication required**"
+					},
+					"response": [
+						{
+							"name": "✅ Success - Healthy",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/health",
+									"host": ["{{base_url}}"],
+									"path": ["health"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"status\": \"healthy\",\n  \"version\": \"1.0.0\",\n  \"timestamp\": 1697904000.0,\n  \"services\": {\n    \"database\": \"connected\",\n    \"cache\": \"connected\",\n    \"api\": \"operational\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Get API Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"✅ API info retrieved\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": ["{{base_url}}"],
+							"path": [""]
+						},
+						"description": "Get API information and welcome message.\n\n**No authentication required**"
+					},
+					"response": [
+						{
+							"name": "✅ Success - API Info",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/",
+									"host": ["{{base_url}}"],
+									"path": [""]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [{"key": "Content-Type", "value": "application/json"}],
+							"body": "{\n  \"message\": \"Welcome to DAFU API\",\n  \"version\": \"1.0.0\",\n  \"documentation\": \"/docs\",\n  \"health\": \"/health\"\n}"
+						}
+					]
+				},
+				{
+					"name": "OpenAPI Schema",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/openapi.json",
+							"host": ["{{base_url}}"],
+							"path": ["openapi.json"]
+						},
+						"description": "Get OpenAPI 3.0 schema.\n\n**No authentication required**"
+					},
+					"response": []
+				}
+			],
+			"description": "System health and information endpoints.\n\n**Public endpoints** - No authentication required\n\n**Test Features:**\n- ✅ Health status validation\n- ✅ Version checking"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"console.log('🚀 Executing request:', pm.info.requestName);",
+					"",
+					"// Check if base_url is set",
+					"const baseUrl = pm.variables.get('base_url');",
+					"if (!baseUrl) {",
+					"    console.warn('⚠️ Warning: base_url not set. Using default: http://localhost:8000');",
+					"    pm.variables.set('base_url', 'http://localhost:8000');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"pm.test('✅ Response time is acceptable', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});",
+					"",
+					"// Log response status",
+					"const statusCode = pm.response.code;",
+					"const statusText = pm.response.status;",
+					"console.log('📊 Response:', statusCode, statusText);",
+					"",
+					"// Check for common errors",
+					"if (statusCode === 401) {",
+					"    console.error('🔒 Authentication required. Please login first.');",
+					"} else if (statusCode === 403) {",
+					"    console.error('🚫 Access forbidden. Check your permissions.');",
+					"} else if (statusCode === 500) {",
+					"    console.error('💥 Server error. Check API logs.');",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "last_log_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "last_report_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "last_product_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
