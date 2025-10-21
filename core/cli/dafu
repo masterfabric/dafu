@@ -305,12 +305,12 @@ execute_api_command() {
 execute_docker_command() {
     local cmd=$1
     
-    if [ ! -f "$SCRIPT_DIR/start.sh" ]; then
+    if [ ! -f "$PROJECT_ROOT/start.sh" ]; then
         echo -e "${RED}Error: start.sh not found${NC}"
         return 1
     fi
     
-    cd "$SCRIPT_DIR"
+    cd "$PROJECT_ROOT"
     
     case $cmd in
         up)
