@@ -12,7 +12,7 @@
 # - All fraud detection features
 # 
 # HOW TO USE ML MODELS NOW:
-#   cd fraud_detection
+#   cd core/features/fraud_detection
 #   python3 -m venv venv
 #   source venv/bin/activate  # Windows: venv\Scripts\activate
 #   pip install -r requirements.txt
@@ -40,55 +40,48 @@
 # 
 # ============================================================================
 
-# Minimal valid compose file - all services commented out
-services: {}
-
-# All services are commented out below
-# Uncomment when API-ML integration is complete
-
-# services:
-#   # ==========================================================================
-#   # Fraud Detection API Service
-#   # ==========================================================================
-#   fraud-detection-api:
-#     build:
-#       context: ./fraud_detection
-#       dockerfile: deployment/Dockerfile
-#     container_name: dafu-fraud-api
-#     restart: unless-stopped
-#     ports:
-#       - "${API_PORT:-8000}:8000"
-#     environment:
-#       - FRAUD_DETECTION_ENV=${FRAUD_DETECTION_ENV:-development}
-#       - LOG_LEVEL=${LOG_LEVEL:-INFO}
-#       - API_WORKERS=${API_WORKERS:-4}
-#       - DATABASE_URL=postgresql://${POSTGRES_USER:-dafu}:${POSTGRES_PASSWORD:-dafu_secure_password}@postgres:5432/${POSTGRES_DB:-dafu}
-#       - REDIS_URL=redis://redis:6379/0
-#       - RABBITMQ_URL=amqp://${RABBITMQ_USER:-dafu}:${RABBITMQ_PASSWORD:-dafu_rabbitmq_password}@rabbitmq:5672/
-#       - MODEL_STORAGE_PATH=/app/models
-#       - RESULTS_PATH=/app/results
-#       - SECRET_KEY=${SECRET_KEY:-change-this-secret-key-in-production}
-#       - API_KEY_ENABLED=${API_KEY_ENABLED:-false}
-#       - ENABLE_MONITORING=${ENABLE_MONITORING:-true}
-#       - ENABLE_RATE_LIMITING=${ENABLE_RATE_LIMITING:-true}
-#       - MAX_WORKERS=${MAX_WORKERS:-4}
-#       - WORKER_TIMEOUT=${WORKER_TIMEOUT:-300}
-#     volumes:
-#       - ./fraud_detection/models:/app/models
-#       - ./fraud_detection/results:/app/results
-#       - ./fraud_detection/logs:/app/logs
-#     depends_on:
-#       - postgres
-#       - redis
-#       - rabbitmq
-#     networks:
-#       - dafu-network
-#     healthcheck:
-#       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-#       interval: 30s
-#       timeout: 10s
-#       retries: 3
-#       start_period: 40s
+# All services are now active with auth, logs, reports, and product management
+services:
+  # ==========================================================================
+  # Fraud Detection API Service
+  # ==========================================================================
+  fraud-detection-api:
+    build:
+      context: ./core/features/fraud_detection
+      dockerfile: deployment/Dockerfile
+    container_name: dafu-fraud-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - FRAUD_DETECTION_ENV=${FRAUD_DETECTION_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - API_WORKERS=${API_WORKERS:-4}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-dafu}:${POSTGRES_PASSWORD:-dafu_secure_password}@postgres:5432/${POSTGRES_DB:-dafu}
+      - REDIS_URL=redis://redis:6379/0
+      - MODEL_STORAGE_PATH=/app/models
+      - RESULTS_PATH=/app/results
+      - SECRET_KEY=${SECRET_KEY:-change-this-secret-key-in-production}
+      - API_KEY_ENABLED=${API_KEY_ENABLED:-false}
+      - ENABLE_MONITORING=${ENABLE_MONITORING:-true}
+      - ENABLE_RATE_LIMITING=${ENABLE_RATE_LIMITING:-true}
+      - MAX_WORKERS=${MAX_WORKERS:-4}
+      - WORKER_TIMEOUT=${WORKER_TIMEOUT:-300}
+    volumes:
+      - ./core/features/fraud_detection/models:/app/models
+      - ./core/features/fraud_detection/results:/app/results
+      - ./core/features/fraud_detection/logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - dafu-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 #   # ==========================================================================
 #   # Celery Worker Service
@@ -119,50 +112,50 @@ services: {}
 #     networks:
 #       - dafu-network
 
-#   # ==========================================================================
-#   # PostgreSQL Database
-#   # ==========================================================================
-#   postgres:
-#     image: postgres:15-alpine
-#     container_name: dafu-postgres
-#     restart: unless-stopped
-#     ports:
-#       - "${POSTGRES_PORT:-5432}:5432"
-#     environment:
-#       - POSTGRES_USER=${POSTGRES_USER:-dafu}
-#       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-dafu_secure_password}
-#       - POSTGRES_DB=${POSTGRES_DB:-dafu}
-#       - PGDATA=/var/lib/postgresql/data/pgdata
-#     volumes:
-#       - postgres-data:/var/lib/postgresql/data
-#       - ./fraud_detection/deployment/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
-#     networks:
-#       - dafu-network
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dafu}"]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
+  # ==========================================================================
+  # PostgreSQL Database
+  # ==========================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: dafu-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-dafu}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-dafu_secure_password}
+      - POSTGRES_DB=${POSTGRES_DB:-dafu}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./core/features/fraud_detection/deployment/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - dafu-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dafu}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-#   # ==========================================================================
-#   # Redis Cache
-#   # ==========================================================================
-#   redis:
-#     image: redis:7-alpine
-#     container_name: dafu-redis
-#     restart: unless-stopped
-#     ports:
-#       - "${REDIS_PORT:-6379}:6379"
-#     command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
-#     volumes:
-#       - redis-data:/data
-#     networks:
-#       - dafu-network
-#     healthcheck:
-#       test: ["CMD", "redis-cli", "ping"]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
+  # ==========================================================================
+  # Redis Cache
+  # ==========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: dafu-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    networks:
+      - dafu-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 #   # ==========================================================================
 #   # RabbitMQ Message Broker
@@ -271,27 +264,27 @@ services: {}
 #     profiles:
 #       - tools
 
-# # ============================================================================
-# # Networks (Uncomment when services are active)
-# # ============================================================================
-# networks:
-#   dafu-network:
-#     driver: bridge
-#     name: dafu-network
+# ============================================================================
+# Networks (Uncomment when services are active)
+# ============================================================================
+networks:
+  dafu-network:
+    driver: bridge
+    name: dafu-network
 
-# # ============================================================================
-# # Volumes (Uncomment when services are active)
-# # ============================================================================
-# volumes:
-#   postgres-data:
-#     name: dafu-postgres-data
-#   redis-data:
-#     name: dafu-redis-data
-#   rabbitmq-data:
-#     name: dafu-rabbitmq-data
-#   prometheus-data:
-#     name: dafu-prometheus-data
-#   grafana-data:
-#     name: dafu-grafana-data
-#   pgadmin-data:
-#     name: dafu-pgadmin-data
+# ============================================================================
+# Volumes (Uncomment when services are active)
+# ============================================================================
+volumes:
+  postgres-data:
+    name: dafu-postgres-data
+  redis-data:
+    name: dafu-redis-data
+  rabbitmq-data:
+    name: dafu-rabbitmq-data
+  prometheus-data:
+    name: dafu-prometheus-data
+  grafana-data:
+    name: dafu-grafana-data
+  pgadmin-data:
+    name: dafu-pgadmin-data

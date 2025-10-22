@@ -1,0 +1,98 @@
+# Fraud Detection Service Dependencies
+# ======================================
+
+# Core data science libraries
+pandas>=1.5.0
+numpy>=1.21.0
+scikit-learn>=1.1.0
+
+# Visualization libraries
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Additional data science utilities
+scipy>=1.9.0
+joblib>=1.2.0
+
+# Standard library dependencies (included in Python 3.8+)
+# - warnings (built-in)
+# - logging (built-in)
+# - typing (built-in)
+# - os (built-in)
+# - datetime (built-in)
+# - json (built-in)
+
+# Machine learning libraries
+# Note: IsolationForest is included in scikit-learn, no separate package needed
+
+# ======================================
+# CORE FRAUD DETECTION PACKAGES (REQUIRED)
+# ======================================
+# These packages are essential for the fraud detection system to work
+
+# Enterprise fraud detection platform dependencies
+fastapi>=0.95.0
+uvicorn[standard]>=0.20.0
+pydantic>=1.10.0
+
+# Deep learning for sequence models
+tensorflow>=2.13.0
+
+# ======================================
+# OPTIONAL ENTERPRISE FEATURES
+# ======================================
+# These packages are only needed for enterprise features
+
+# Database and caching (optional)
+redis>=4.5.0
+psycopg2-binary>=2.9.0
+sqlalchemy>=1.4.0
+
+# Message queuing (optional)
+celery>=5.2.0
+# Note: rabbitmq is a system package, not a Python package
+
+# Monitoring and logging (optional)
+prometheus-client>=0.15.0
+structlog>=22.3.0
+
+# Security (optional)
+cryptography>=38.0.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+bcrypt<4.0.0
+email-validator>=2.0.0
+
+# ======================================
+# DEVELOPMENT AND TESTING (OPTIONAL)
+# ======================================
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.20.0
+pytest-cov>=4.0.0
+httpx>=0.24.0
+
+# CLI and utilities
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Development tools
+black>=22.0.0
+flake8>=5.0.0
+mypy>=0.991
+pylint>=3.0.0
+pre-commit>=3.0.0
+
+# ======================================
+# INSTALLATION NOTES
+# ======================================
+# 
+# For basic fraud detection functionality, install only:
+# pip install pandas numpy scikit-learn matplotlib seaborn
+#
+# For full enterprise features, install all packages:
+# pip install -r requirements.txt
+#
+# For development, install with testing tools:
+# pip install -r requirements.txt
