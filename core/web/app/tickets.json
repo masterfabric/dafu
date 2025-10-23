@@ -12,6 +12,19 @@
         "This project is built in the open to accelerate innovation across financial services, e‑commerce, payments and fintech.",
         "Areas to help: API–ML integration, feature engineering & rules, observability, security & compliance, model monitoring (drift, CI for ML)."
       ]
+    },
+    {
+      "number": 2,
+      "title": "DAFU Platform Evolution: From ML Core to Enterprise API",
+      "author": "furkancankaya",
+      "github": "https://github.com/cankaya96",
+      "created_at": "2025-10-23",
+      "tags": ["api-integration", "enterprise", "ml-platform", "infrastructure"],
+      "body": [
+        "DAFU has evolved from a pure machine learning platform to a comprehensive enterprise fraud detection solution. The latest merge brings significant infrastructure improvements and API integration capabilities.",
+        "This update represents a major milestone in our journey toward building a production-ready fraud detection platform that bridges the gap between advanced ML algorithms and enterprise requirements.",
+        "Recent achievements: Unified CLI with API integration, JWT authentication & RBAC, structured logging system, report management, product risk tracking, and complete Postman collection for API testing."
+      ]
     }
   ]
 }
