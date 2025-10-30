@@ -33,6 +33,9 @@ import os
 from datetime import datetime
 import json
 import joblib
+import plotly.graph_objs as go
+import plotly.subplots as psub
+import plotly.io as pio
 
 # Configure logging
 logging.basicConfig(
@@ -1346,6 +1349,98 @@ class IsolationForestFraudDetector:
             plt.close(fig)
             print("📊 Visualization created and saved (interactive display skipped)")
     
+    def create_interactive_visualizations(self, save_html: bool = True) -> None:
+        """
+        Creates interactive fraud analytics visuals with Plotly and saves as standalone HTML.
+        """
+        logger = logging.getLogger(__name__)
+        logger.info("Creating interactive plotly visualizations...")
+
+        results = self.results if self.results else None
+
+        # Main title and subplots
+        fig = psub.make_subplots(
+            rows=2, cols=2,
+            subplot_titles=(
+                'Feature Importance (Variance)',
+                'Anomaly Score Distribution',
+                'Confusion Matrix' if self.is_supervised and results else 'No Supervised Evaluation',
+                'ROC Curve' if self.is_supervised and (self.label_column and results and self.data[self.label_column].nunique() == 2) else 'Not Available'
+            )
+        )
+
+        # 1. Feature Importance (Variance)
+        if self.processed_data is not None:
+            feature_vars = self.processed_data.var().sort_values(ascending=True)
+            top_features = feature_vars.tail(10)
+            fig.add_trace(
+                go.Bar(
+                    x=top_features.values, y=top_features.index,
+                    orientation='h', marker_color='skyblue', name='Variance'
+                ), row=1, col=1
+            )
+
+        # 2. Anomaly Score Distribution
+        contamination = list(self.anomaly_scores.keys())[0] if self.anomaly_scores else None
+        scores = self.anomaly_scores[contamination] if contamination else None
+        if scores is not None:
+            fig.add_trace(
+                go.Histogram(
+                    x=scores, nbinsx=50, name=f'Scores (cont={contamination})',
+                    marker_color='lightcoral', opacity=0.7
+                ), row=1, col=2
+            )
+            fig.add_vline(
+                x=scores.mean(), line=dict(color='red', dash='dash'), row=1, col=2
+            )
+
+        # 3. Confusion Matrix (Supervised)
+        if self.is_supervised and results and self.label_column and contamination:
+            cm = results[contamination]['confusion_matrix'] if 'confusion_matrix' in results[contamination] else None
+            if cm is not None:
+                import numpy as np
+                import plotly.figure_factory as ff
+                z = cm.tolist()
+                labels = ["Normal", "Fraud"]
+                # Plot a confusion matrix (heatmap)
+                fig.add_trace(
+                    go.Heatmap(z=z, x=labels, y=labels, colorscale='Blues', showscale=True, name='CM'),
+                    row=2, col=1
+                )
+
+        # 4. ROC Curve
+        if self.is_supervised and results and self.label_column and self.data[self.label_column].nunique() == 2 and contamination:
+            y_true = self.processed_data[self.label_column]
+            from sklearn.metrics import roc_curve, roc_auc_score
+            binary_true = (y_true == y_true.unique()[1]).astype(int)
+            scores_pred = results[contamination]['scores']
+            fpr, tpr, _ = roc_curve(binary_true, scores_pred)
+            roc_auc = roc_auc_score(binary_true, scores_pred)
+            fig.add_trace(
+                go.Scatter(x=fpr, y=tpr, mode='lines',
+                           name=f'ROC AUC={roc_auc:.3f}', line=dict(color='darkorange')),
+                row=2, col=2
+            )
+            fig.add_shape(type="line", x0=0, x1=1, y0=0, y1=1,
+                          line=dict(color='navy', width=2, dash='dash'), row=2, col=2)
+
+        fig.update_layout(
+            title_text='Isolation Forest Fraud Detection (Interactive)', height=900, width=1350,
+            showlegend=False, template='plotly_white')
+
+        # Save HTML
+        if save_html:
+            import os
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            base_dir = os.path.join(os.path.dirname(__file__), 'fraud_detection_results/visualization/anomaly_detection')
+            os.makedirs(base_dir, exist_ok=True)
+            html_path = os.path.join(base_dir, f"fraud_detection_analysis_interactive_{timestamp}.html")
+            pio.write_html(fig, file=html_path, full_html=True, include_plotlyjs='cdn')
+            print(f"📈 Plotly interactive HTML saved: {html_path}")
+        else:
+            fig.show()
+    
     def _plot_feature_importance(self, ax) -> None:
         """Plot feature importance based on variance."""
         if self.processed_data is None:
@@ -1670,6 +1765,9 @@ def main():
             show_interactive = show_plots in ['y', 'yes']
             
             detector.create_visualizations(save_plots=True, show_interactive=show_interactive)
+            # Automatically save interactive Plotly HTML visualization:
+            print("\n🌐 Creating interactive Plotly HTML visualizations...")
+            detector.create_interactive_visualizations(save_html=True)
             
             print("\n🎉 Analysis complete! Program will now exit.")
             if not show_interactive:
