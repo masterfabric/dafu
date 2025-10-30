@@ -1709,7 +1709,9 @@ class SequenceFraudDetector:
         
         if save_plots:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            plot_path = f"sequence_fraud_detection_analysis_{timestamp}.png"
+            base_dir = os.path.join(os.path.dirname(__file__), 'sequence_fraud_detection_results/visualization/sequence_fraud_detection')
+            os.makedirs(base_dir, exist_ok=True)
+            plot_path = os.path.join(base_dir, f"sequence_fraud_detection_analysis_{timestamp}.png")
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             logger.info(f"Plot saved as: {plot_path}")
             print(f"📊 Visualization saved as: {plot_path}")
