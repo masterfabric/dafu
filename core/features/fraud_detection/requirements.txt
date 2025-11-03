@@ -96,3 +96,7 @@ pre-commit>=3.0.0
 #
 # For development, install with testing tools:
 # pip install -r requirements.txt
+
+# Interactive Visualization (Plotly, Streamlit)
+plotly>=5.0.0
+streamlit>=1.25.0

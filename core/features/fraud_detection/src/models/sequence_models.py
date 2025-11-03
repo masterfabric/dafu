@@ -38,6 +38,9 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.utils import to_categorical
 import joblib
+import plotly.graph_objs as go
+import plotly.subplots as psub
+import plotly.io as pio
 
 # Configure logging
 logging.basicConfig(
@@ -1709,7 +1712,9 @@ class SequenceFraudDetector:
         
         if save_plots:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            plot_path = f"sequence_fraud_detection_analysis_{timestamp}.png"
+            base_dir = os.path.join(os.path.dirname(__file__), 'sequence_fraud_detection_results/visualization/sequence_fraud_detection')
+            os.makedirs(base_dir, exist_ok=True)
+            plot_path = os.path.join(base_dir, f"sequence_fraud_detection_analysis_{timestamp}.png")
             plt.savefig(plot_path, dpi=300, bbox_inches='tight')
             logger.info(f"Plot saved as: {plot_path}")
             print(f"📊 Visualization saved as: {plot_path}")
@@ -2048,6 +2053,89 @@ class SequenceFraudDetector:
         
         print("="*80)
 
+    def create_interactive_visualizations(self, save_html: bool = True) -> None:
+        """
+        Creates interactive sequence model visuals with Plotly and saves as standalone HTML.
+        """
+        logger = logging.getLogger(__name__)
+        logger.info("Creating interactive plotly sequence visualizations...")
+
+        results = self.results if self.results else None
+
+        # Main title and subplots
+        fig = psub.make_subplots(
+            rows=2, cols=2,
+            subplot_titles=(
+                'Model Performance Comparison',
+                'Prediction Score Distribution',
+                'Confusion Matrices' if self.is_supervised and results else 'No Supervised Evaluation',
+                'ROC Curves' if self.is_supervised and results else 'Not Available'
+            )
+        )
+
+        # 1. Model Performance Comparison
+        if results and any('accuracy' in val for val in results.values()):
+            metrics = ['accuracy', 'f1_score', 'precision', 'recall']
+            models = [k for k in results.keys() if all(m in results[k] for m in metrics)]
+            for idx, model_name in enumerate(models):
+                r = results[model_name]
+                bars = [r[m] for m in metrics]
+                fig.add_trace(
+                    go.Bar(
+                        x=metrics,
+                        y=bars,
+                        name=model_name,
+                        marker_color=['skyblue','lightcoral','gold','green'][idx % 4],
+                        opacity=0.7
+                    ), row=1, col=1
+                )
+
+        # 2. Prediction Score Distribution
+        if self.lstm_predictions is not None or self.gru_predictions is not None:
+            if self.lstm_predictions is not None:
+                fig.add_trace(go.Histogram(x=self.lstm_predictions.flatten(), nbinsx=30, name='LSTM', marker_color='skyblue', opacity=0.7), row=1, col=2)
+            if self.gru_predictions is not None:
+                fig.add_trace(go.Histogram(x=self.gru_predictions.flatten(), nbinsx=30, name='GRU', marker_color='lightcoral', opacity=0.7), row=1, col=2)
+
+        # 3. Confusion Matrices
+        if self.is_supervised and results:
+            for idx, model in enumerate(['LSTM','GRU']):
+                if model in results and 'confusion_matrix' in results[model]:
+                    cm = results[model]['confusion_matrix']
+                    import numpy as np
+                    z = cm.tolist()
+                    fig.add_trace(go.Heatmap(z=z, x=['Normal','Fraud'], y=['Normal','Fraud'], colorscale='Blues' if model=='LSTM' else 'Reds', showscale=True, name=f'{model} CM', zmin=0), row=2, col=1 if model=='LSTM' else 2)
+
+        # 4. ROC Curves
+        from sklearn.metrics import roc_curve, roc_auc_score
+        if self.is_supervised and results:
+            for model in ['LSTM','GRU']:
+                if model in results and 'scores' in results[model] and 'actual_labels' in results[model]:
+                    y_true = results[model]['actual_labels']
+                    y_score = results[model]['scores']
+                    if len(np.unique(y_true))==2:
+                        fpr, tpr, _ = roc_curve(y_true, y_score)
+                        auc = roc_auc_score(y_true, y_score)
+                        fig.add_trace(
+                            go.Scatter(x=fpr, y=tpr, mode='lines', name=f'{model} ROC (AUC={auc:.3f})', line=dict(width=2)), row=2, col=2
+                        )
+            fig.add_shape(type="line", x0=0, x1=1, y0=0, y1=1, line=dict(color='gray', width=1, dash='dash'), row=2, col=2)
+
+        fig.update_layout(title_text='Sequence Fraud Detection (Interactive)',height=900, width=1350,showlegend=True, template='plotly_white')
+
+        # Save HTML
+        if save_html:
+            import os
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            base_dir = os.path.join(os.path.dirname(__file__), 'sequence_fraud_detection_results/visualization/sequence_fraud_detection')
+            os.makedirs(base_dir, exist_ok=True)
+            html_path = os.path.join(base_dir, f"sequence_fraud_detection_analysis_interactive_{timestamp}.html")
+            pio.write_html(fig, file=html_path, full_html=True, include_plotlyjs='cdn')
+            print(f"📈 Plotly interactive HTML saved: {html_path}")
+        else:
+            fig.show()
+
 
 def main():
     """
@@ -2137,6 +2225,9 @@ def main():
             show_interactive = show_plots in ['y', 'yes']
             
             detector.create_visualizations(save_plots=True, show_interactive=show_interactive)
+            # Automatically save interactive Plotly HTML visualization:
+            print("\n🌐 Creating interactive Plotly HTML visualizations...")
+            detector.create_interactive_visualizations(save_html=True)
             
             print("\n🎉 Analysis complete! Program will now exit.")
             if not show_interactive:
