@@ -1,0 +1,3 @@
+# This directory stores classification data results from feature engineering
+# CSV files in this directory are automatically ignored by .gitignore
+

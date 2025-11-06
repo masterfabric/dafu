@@ -5,7 +5,7 @@ Handles CSV input validation, sessionization, and session aggregation.
 
 import pandas as pd
 import numpy as np
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict, Union
 from pathlib import Path
 
 
@@ -95,8 +95,9 @@ def validate_data_format(df: pd.DataFrame) -> Tuple[bool, Optional[str]]:
 def preprocess_data(
     input_path: str,
     output_path: Optional[str] = None,
-    session_timeout_minutes: int = SESSION_TIMEOUT_MINUTES
-) -> pd.DataFrame:
+    session_timeout_minutes: int = SESSION_TIMEOUT_MINUTES,
+    return_sessionized: bool = False
+) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
     """
     Preprocess customer analytics data: validate, sessionize, and aggregate.
     
@@ -104,9 +105,11 @@ def preprocess_data(
         input_path: Path to input CSV file
         output_path: Path to save aggregated sessions CSV (optional)
         session_timeout_minutes: Minutes of inactivity before starting new session
+        return_sessionized: If True, return both aggregated and sessionized data
         
     Returns:
-        DataFrame with aggregated session features
+        If return_sessionized=False: DataFrame with aggregated session features
+        If return_sessionized=True: Tuple of (aggregated_sessions, sessionized_data)
         
     Raises:
         DataFormatError: If data format validation fails
@@ -171,6 +174,8 @@ def preprocess_data(
     if output_path:
         aggregated_sessions.to_csv(output_path, index=False)
     
+    if return_sessionized:
+        return aggregated_sessions, df
     return aggregated_sessions
 
 

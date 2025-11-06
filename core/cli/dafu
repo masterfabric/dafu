@@ -21,6 +21,7 @@ BOLD='\033[1m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FRAUD_DETECTION_DIR="$PROJECT_ROOT/core/features/fraud_detection"
+CUSTOMER_ANALYTICS_DIR="$PROJECT_ROOT/core/features/customer_analytics"
 TOKEN_FILE="$HOME/.dafu_token"
 
 # Banner
@@ -80,6 +81,11 @@ show_help() {
     echo -e "  ${BOLD}models${NC}              - Alias for fraud-detection"
     echo -e "  ${BOLD}ml${NC}                  - Alias for fraud-detection"
     echo ""
+    echo -e "${GREEN}Customer Analytics:${NC}"
+    echo -e "  ${BOLD}customer-analytics${NC}  - Run customer analytics (interactive)"
+    echo -e "  ${BOLD}analytics${NC}           - Alias for customer-analytics"
+    echo -e "  ${BOLD}ca${NC}                  - Alias for customer-analytics"
+    echo ""
     echo -e "${GREEN}Docker Services:${NC}"
     echo -e "  ${BOLD}docker up${NC}           - Start Docker services"
     echo -e "  ${BOLD}docker down${NC}         - Stop Docker services"
@@ -122,6 +128,7 @@ show_info() {
     echo -e "${CYAN}══════════════════════════════════════════════════════════${NC}"
     echo -e "Installation Path: ${GREEN}$SCRIPT_DIR${NC}"
     echo -e "Fraud Detection:   ${GREEN}$FRAUD_DETECTION_DIR${NC}"
+    echo -e "Customer Analytics: ${GREEN}$CUSTOMER_ANALYTICS_DIR${NC}"
     echo ""
     
     if [ -d "$FRAUD_DETECTION_DIR/venv" ]; then
@@ -143,6 +150,7 @@ show_info() {
     echo -e "  • Risk Score Analysis"
     echo -e "  • Real-time Stream Processing"
     echo -e "  • Batch Processing"
+    echo -e "  • Customer Analytics & Churn Prediction"
     echo ""
 }
 
@@ -199,6 +207,23 @@ show_status() {
         fi
     else
         echo -e "Fraud Detection:   ${RED}✗ Not found${NC}"
+    fi
+    
+    # Check customer analytics directory
+    if [ -d "$CUSTOMER_ANALYTICS_DIR" ]; then
+        echo -e "Customer Analytics: ${GREEN}✓ Available${NC}"
+        
+        # Check for results
+        if [ -d "$CUSTOMER_ANALYTICS_DIR/results" ]; then
+            local result_count=$(find "$CUSTOMER_ANALYTICS_DIR/results" -name "*.csv" 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$result_count" -gt 0 ]; then
+                echo -e "Analytics Results: ${GREEN}✓ $result_count result(s) found${NC}"
+            else
+                echo -e "Analytics Results: ${YELLOW}○ No results yet${NC}"
+            fi
+        fi
+    else
+        echo -e "Customer Analytics: ${RED}✗ Not found${NC}"
     fi
     
     echo ""
@@ -268,6 +293,56 @@ run_fraud_detection() {
     
     # Deactivate virtual environment
     deactivate 2>/dev/null || true
+    
+    cd "$SCRIPT_DIR"
+}
+
+# Run customer analytics
+run_customer_analytics() {
+    # Check authentication
+    if ! check_auth; then
+        echo ""
+        echo -e "${RED}❌ Authentication required${NC}"
+        echo -e "${YELLOW}Please login first: ${BOLD}auth login${NC}"
+        echo ""
+        return 1
+    fi
+    
+    echo ""
+    echo -e "${BLUE}📊 Starting Customer Analytics...${NC}"
+    echo ""
+    
+    if [ ! -d "$CUSTOMER_ANALYTICS_DIR" ]; then
+        echo -e "${RED}Error: Customer analytics directory not found${NC}"
+        echo -e "${YELLOW}Expected location: $CUSTOMER_ANALYTICS_DIR${NC}"
+        return 1
+    fi
+    
+    cd "$CUSTOMER_ANALYTICS_DIR"
+    
+    # Check if Python is available
+    if ! command -v python3 &> /dev/null; then
+        echo -e "${RED}Error: Python 3 is not installed${NC}"
+        return 1
+    fi
+    
+    # Check if required packages are available
+    if ! python3 -c "import pandas, numpy" 2>/dev/null; then
+        echo -e "${YELLOW}Required packages not found. Installing...${NC}"
+        pip3 install -q pandas numpy
+        echo -e "${GREEN}✓ Dependencies installed${NC}"
+        echo ""
+    fi
+    
+    # Run the interactive CLI
+    echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
+    echo ""
+    python3 interactive_cli.py
+    
+    echo ""
+    echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}✓ Customer analytics session completed${NC}"
+    echo ""
     
     cd "$SCRIPT_DIR"
 }
@@ -412,6 +487,9 @@ process_command() {
             ;;
         "fraud-detection"|"models"|"ml")
             run_fraud_detection
+            ;;
+        "customer-analytics"|"analytics"|"ca")
+            run_customer_analytics
             ;;
         "docker")
             if [ ${#args[@]} -gt 0 ]; then

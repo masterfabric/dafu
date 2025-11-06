@@ -167,6 +167,7 @@ dafu> logs list               # View system logs (NEW!)
 dafu> reports list            # View fraud reports (NEW!)
 dafu> products stats          # Product statistics (NEW!)
 dafu> fraud-detection         # Run ML models
+dafu> customer-analytics      # Run customer analytics (NEW!)
 dafu> docker status           # Check Docker services
 
 # The CLI will:
@@ -186,6 +187,7 @@ dafu> docker status           # Check Docker services
 | **Reports** | `reports list/create/view/stats` | Fraud detection reports ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
 | **Products** | `products list/high-risk/stats` | Product risk management ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
 | **ML Models** | `fraud-detection`, `models`, `ml` | Run fraud detection models |
+| **Customer Analytics** | `customer-analytics`, `analytics`, `ca` | Run customer analytics & churn prediction ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
 | **Docker** | `docker up/down/restart/status/logs` | Manage Docker services |
 | **System** | `status`, `info`, `version` | Show system information |
 | **Utilities** | `help`, `clear`, `exit` | Utility commands |
@@ -243,6 +245,7 @@ dafu> logs list         # View system logs
 dafu> reports list      # View fraud reports
 dafu> products stats    # Product statistics
 dafu> fraud-detection   # Run ML models
+dafu> customer-analytics # Run customer analytics (NEW!)
 ```
 
 📖 **Complete Guide**: See [docs/USAGE_GUIDE.md](./core/docs/USAGE_GUIDE.md) for detailed instructions
@@ -252,6 +255,7 @@ dafu> fraud-detection   # Run ML models
 - ✅ System logging and analytics
 - ✅ Fraud detection report generation
 - ✅ Product risk management
+- ✅ Customer analytics & churn prediction ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - ✅ All ML models
 - ✅ RESTful API endpoints
 - ✅ Database persistence
