@@ -114,6 +114,7 @@ The single most important document - covers all DAFU features in one place:
 | **View logs** | [Usage Guide - Logs](./core/docs/USAGE_GUIDE.md#logs-management) |
 | **Create reports** | [Usage Guide - Reports](./core/docs/USAGE_GUIDE.md#reports-management) |
 | **Manage products** | [Usage Guide - Products](./core/docs/USAGE_GUIDE.md#products-management) |
+| **Customer analytics** | [Usage Guide - Customer Analytics](./core/docs/USAGE_GUIDE.md#customer-analytics) |
 
 ---
 
@@ -202,6 +203,7 @@ dafu/
 | **Logging** | [Usage Guide - Logs](./core/docs/USAGE_GUIDE.md#logs-management) |
 | **Reports** | [Usage Guide - Reports](./core/docs/USAGE_GUIDE.md#reports-management) |
 | **Products** | [Usage Guide - Products](./core/docs/USAGE_GUIDE.md#products-management) |
+| **Customer Analytics** | [Usage Guide - Customer Analytics](./core/docs/USAGE_GUIDE.md#customer-analytics) |
 | **ML Models** | [ML Quick Start](./core/docs/guides/QUICK_START.md) |
 | **Docker** | [Docker Status](./core/docs/docker/DOCKER_STATUS.md) |
 

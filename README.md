@@ -167,6 +167,7 @@ dafu> logs list               # View system logs (NEW!)
 dafu> reports list            # View fraud reports (NEW!)
 dafu> products stats          # Product statistics (NEW!)
 dafu> fraud-detection         # Run ML models
+dafu> customer-analytics      # Run customer analytics (NEW!)
 dafu> docker status           # Check Docker services
 
 # The CLI will:
@@ -186,6 +187,7 @@ dafu> docker status           # Check Docker services
 | **Reports** | `reports list/create/view/stats` | Fraud detection reports ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
 | **Products** | `products list/high-risk/stats` | Product risk management ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
 | **ML Models** | `fraud-detection`, `models`, `ml` | Run fraud detection models |
+| **Customer Analytics** | `customer-analytics`, `analytics`, `ca` | Run customer analytics & churn prediction ![NEW](https://img.shields.io/badge/NEW!-brightgreen) |
 | **Docker** | `docker up/down/restart/status/logs` | Manage Docker services |
 | **System** | `status`, `info`, `version` | Show system information |
 | **Utilities** | `help`, `clear`, `exit` | Utility commands |
@@ -243,6 +245,7 @@ dafu> logs list         # View system logs
 dafu> reports list      # View fraud reports
 dafu> products stats    # Product statistics
 dafu> fraud-detection   # Run ML models
+dafu> customer-analytics # Run customer analytics (NEW!)
 ```
 
 📖 **Complete Guide**: See [docs/USAGE_GUIDE.md](./core/docs/USAGE_GUIDE.md) for detailed instructions
@@ -252,6 +255,7 @@ dafu> fraud-detection   # Run ML models
 - ✅ System logging and analytics
 - ✅ Fraud detection report generation
 - ✅ Product risk management
+- ✅ Customer analytics & churn prediction ![NEW](https://img.shields.io/badge/NEW!-brightgreen)
 - ✅ All ML models
 - ✅ RESTful API endpoints
 - ✅ Database persistence
@@ -824,6 +828,25 @@ timestamp,user_id,transaction_count,daily_amount,risk_score
 2024-01-15,user_123,5,750.00,0.2
 2024-01-16,user_123,8,1200.00,0.4
 ```
+
+### Customer Analytics Session Data
+Customer analytics pre-processing and feature engineering expect a sessionized clickstream dataset with the following structure:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `timestamp` | int64 | UNIX timestamp for the event (UTC). |
+| `visitorid` | int64 | Unique customer/visitor identifier. |
+| `itemid` | int64 | Product identifier associated with the interaction. |
+| `event` | string | One of `view`, `addtocart`, `transaction`. |
+| `categoryid` | string | Product category identifier. |
+| `price` | float64 | Item price at the time of the event. |
+| `datetime` | string | Human-readable timestamp (ISO-8601 recommended). |
+| `row_number` | int64 | Sequential row counter (monotonic within the file). |
+
+**Notes**
+- The interactive CLI performs format validation and enforces the event vocabulary above.
+- Default outputs are saved alongside the source file (`*_aggregated_sessions.csv`) and under `core/features/customer_analytics/results/` as timestamped classification datasets.
+- See `core/features/customer_analytics/README.md` for advanced configuration (session timeout, split strategies, filters) and additional context on derived feature columns.
 
 ## 🎯 Use Cases and Scenarios
 
