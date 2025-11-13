@@ -15,6 +15,7 @@ sys.path.insert(0, str(current_dir))
 
 from preprocessing import preprocess_data, DataFormatError, validate_data_format
 from feature_engineering import engineer_features
+from modeling import launch_modeling
 
 
 class CustomerAnalyticsCLI:
@@ -35,6 +36,8 @@ class CustomerAnalyticsCLI:
         self.classification_data_path = None
         self.use_default_location = True
         self.use_default_filename = True
+        self.latest_classification_data = None
+        self.latest_classification_path = None
     
     def display_welcome_message(self):
         """Display welcome message."""
@@ -52,6 +55,20 @@ class CustomerAnalyticsCLI:
         print("• Churn prediction dataset creation")
         print("="*80)
     
+    @staticmethod
+    def _prompt_yes_no(message, default=True):
+        """Prompt user for yes/no input."""
+        suffix = " [Y/n]: " if default else " [y/N]: "
+        while True:
+            response = input(f"{message}{suffix}").strip().lower()
+            if not response:
+                return default
+            if response in ("y", "yes"):
+                return True
+            if response in ("n", "no"):
+                return False
+            print("❌ Please enter 'y' or 'n'.")
+
     def get_input_file(self):
         """Get input CSV file path from user."""
         print("\n" + "="*60)
@@ -396,6 +413,12 @@ class CustomerAnalyticsCLI:
     
     def process_data(self):
         """Process the data based on user selections."""
+        context = {
+            "success": False,
+            "classification_data": None,
+            "classification_path": None,
+            "split_time": None,
+        }
         print("\n" + "="*80)
         print("🚀 PROCESSING DATA")
         print("="*80)
@@ -462,24 +485,69 @@ class CustomerAnalyticsCLI:
                 
                 if saved_path:
                     print(f"  - Saved to: {saved_path}")
+                    context["classification_path"] = str(saved_path)
+                else:
+                    context["classification_path"] = None
+
+                context["classification_data"] = classification_data
+                context["split_time"] = used_split_time
+                self.latest_classification_data = classification_data
+                self.latest_classification_path = (
+                    str(saved_path) if saved_path else self.classification_data_path
+                )
+            else:
+                self.latest_classification_data = None
+                self.latest_classification_path = None
             
             print("\n" + "="*80)
             print("✅ ALL PROCESSING COMPLETED SUCCESSFULLY!")
             print("="*80)
             
-            return True
+            context["success"] = True
+            return context
             
         except DataFormatError as e:
             print(f"\n❌ Data format error: {str(e)}")
-            return False
+            return context
         except FileNotFoundError as e:
             print(f"\n❌ File not found: {str(e)}")
-            return False
+            return context
         except Exception as e:
             print(f"\n❌ Unexpected error: {str(e)}")
             import traceback
             traceback.print_exc()
-            return False
+            return context
+    
+    def run_modeling_workflow(self, classification_data=None, classification_path=None):
+        """Launch modeling workflows if the user opts in."""
+        print("\n" + "="*80)
+        print("📈 ADVANCED MODELING & SEGMENTATION")
+        print("="*80)
+        print("Run predictive pipelines (churn, CLV) and segmentation on engineered features.")
+        
+        default_choice = bool(classification_data is not None or classification_path)
+        if not self._prompt_yes_no("Proceed to modeling workflows?", default=default_choice):
+            print("⏭️  Skipping modeling stage.")
+            return
+        
+        default_path = classification_path or self.latest_classification_path
+        if default_path:
+            print(f"\nUsing dataset: {default_path}")
+        else:
+            print("\nNo recent classification dataset detected. You can provide a compatible CSV path manually.")
+        
+        try:
+            launch_modeling(
+                default_dataset_path=default_path,
+                classification_data=classification_data
+            )
+        except ImportError as err:
+            print(f"\n❌ Modeling dependencies missing: {err}")
+            print("Install required packages (e.g., scikit-learn, xgboost, lightgbm, catboost, hdbscan) and retry.")
+        except Exception as err:
+            print(f"\n❌ Modeling workflow failed: {err}")
+            import traceback
+            traceback.print_exc()
     
     def run(self):
         """Run the interactive CLI."""
@@ -511,9 +579,16 @@ class CustomerAnalyticsCLI:
             self.get_save_options()
             
             # Process data
-            if not self.process_data():
+            process_context = self.process_data()
+            if not process_context.get("success"):
                 print("\n👋 Exiting due to processing errors...")
                 return
+            
+            # Optional modeling workflows
+            self.run_modeling_workflow(
+                classification_data=process_context.get("classification_data"),
+                classification_path=process_context.get("classification_path")
+            )
             
             # Exit message
             print("\n" + "="*80)

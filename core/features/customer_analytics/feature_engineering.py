@@ -125,11 +125,7 @@ def engineer_features(
         (classification_data["ses_rec"] <= max_recency_days)
     ]
     
-    # Convert target to binary (0=visited, 1=churn)
-    classification_data["target_class"] = classification_data["target_class"].apply(
-        lambda c: 0 if c > 0 else 1
-    )
-    
+    # Ensure missing values are handled after target merge
     # Fill remaining missing values
     classification_data = classification_data.fillna(-1)
     
