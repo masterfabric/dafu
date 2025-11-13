@@ -19,6 +19,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
+import os
 
 try:
     from sklearn.cluster import KMeans
@@ -72,6 +73,8 @@ try:
     _HAS_HDBSCAN = True
 except ImportError:
     _HAS_HDBSCAN = False
+
+_THREADPOOLCTL_PATCHED = False
 
 
 NUMERIC_FEATURES = [
@@ -253,6 +256,13 @@ class CustomerAnalyticsModeler:
 
             try:
                 self.dataset = pd.read_csv(self.dataset_path)
+                duplicated_cols = self.dataset.columns[self.dataset.columns.duplicated()]
+                if len(duplicated_cols) > 0:
+                    print(
+                        "⚠️  Duplicate columns detected. Keeping first occurrence for: "
+                        + ", ".join(sorted(set(duplicated_cols)))
+                    )
+                    self.dataset = self.dataset.loc[:, ~self.dataset.columns.duplicated()]
                 print(f"✅ Loaded dataset with shape {self.dataset.shape}")
                 self._validate_required_columns()
                 self._describe_labels()
@@ -300,11 +310,37 @@ class CustomerAnalyticsModeler:
             ]
         )
         base_features = [col for col in NUMERIC_FEATURES if col in self.dataset.columns]
-        self.feature_columns = [
+        raw_features = [
             col
             for col in base_features + cat_columns
             if col not in {"target_class", "final_churn"}
         ]
+
+        # Deduplicate while preserving order
+        seen = set()
+        deduped: List[str] = []
+        for col in raw_features:
+            if col not in seen:
+                deduped.append(col)
+                seen.add(col)
+
+        # Keep only numeric columns (XGBoost/LightGBM expect numeric input)
+        numeric_cols = []
+        dropped_non_numeric = []
+        for col in deduped:
+            dtype = self.dataset[col].dtype
+            if np.issubdtype(dtype, np.number):
+                numeric_cols.append(col)
+            else:
+                dropped_non_numeric.append(col)
+
+        if dropped_non_numeric:
+            print(
+                "⚠️  Dropping non-numeric feature columns: "
+                + ", ".join(dropped_non_numeric)
+            )
+
+        self.feature_columns = numeric_cols
 
         if not self.feature_columns:
             raise ValueError(
@@ -428,10 +464,27 @@ class CustomerAnalyticsModeler:
             except Exception:
                 metrics["roc_auc_ovr"] = float("nan")
 
-            prob_df = pd.DataFrame(
-                probas,
-                columns=[f"prob_class_{c}" for c in sorted(target.unique())],
-            )
+            unique_classes = sorted(np.unique(np.concatenate([y_train, y_test])))
+            num_classes = len(unique_classes)
+            num_probs = probas.shape[1]
+            if num_probs != num_classes:
+                # Align probability matrix with expected number of classes
+                if model_name.lower().startswith("xgboost") and num_probs == num_classes - 1:
+                    # Some XGBoost setups may omit a column; infer the missing one
+                    missing_class = [c for c in unique_classes if c >= num_probs][-1]
+                    inferred = 1 - probas.sum(axis=1, keepdims=True)
+                    probas = np.hstack([probas, inferred])
+                    num_probs = probas.shape[1]
+                if num_probs != num_classes:
+                    print(
+                        f"⚠️  Probability output columns ({num_probs}) do not match expected classes ({num_classes})."
+                        " Adjusting to available classes."
+                    )
+                    unique_classes = list(range(num_probs))
+                    num_classes = num_probs
+
+            prob_columns = [f"prob_class_{c}" for c in unique_classes]
+            prob_df = pd.DataFrame(np.round(probas, 2), columns=prob_columns)
             predictions = pd.DataFrame(
                 {
                     "visitorid": visitors_test.values,
@@ -601,7 +654,7 @@ class CustomerAnalyticsModeler:
                             "visitorid": visitors_test.values,
                             "true_churn": y_test.values,
                             "predicted_churn": preds,
-                            "prob_churn": probs,
+                            "prob_churn": np.round(probs, 2),
                         }
                     ),
                 )
@@ -675,18 +728,25 @@ class CustomerAnalyticsModeler:
 
         print("\n💰 CLV REGRESSION")
         print("Numeric columns available as potential targets:")
-        for col in num_cols:
-            print(f"  - {col}")
+        for idx, col in enumerate(num_cols, start=1):
+            print(f"  {idx:>2}. {col}")
 
         target_col = None
-        while not target_col:
+        while target_col is None:
             candidate = input(
-                "Enter target column for regression (e.g., future_revenue): "
+                "Select target column by number (e.g., 5): "
             ).strip()
-            if candidate in num_cols:
-                target_col = candidate
-            else:
-                print("Column not found or not numeric. Please try again.")
+            if not candidate:
+                print("Please enter a column number.")
+                continue
+            try:
+                index = int(candidate)
+                if 1 <= index <= len(num_cols):
+                    target_col = num_cols[index - 1]
+                else:
+                    print("Number out of range. Try again.")
+            except ValueError:
+                print("Please enter a valid integer.")
 
         df = df.dropna(subset=[target_col])
         y = df[target_col].astype(float)
@@ -739,8 +799,8 @@ class CustomerAnalyticsModeler:
                     predictions=pd.DataFrame(
                         {
                             "visitorid": visitors_test.values,
-                            "actual": y_test.values,
-                            "predicted": preds,
+                            "actual": np.round(y_test.values, 2),
+                            "predicted": np.round(preds, 2),
                         }
                     ),
                 )
@@ -837,19 +897,24 @@ class CustomerAnalyticsModeler:
         self._print_model_choices(algorithms)
         selected = self._prompt_model_selection(algorithms)
 
+        self._ensure_threadpoolctl_safe()
+
         results: List[SegmentationResult] = []
         for algo in selected:
             print(f"\n▶ Running {algo} segmentation...")
             if algo.startswith("K-Means"):
                 k = self._prompt_int("Number of clusters (k)", default=4, minimum=2)
-                model = KMeans(n_clusters=k, random_state=42, n_init="auto")
-                labels = model.fit_predict(scaled)
+                model = KMeans(n_clusters=k, random_state=42, n_init=10)
+                labels = self._safe_fit_predict(model, scaled, algo)
                 results.append(
                     SegmentationResult(
                         algorithm=f"KMeans_{k}",
                         params={"n_clusters": k, "inertia": float(model.inertia_)},
                         assignments=pd.DataFrame(
-                            {"visitorid": df["visitorid"].values, "cluster": labels}
+                            {
+                                "visitorid": df["visitorid"].values,
+                                "cluster": labels,
+                            }
                         ),
                     )
                 )
@@ -860,7 +925,7 @@ class CustomerAnalyticsModeler:
                 model = GaussianMixture(
                     n_components=comp, covariance_type="full", random_state=42
                 )
-                labels = model.fit_predict(scaled)
+                labels = self._safe_fit_predict(model, scaled, algo)
                 results.append(
                     SegmentationResult(
                         algorithm=f"GMM_{comp}",
@@ -869,7 +934,10 @@ class CustomerAnalyticsModeler:
                             "avg_log_likelihood": float(model.score(scaled)),
                         },
                         assignments=pd.DataFrame(
-                            {"visitorid": df["visitorid"].values, "cluster": labels}
+                            {
+                                "visitorid": df["visitorid"].values,
+                                "cluster": labels,
+                            }
                         ),
                     )
                 )
@@ -885,7 +953,7 @@ class CustomerAnalyticsModeler:
                     min_samples=min_samples,
                     metric="euclidean",
                 )
-                labels = model.fit_predict(scaled)
+                labels = self._safe_fit_predict(model, scaled, algo)
                 results.append(
                     SegmentationResult(
                         algorithm=f"HDBSCAN_{min_cluster}_{min_samples}",
@@ -895,7 +963,10 @@ class CustomerAnalyticsModeler:
                             "outlier_score": float(np.nanmean(model.outlier_scores_)),
                         },
                         assignments=pd.DataFrame(
-                            {"visitorid": df["visitorid"].values, "cluster": labels}
+                            {
+                                "visitorid": df["visitorid"].values,
+                                "cluster": labels,
+                            }
                         ),
                     )
                 )
@@ -1094,6 +1165,49 @@ class CustomerAnalyticsModeler:
             print(f"  - Saved {res.algorithm} assignments to {output_path}")
 
         print(f"\n✅ Segmentation outputs saved to {final_dir}")
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+    def _ensure_threadpoolctl_safe(self) -> None:
+        """Patch threadpoolctl get_version to guard against None returns."""
+        global _THREADPOOLCTL_PATCHED
+        if _THREADPOOLCTL_PATCHED:
+            return
+        try:
+            import threadpoolctl
+
+            original_get_version = threadpoolctl.lib_controller.LibController.get_version
+
+            def safe_get_version(self):
+                value = original_get_version(self)
+                if value is None:
+                    return ""
+                return value
+
+            threadpoolctl.lib_controller.LibController.get_version = safe_get_version
+            _THREADPOOLCTL_PATCHED = True
+        except Exception:
+            # Best-effort guard; ignore if threadpoolctl internals change
+            pass
+
+    def _safe_fit_predict(self, model, data, algo_name: str):
+        """Run fit_predict with safeguards for threadpool-related issues."""
+        try:
+            return model.fit_predict(data)
+        except AttributeError as exc:
+            if "split" in str(exc):
+                print(
+                    f"⚠️  Encountered BLAS/threadpool issue while running {algo_name}. "
+                    "Retrying with single-thread limit."
+                )
+                try:
+                    import threadpoolctl
+                    with threadpoolctl.threadpool_limits(limits=1, user_api=None):
+                        return model.fit_predict(data)
+                except Exception:
+                    pass
+            raise
 
 
 def launch_modeling(

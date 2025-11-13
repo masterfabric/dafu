@@ -38,6 +38,7 @@ class CustomerAnalyticsCLI:
         self.use_default_filename = True
         self.latest_classification_data = None
         self.latest_classification_path = None
+        self.workflow_mode = "pipeline"
     
     def display_welcome_message(self):
         """Display welcome message."""
@@ -55,6 +56,28 @@ class CustomerAnalyticsCLI:
         print("• Churn prediction dataset creation")
         print("="*80)
     
+    def choose_workflow_mode(self):
+        """Decide between full pipeline or modeling-only mode."""
+        print("\n" + "="*80)
+        print("⚙️  WORKFLOW SELECTION")
+        print("="*80)
+        print("Select the workflow you want to run:")
+        print("  1. Preprocess + Feature Engineering (optionally continue to modeling)")
+        print("  2. Modeling Only (use existing engineered dataset)")
+        print("  3. Cancel / Exit")
+        
+        while True:
+            choice = input("Enter choice (1/2/3): ").strip()
+            if choice == "1":
+                self.workflow_mode = "pipeline"
+                return True
+            if choice == "2":
+                self.workflow_mode = "modeling_only"
+                return True
+            if choice == "3":
+                return False
+            print("❌ Please enter 1, 2, or 3.")
+
     @staticmethod
     def _prompt_yes_no(message, default=True):
         """Prompt user for yes/no input."""
@@ -517,6 +540,52 @@ class CustomerAnalyticsCLI:
             import traceback
             traceback.print_exc()
             return context
+
+    def run_modeling_only(self):
+        """Run modeling workflow directly with an existing dataset."""
+        print("\n" + "="*80)
+        print("📈 MODELING ONLY MODE")
+        print("="*80)
+        print("Use an existing classification dataset (output of feature engineering or compatible schema).")
+        
+        default_path = self.latest_classification_path
+        if default_path:
+            print(f"Latest generated dataset detected: {default_path}")
+            if not self._prompt_yes_no("Use this dataset?", default=True):
+                default_path = None
+        
+        dataset_path = default_path
+        while dataset_path is None:
+            candidate = input("Enter classification dataset path (or type 'exit' to cancel): ").strip().strip('"').strip("'")
+            if not candidate:
+                print("❌ Path is required.")
+                continue
+            if candidate.lower() in {"exit", "quit"}:
+                print("🔙 Returning to main menu.")
+                return
+            candidate_path = Path(candidate).expanduser()
+            if not candidate_path.exists():
+                print(f"❌ File not found: {candidate_path}")
+                continue
+            if candidate_path.is_dir():
+                print("❌ Path points to a directory. Please provide a CSV file.")
+                continue
+            if candidate_path.suffix.lower() != ".csv":
+                proceed = self._prompt_yes_no("File does not have .csv extension. Continue?", default=False)
+                if not proceed:
+                    continue
+            dataset_path = candidate_path
+        
+        print(f"\n✅ Using dataset: {dataset_path}")
+        try:
+            launch_modeling(default_dataset_path=str(dataset_path))
+        except ImportError as err:
+            print(f"\n❌ Modeling dependencies missing: {err}")
+            print("Install required packages (e.g., scikit-learn, xgboost, lightgbm, catboost, hdbscan) and retry.")
+        except Exception as err:
+            print(f"\n❌ Modeling workflow failed: {err}")
+            import traceback
+            traceback.print_exc()
     
     def run_modeling_workflow(self, classification_data=None, classification_path=None):
         """Launch modeling workflows if the user opts in."""
@@ -554,6 +623,19 @@ class CustomerAnalyticsCLI:
         try:
             # Display welcome
             self.display_welcome_message()
+
+            # Choose workflow
+            if not self.choose_workflow_mode():
+                print("\n👋 Exiting...")
+                return
+            
+            if self.workflow_mode == "modeling_only":
+                self.run_modeling_only()
+                print("\n" + "="*80)
+                print("👋 Thank you for using Customer Analytics Platform!")
+                print("="*80)
+                print("\n")
+                return
             
             # Get input file
             if not self.get_input_file():
