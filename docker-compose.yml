@@ -47,8 +47,8 @@ services:
   # ==========================================================================
   fraud-detection-api:
     build:
-      context: ./core/features/fraud_detection
-      dockerfile: deployment/Dockerfile
+      context: .
+      dockerfile: ./core/features/fraud_detection/deployment/Dockerfile
     container_name: dafu-fraud-api
     restart: unless-stopped
     ports:

@@ -18,17 +18,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-COPY requirements-minimal.txt .
+# Copy requirements first for better caching (from project root)
+# Context is now project root, so we can copy directly
+COPY requirements.txt /build/requirements.txt
+COPY core/features/fraud_detection/requirements-minimal.txt /build/requirements-minimal.txt
 
 # Create virtual environment and install dependencies
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install Python dependencies
+# Install Python dependencies from project root requirements.txt
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r /build/requirements.txt
 
 # Stage 2: Runtime stage
 # ================================================
@@ -63,8 +64,11 @@ WORKDIR /app
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 
-# Copy application code
-COPY --chown=appuser:appuser . /app/
+# Copy application code (fraud detection feature)
+COPY --chown=appuser:appuser core/features/fraud_detection /app/
+
+# Copy core modules that may be needed
+COPY --chown=appuser:appuser core /app/core
 
 # Create necessary directories
 RUN mkdir -p /app/models /app/results /app/logs && \

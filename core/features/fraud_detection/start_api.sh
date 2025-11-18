@@ -36,6 +36,9 @@ echo -e "${NC}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
+# Use project root requirements.txt
+REQUIREMENTS_FILE="$PROJECT_ROOT/requirements.txt"
+
 echo -e "${CYAN}Starting DAFU API...${NC}"
 echo ""
 
@@ -54,8 +57,14 @@ source venv/bin/activate
 # Install/upgrade dependencies
 echo -e "${CYAN}Checking dependencies...${NC}"
 pip install -q --upgrade pip
-pip install -q -r requirements.txt
-echo -e "${GREEN}✓ Dependencies installed${NC}"
+if [ -f "$REQUIREMENTS_FILE" ]; then
+    pip install -q -r "$REQUIREMENTS_FILE"
+    echo -e "${GREEN}✓ Dependencies installed from project root${NC}"
+else
+    # Fallback to local requirements.txt if project root doesn't exist
+    pip install -q -r requirements.txt
+    echo -e "${GREEN}✓ Dependencies installed from local requirements.txt${NC}"
+fi
 echo ""
 
 # Check if PostgreSQL is running

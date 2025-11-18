@@ -25,6 +25,17 @@ joblib>=1.2.0
 # Machine learning libraries
 # Note: IsolationForest is included in scikit-learn, no separate package needed
 
+# Gradient boosting frameworks (for customer analytics and fraud detection)
+xgboost>=2.0.0
+lightgbm>=4.0.0
+catboost>=1.2.0
+
+# Clustering algorithms
+hdbscan>=0.8.33
+
+# Thread pool control (for BLAS/threading compatibility)
+threadpoolctl>=3.1.0
+
 # ======================================
 # CORE FRAUD DETECTION PACKAGES (REQUIRED)
 # ======================================
