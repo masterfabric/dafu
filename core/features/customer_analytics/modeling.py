@@ -77,6 +77,69 @@ except ImportError:
 _THREADPOOLCTL_PATCHED = False
 
 
+def _patch_threadpoolctl_early():
+    """Patch threadpoolctl early to prevent BLAS config issues on macOS."""
+    global _THREADPOOLCTL_PATCHED
+    if _THREADPOOLCTL_PATCHED:
+        return
+    try:
+        import threadpoolctl
+
+        # Patch LibController.get_version to handle None from get_config()
+        if hasattr(threadpoolctl, "lib_controller"):
+            original_get_version = threadpoolctl.lib_controller.LibController.get_version
+
+            def safe_get_version(self):
+                try:
+                    value = original_get_version(self)
+                    if value is None:
+                        return ""
+                    return value
+                except (AttributeError, TypeError):
+                    return ""
+
+            threadpoolctl.lib_controller.LibController.get_version = safe_get_version
+
+        # Patch threadpool_limits context manager to bypass BLAS checks when problematic
+        original_threadpool_limits = threadpoolctl.threadpool_limits
+
+        class SafeThreadpoolLimits:
+            """Context manager that bypasses BLAS checks if they fail."""
+
+            def __init__(self, limits=None, user_api=None):
+                self.limits = limits
+                self.user_api = user_api
+                self._ctx = None
+
+            def __enter__(self):
+                try:
+                    self._ctx = original_threadpool_limits(
+                        limits=self.limits, user_api=self.user_api
+                    )
+                    return self._ctx.__enter__()
+                except (AttributeError, TypeError, Exception):
+                    # If threadpool_limits fails, return a no-op context
+                    return self
+
+            def __exit__(self, *args):
+                if self._ctx:
+                    try:
+                        return self._ctx.__exit__(*args)
+                    except Exception:
+                        pass
+                return False
+
+        threadpoolctl.threadpool_limits = SafeThreadpoolLimits
+        _THREADPOOLCTL_PATCHED = True
+    except Exception:
+        # Best-effort; ignore if threadpoolctl internals differ
+        pass
+
+
+# Apply patch at module import time
+_patch_threadpoolctl_early()
+
+
 NUMERIC_FEATURES = [
     "ses_rec",
     "ses_rec_avg",
@@ -385,22 +448,62 @@ class CustomerAnalyticsModeler:
         print("  4) RFM & behavioural segmentation")
         print("Press any other key at menu to return.\n")
 
+    def _get_multiclass_model_names(self) -> List[str]:
+        """Get available multi-class model names for display."""
+        models = []
+        if _HAS_XGB:
+            models.append("XGBoost")
+        if _HAS_LGB:
+            models.append("LightGBM")
+        if _HAS_CATBOOST:
+            models.append("CatBoost")
+        models.append("RF")
+        models.append("Logistic")
+        return models
+
+    def _get_binary_model_names(self) -> List[str]:
+        """Get available binary model names for display."""
+        models = []
+        if _HAS_XGB:
+            models.append("XGBoost")
+        if _HAS_CATBOOST:
+            models.append("CatBoost")
+        models.append("Logistic")
+        return models
+
+    def _get_regression_model_names(self) -> List[str]:
+        """Get available regression model names for display."""
+        models = ["GBM"]
+        if _HAS_XGB:
+            models.append("XGBoost")
+        if _HAS_CATBOOST:
+            models.append("CatBoost")
+        models.append("Poisson")
+        return models
+
     def _prompt_pipeline_choice(self) -> str:
         """Prompt user for pipeline selection."""
         print("\n" + "-" * 60)
         print("Available pipelines:")
         if self.has_target:
-            print("  1. Multi-class churn propensity (XGBoost, LightGBM, CatBoost, RF, Logistic)")
+            multiclass_models = ", ".join(self._get_multiclass_model_names())
+            print(f"  1. Multi-class churn propensity ({multiclass_models})")
         else:
             print("  1. Multi-class churn propensity [requires target_class]")
 
         if self.has_final_churn:
-            print("  2. Binary churn scoring (XGBoost, CatBoost, Logistic)")
+            binary_models = ", ".join(self._get_binary_model_names())
+            print(f"  2. Binary churn scoring ({binary_models})")
         else:
             print("  2. Binary churn scoring [requires final_churn]")
 
-        print("  3. CLV regression (GBM, XGBoost, CatBoost, Poisson)")
-        print("  4. Segmentation (KMeans, GMM, HDBSCAN)")
+        regression_models = ", ".join(self._get_regression_model_names())
+        print(f"  3. CLV regression ({regression_models})")
+
+        seg_models = ["KMeans", "GMM"]
+        if _HAS_HDBSCAN:
+            seg_models.append("HDBSCAN")
+        print(f"  4. Segmentation ({', '.join(seg_models)})")
         print("-" * 60)
         return input("Choose pipeline [1-4, other to exit]: ").strip()
 
@@ -446,8 +549,8 @@ class CustomerAnalyticsModeler:
                 steps.append(("scaler", StandardScaler()))
             steps.append(("model", estimator))
             pipeline = Pipeline(steps)
-            pipeline.fit(x_train, y_train)
-            probas = pipeline.predict_proba(x_test)
+            self._safe_fit(pipeline, x_train, y_train)
+            probas = self._safe_predict_proba(pipeline, x_test)
             preds = np.argmax(probas, axis=1)
 
             metrics = {
@@ -624,8 +727,8 @@ class CustomerAnalyticsModeler:
                 steps.append(("scaler", StandardScaler()))
             steps.append(("model", estimator))
             pipeline = Pipeline(steps)
-            pipeline.fit(x_train, y_train)
-            probs = pipeline.predict_proba(x_test)[:, 1]
+            self._safe_fit(pipeline, x_train, y_train)
+            probs = self._safe_predict_proba(pipeline, x_test)[:, 1]
             preds = (probs >= 0.5).astype(int)
 
             metrics = {
@@ -727,7 +830,10 @@ class CustomerAnalyticsModeler:
         )
 
         print("\n💰 CLV REGRESSION")
-        print("Numeric columns available as potential targets:")
+        print("Predict future numeric value (revenue, transaction count, etc.)")
+        print("\nNote: target_class and final_churn are excluded as they are categorical labels.")
+        print("      Use Pipeline 1 or 2 for churn prediction instead.")
+        print("\nNumeric columns available as potential targets:")
         for idx, col in enumerate(num_cols, start=1):
             print(f"  {idx:>2}. {col}")
 
@@ -782,8 +888,8 @@ class CustomerAnalyticsModeler:
                 steps.append(("scaler", StandardScaler()))
             steps.append(("model", estimator))
             pipeline = Pipeline(steps)
-            pipeline.fit(x_train, y_train)
-            preds = pipeline.predict(x_test)
+            self._safe_fit(pipeline, x_train, y_train)
+            preds = self._safe_predict(pipeline, x_test)
 
             results.append(
                 RegressionResult(
@@ -891,13 +997,23 @@ class CustomerAnalyticsModeler:
             return
 
         data = df[feature_cols].fillna(0)
-        scaled = StandardScaler().fit_transform(data)
+        scaler = StandardScaler()
+        try:
+            scaled = scaler.fit_transform(data)
+        except (AttributeError, TypeError) as exc:
+            if "split" in str(exc) or "NoneType" in str(type(exc).__name__):
+                try:
+                    import threadpoolctl
+                    with threadpoolctl.threadpool_limits(limits=1, user_api=None):
+                        scaled = scaler.fit_transform(data)
+                except Exception:
+                    scaled = scaler.fit_transform(data)
+            else:
+                raise
 
         algorithms = self._available_segmentation_algorithms()
         self._print_model_choices(algorithms)
         selected = self._prompt_model_selection(algorithms)
-
-        self._ensure_threadpoolctl_safe()
 
         results: List[SegmentationResult] = []
         for algo in selected:
@@ -926,12 +1042,24 @@ class CustomerAnalyticsModeler:
                     n_components=comp, covariance_type="full", random_state=42
                 )
                 labels = self._safe_fit_predict(model, scaled, algo)
+                try:
+                    score_val = float(model.score(scaled))
+                except (AttributeError, TypeError) as exc:
+                    if "split" in str(exc) or "NoneType" in str(type(exc).__name__):
+                        try:
+                            import threadpoolctl
+                            with threadpoolctl.threadpool_limits(limits=1, user_api=None):
+                                score_val = float(model.score(scaled))
+                        except Exception:
+                            score_val = float(model.score(scaled))
+                    else:
+                        score_val = 0.0
                 results.append(
                     SegmentationResult(
                         algorithm=f"GMM_{comp}",
                         params={
                             "n_components": comp,
-                            "avg_log_likelihood": float(model.score(scaled)),
+                            "avg_log_likelihood": score_val,
                         },
                         assignments=pd.DataFrame(
                             {
@@ -1169,34 +1297,65 @@ class CustomerAnalyticsModeler:
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
-    def _ensure_threadpoolctl_safe(self) -> None:
-        """Patch threadpoolctl get_version to guard against None returns."""
-        global _THREADPOOLCTL_PATCHED
-        if _THREADPOOLCTL_PATCHED:
-            return
+    def _safe_fit(self, pipeline_or_model, X, y=None):
+        """Safely fit pipeline or model, handling threadpool/BLAS issues."""
         try:
-            import threadpoolctl
+            if y is not None:
+                return pipeline_or_model.fit(X, y)
+            else:
+                return pipeline_or_model.fit(X)
+        except (AttributeError, TypeError) as exc:
+            if "split" in str(exc) or "NoneType" in str(type(exc).__name__):
+                # BLAS/threadpool issue detected; retry with single-thread fallback
+                try:
+                    import threadpoolctl
+                    with threadpoolctl.threadpool_limits(limits=1, user_api=None):
+                        if y is not None:
+                            return pipeline_or_model.fit(X, y)
+                        else:
+                            return pipeline_or_model.fit(X)
+                except Exception:
+                    # If threadpool_limits also fails (already patched), try direct fit
+                    if y is not None:
+                        return pipeline_or_model.fit(X, y)
+                    else:
+                        return pipeline_or_model.fit(X)
+            raise
 
-            original_get_version = threadpoolctl.lib_controller.LibController.get_version
+    def _safe_predict(self, pipeline_or_model, X):
+        """Safely predict with pipeline or model."""
+        try:
+            return pipeline_or_model.predict(X)
+        except (AttributeError, TypeError) as exc:
+            if "split" in str(exc) or "NoneType" in str(type(exc).__name__):
+                try:
+                    import threadpoolctl
+                    with threadpoolctl.threadpool_limits(limits=1, user_api=None):
+                        return pipeline_or_model.predict(X)
+                except Exception:
+                    return pipeline_or_model.predict(X)
+            raise
 
-            def safe_get_version(self):
-                value = original_get_version(self)
-                if value is None:
-                    return ""
-                return value
-
-            threadpoolctl.lib_controller.LibController.get_version = safe_get_version
-            _THREADPOOLCTL_PATCHED = True
-        except Exception:
-            # Best-effort guard; ignore if threadpoolctl internals change
-            pass
+    def _safe_predict_proba(self, pipeline_or_model, X):
+        """Safely predict probabilities with pipeline or model."""
+        try:
+            return pipeline_or_model.predict_proba(X)
+        except (AttributeError, TypeError) as exc:
+            if "split" in str(exc) or "NoneType" in str(type(exc).__name__):
+                try:
+                    import threadpoolctl
+                    with threadpoolctl.threadpool_limits(limits=1, user_api=None):
+                        return pipeline_or_model.predict_proba(X)
+                except Exception:
+                    return pipeline_or_model.predict_proba(X)
+            raise
 
     def _safe_fit_predict(self, model, data, algo_name: str):
         """Run fit_predict with safeguards for threadpool-related issues."""
         try:
             return model.fit_predict(data)
-        except AttributeError as exc:
-            if "split" in str(exc):
+        except (AttributeError, TypeError) as exc:
+            if "split" in str(exc) or "NoneType" in str(type(exc).__name__):
                 print(
                     f"⚠️  Encountered BLAS/threadpool issue while running {algo_name}. "
                     "Retrying with single-thread limit."
@@ -1206,7 +1365,8 @@ class CustomerAnalyticsModeler:
                     with threadpoolctl.threadpool_limits(limits=1, user_api=None):
                         return model.fit_predict(data)
                 except Exception:
-                    pass
+                    # Fallback: try direct fit_predict if threadpool_limits fails
+                    return model.fit_predict(data)
             raise
 
 
