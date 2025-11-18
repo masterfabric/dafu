@@ -830,23 +830,67 @@ timestamp,user_id,transaction_count,daily_amount,risk_score
 ```
 
 ### Customer Analytics Session Data
-Customer analytics pre-processing and feature engineering expect a sessionized clickstream dataset with the following structure:
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `timestamp` | int64 | UNIX timestamp for the event (UTC). |
-| `visitorid` | int64 | Unique customer/visitor identifier. |
-| `itemid` | int64 | Product identifier associated with the interaction. |
-| `event` | string | One of `view`, `addtocart`, `transaction`. |
-| `categoryid` | string | Product category identifier. |
-| `price` | float64 | Item price at the time of the event. |
-| `datetime` | string | Human-readable timestamp (ISO-8601 recommended). |
-| `row_number` | int64 | Sequential row counter (monotonic within the file). |
+Customer analytics preprocessing and feature engineering expect a sessionized clickstream dataset. The `preprocessing.py` module automatically validates the dataset format before processing.
 
-**Notes**
-- The interactive CLI performs format validation and enforces the event vocabulary above.
-- Default outputs are saved alongside the source file (`*_aggregated_sessions.csv`) and under `core/features/customer_analytics/results/` as timestamped classification datasets.
-- See `core/features/customer_analytics/README.md` for advanced configuration (session timeout, split strategies, filters) and additional context on derived feature columns.
+#### Required Columns
+
+Your CSV file **must** contain all of the following columns with exact names and types:
+
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `timestamp` | int64 | ✅ Yes | UNIX timestamp for the event (UTC seconds since epoch). |
+| `visitorid` | int64 | ✅ Yes | Unique customer/visitor identifier. Must be numeric. |
+| `itemid` | int64 | ✅ Yes | Product/item identifier associated with the interaction. Must be numeric. |
+| `event` | object/string | ✅ Yes | Event type. **Must be one of:** `view`, `addtocart`, `transaction` (case-sensitive). |
+| `categoryid` | object/string | ✅ Yes | Product category identifier. Can be numeric or string. |
+| `price` | float64 | ✅ Yes | Item price at the time of the event. Must be numeric (can include 0.0). |
+| `datetime` | object/string | ✅ Yes | Human-readable timestamp (ISO-8601 format recommended, e.g., `2024-01-15 10:30:00`). |
+| `row_number` | int64 | ✅ Yes | Sequential row counter (monotonic within the file). Must start from 1 and increment. |
+
+#### Event Type Values
+
+The `event` column **must only** contain these exact values (case-sensitive):
+- ✅ `view` - User viewed a product/item
+- ✅ `addtocart` - User added item to shopping cart
+- ✅ `transaction` - User completed a purchase
+
+**Invalid values will cause validation errors.** The preprocessing module automatically checks event vocabulary.
+
+#### Data Validation
+
+The `preprocessing.py` module performs automatic validation:
+- ✅ **Column existence check**: Verifies all 8 required columns are present
+- ✅ **Data type validation**: Checks numeric columns are correct type
+- ✅ **Event value validation**: Ensures only valid event types exist
+- ✅ **Format consistency**: Validates data structure matches expected format
+
+**Validation errors** provide detailed messages indicating:
+- Which columns are missing
+- Type mismatches
+- Invalid event values found
+- Expected vs. received format
+
+#### Example Valid Dataset
+
+```csv
+timestamp,visitorid,itemid,event,categoryid,price,datetime,row_number
+1705316400,123456,789,view,electronics,149.99,2024-01-15 10:30:00,1
+1705316460,123456,790,addtocart,electronics,299.99,2024-01-15 10:31:00,2
+1705316520,123456,790,transaction,electronics,299.99,2024-01-15 10:32:00,3
+1705316580,123457,791,view,clothing,49.99,2024-01-15 10:33:00,4
+```
+
+#### Output Files
+
+**After Preprocessing:**
+- `*_aggregated_sessions.csv` - Session-level features (default: saved alongside input file)
+- `classification_data_YYYYMMDD_HHMMSS.csv` - Customer-level features for modeling (default: `core/features/customer_analytics/results/`)
+
+**See Also:**
+- `core/features/customer_analytics/README.md` - Advanced configuration (session timeout, split strategies, filters)
+- `core/features/customer_analytics/preprocessing.py` - Source code for validation logic
+- `core/features/customer_analytics/feature_engineering.py` - Feature engineering details
 
 ## 🎯 Use Cases and Scenarios
 
