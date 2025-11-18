@@ -23,6 +23,14 @@ fi
 
 echo "✅ Python $PYTHON_VERSION detected"
 
+# Get script directory and project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+
+# Use project root requirements.txt
+REQUIREMENTS_FILE="$PROJECT_ROOT/requirements.txt"
+REQUIREMENTS_MINIMAL_FILE="$SCRIPT_DIR/requirements-minimal.txt"
+
 # Create virtual environment if it doesn't exist
 if [ ! -d "fraud_detection_env" ]; then
     echo "📦 Creating virtual environment..."
@@ -41,10 +49,20 @@ pip install --upgrade pip
 echo "📥 Installing dependencies..."
 if [ "$1" = "minimal" ]; then
     echo "   Installing minimal requirements..."
-    pip install -r requirements-minimal.txt
+    if [ -f "$REQUIREMENTS_MINIMAL_FILE" ]; then
+        pip install -r "$REQUIREMENTS_MINIMAL_FILE"
+    else
+        echo "   ⚠️  Minimal requirements file not found, using project requirements..."
+        pip install -r "$REQUIREMENTS_FILE"
+    fi
 else
-    echo "   Installing full requirements..."
-    pip install -r requirements.txt
+    echo "   Installing full requirements from project root..."
+    if [ -f "$REQUIREMENTS_FILE" ]; then
+        pip install -r "$REQUIREMENTS_FILE"
+    else
+        echo "   ⚠️  Project requirements not found, using local requirements.txt..."
+        pip install -r requirements.txt
+    fi
 fi
 
 # Verify installation

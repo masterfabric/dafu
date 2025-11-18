@@ -56,25 +56,57 @@ python main.py input.csv \
 
 ## Data Format Requirements
 
-Your CSV file must have the following columns:
+The `preprocessing.py` module automatically validates your dataset before processing. Your CSV file **must** contain all required columns with exact names and correct data types.
 
-| Column      | Type    | Description                    |
-|-------------|---------|--------------------------------|
-| timestamp   | int64   | Unix timestamp                 |
-| visitorid   | int64   | Unique visitor identifier      |
-| itemid      | int64   | Item/product identifier        |
-| event       | object  | Event type (view/addtocart/transaction) |
-| categoryid  | object  | Category identifier            |
-| price       | float64 | Item price                     |
-| datetime    | object  | Human-readable datetime        |
-| row_number  | int64   | Row number                     |
+### Required Columns
 
-### Event Types
+| Column | Type | Required | Description |
+|--------|------|----------|-------------|
+| `timestamp` | int64 | ✅ Yes | UNIX timestamp for the event (UTC seconds since epoch). |
+| `visitorid` | int64 | ✅ Yes | Unique customer/visitor identifier. Must be numeric. |
+| `itemid` | int64 | ✅ Yes | Product/item identifier associated with the interaction. Must be numeric. |
+| `event` | object/string | ✅ Yes | Event type. **Must be one of:** `view`, `addtocart`, `transaction` (case-sensitive). |
+| `categoryid` | object/string | ✅ Yes | Product category identifier. Can be numeric or string. |
+| `price` | float64 | ✅ Yes | Item price at the time of the event. Must be numeric (can include 0.0). |
+| `datetime` | object/string | ✅ Yes | Human-readable timestamp (ISO-8601 format recommended, e.g., `2024-01-15 10:30:00`). |
+| `row_number` | int64 | ✅ Yes | Sequential row counter (monotonic within the file). Must start from 1 and increment. |
 
-The `event` column must contain only these values:
-- `view`
-- `addtocart`
-- `transaction`
+### Event Type Values
+
+The `event` column **must only** contain these exact values (case-sensitive):
+- ✅ `view` - User viewed a product/item
+- ✅ `addtocart` - User added item to shopping cart  
+- ✅ `transaction` - User completed a purchase
+
+**Invalid values will cause validation errors.** The preprocessing module automatically checks event vocabulary.
+
+### Data Validation
+
+The `preprocessing.py` module performs automatic validation:
+
+- ✅ **Column existence check**: Verifies all 8 required columns are present
+- ✅ **Data type validation**: Checks numeric columns are correct type (int64, float64)
+- ✅ **Event value validation**: Ensures only valid event types (`view`, `addtocart`, `transaction`) exist
+- ✅ **Format consistency**: Validates data structure matches expected format
+
+**Validation errors** provide detailed messages indicating:
+- Which columns are missing
+- Type mismatches (e.g., if `visitorid` is string instead of int64)
+- Invalid event values found (e.g., `purchase` instead of `transaction`)
+- Expected vs. received format
+
+### Example Valid Dataset
+
+```csv
+timestamp,visitorid,itemid,event,categoryid,price,datetime,row_number
+1705316400,123456,789,view,electronics,149.99,2024-01-15 10:30:00,1
+1705316460,123456,790,addtocart,electronics,299.99,2024-01-15 10:31:00,2
+1705316520,123456,790,transaction,electronics,299.99,2024-01-15 10:32:00,3
+1705316580,123457,791,view,clothing,49.99,2024-01-15 10:33:00,4
+1705316640,123457,792,addtocart,clothing,79.99,2024-01-15 10:34:00,5
+```
+
+**See:** `preprocessing.py` source code for full validation logic (`validate_data_format()` function)
 
 ## Output Files
 
