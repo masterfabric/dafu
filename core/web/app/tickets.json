@@ -32,7 +32,7 @@
       "title": "Dynamic GitHub Activity Integration with Rich Hover Cards",
       "author": "gurkanfikretgunak",
       "github": "https://github.com/gurkanfikretgunak",
-      "created_at": "2025-01-15",
+      "created_at": "2025-11-20",
       "tags": ["web", "github-integration", "ui-ux", "api", "nextjs"],
       "body": [
         "We've enhanced the DAFU website with dynamic GitHub activity display, bringing real-time project updates directly to the homepage. This feature showcases recent commits, open pull requests, and recently merged PRs with rich, interactive hover cards.",
