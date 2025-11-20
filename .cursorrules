@@ -1,0 +1,545 @@
+# DAFU - Data Analytics Functional Utilities
+# Cursor Rules for Enterprise Fraud Detection & E-commerce Analytics Platform
+
+## Project Overview
+DAFU is an enterprise fraud detection and e-commerce analytics platform built with:
+- **Backend**: FastAPI (Python 3.8+), PostgreSQL, Redis, RabbitMQ
+- **ML Framework**: scikit-learn, TensorFlow, XGBoost, LightGBM, CatBoost
+- **Frontend**: Next.js 15 (TypeScript), Tailwind CSS
+- **Infrastructure**: Docker, Kubernetes, Prometheus, Grafana
+- **Architecture**: Microservices with API Gateway pattern
+
+## Code Style & Conventions
+
+### Python Code Style
+- Follow PEP 8 strictly
+- Use Black for formatting (line length: 88-100)
+- Use type hints for all function signatures
+- Use Google-style docstrings for all classes and functions
+- Maximum line length: 100 characters
+- Use `snake_case` for variables, functions, and modules
+- Use `PascalCase` for classes
+- Use `UPPER_CASE` for constants
+- Prefer composition over inheritance
+- Use `pathlib.Path` instead of `os.path` for file operations
+
+### Import Organization
+```python
+# Standard library imports
+import os
+import logging
+from pathlib import Path
+from typing import Dict, List, Optional
+
+# Third-party imports
+import pandas as pd
+import numpy as np
+from fastapi import FastAPI, Request
+from sklearn.ensemble import IsolationForest
+
+# Local application imports
+from core.configs.settings import DATABASE_URL
+from core.features.fraud_detection.src.models.anomaly_detection import IsolationForestFraudDetector
+```
+
+### FastAPI Conventions
+- Use Pydantic models for all request/response schemas
+- Use dependency injection for database connections and services
+- Use async/await for I/O operations
+- Use router modules for organizing endpoints (`*_routes.py`)
+- Include comprehensive OpenAPI documentation
+- Use proper HTTP status codes
+- Implement proper error handling with custom exception handlers
+- Use middleware for cross-cutting concerns (logging, timing, CORS)
+
+### Example FastAPI Route Pattern
+```python
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
+from typing import List
+
+router = APIRouter(prefix="/api/v1", tags=["Resource"])
+
+class ResourceRequest(BaseModel):
+    """Request model with validation"""
+    name: str = Field(..., min_length=1, max_length=100)
+    value: float = Field(..., ge=0)
+
+class ResourceResponse(BaseModel):
+    """Response model"""
+    id: str
+    name: str
+    created_at: str
+
+@router.post("/resources", response_model=ResourceResponse, status_code=status.HTTP_201_CREATED)
+async def create_resource(request: ResourceRequest):
+    """Create a new resource with proper validation"""
+    # Implementation
+    pass
+```
+
+## Project Structure
+
+### Directory Organization
+```
+dafu/
+├── core/
+│   ├── apis/              # API services and routes
+│   ├── cli/               # CLI implementation
+│   ├── configs/           # Configuration files
+│   ├── docs/              # Documentation
+│   ├── features/          # Feature modules
+│   │   ├── fraud_detection/
+│   │   └── customer_analytics/
+│   └── web/               # Next.js frontend
+├── docker-compose.yml     # Docker services
+├── requirements.txt       # Python dependencies
+└── README.md             # Project documentation
+```
+
+### File Naming Conventions
+- Python files: `snake_case.py`
+- Test files: `test_*.py` or `*_test.py`
+- Configuration files: `settings.py`, `config.py`
+- Route files: `*_routes.py`
+- Model files: `*_models.py` or `models.py`
+- Service files: `*_service.py` or `service.py`
+
+## Machine Learning Patterns
+
+### Model Implementation
+- All ML models should inherit from a base class when possible
+- Use scikit-learn compatible interfaces (`fit`, `predict`, `score`)
+- Implement model persistence with `joblib` or `pickle`
+- Include comprehensive evaluation metrics
+- Support both batch and stream prediction modes
+- Implement proper data preprocessing pipelines
+- Use `StandardScaler` or `MinMaxScaler` for feature scaling
+- Handle missing values explicitly
+- Support supervised and unsupervised learning modes
+
+### Feature Engineering
+- Create separate modules for feature engineering (`feature_engineering.py`)
+- Use modular functions for different feature types:
+  - Transaction features
+  - User features
+  - Network features
+  - Temporal features
+- Validate input data before feature extraction
+- Document feature definitions and transformations
+
+### Model Training Pattern
+```python
+class FraudDetector:
+    def __init__(self, random_state: int = 42):
+        self.random_state = random_state
+        self.models = {}
+        self.scaler = StandardScaler()
+        
+    def load_and_analyze_data(self, file_path: str) -> pd.DataFrame:
+        """Load and analyze dataset"""
+        pass
+        
+    def preprocess_data(self) -> None:
+        """Preprocess data for training"""
+        pass
+        
+    def train_models(self, contamination_levels: List[float]) -> None:
+        """Train models with multiple configurations"""
+        pass
+        
+    def evaluate_models(self) -> Dict[str, float]:
+        """Evaluate model performance"""
+        pass
+        
+    def save_model_package(self, name: str) -> None:
+        """Save trained models for production"""
+        pass
+```
+
+## Database & ORM Patterns
+
+### SQLAlchemy Usage
+- Use declarative base models
+- Define relationships explicitly
+- Use type hints for model attributes
+- Implement proper migrations with Alembic
+- Use connection pooling
+- Handle database errors gracefully
+
+### Example Model Pattern
+```python
+from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from datetime import datetime
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True)
+    email = Column(String(255), unique=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    logs = relationship("Log", back_populates="user")
+```
+
+## API Design Principles
+
+### RESTful API Conventions
+- Use proper HTTP methods (GET, POST, PUT, DELETE, PATCH)
+- Use plural nouns for resource names (`/api/v1/users`, not `/api/v1/user`)
+- Use query parameters for filtering, sorting, pagination
+- Return consistent response formats
+- Use proper status codes:
+  - 200: Success
+  - 201: Created
+  - 400: Bad Request
+  - 401: Unauthorized
+  - 403: Forbidden
+  - 404: Not Found
+  - 422: Validation Error
+  - 500: Internal Server Error
+
+### API Versioning
+- Use URL versioning: `/api/v1/`, `/api/v2/`
+- Maintain backward compatibility when possible
+- Document breaking changes
+
+### Authentication & Authorization
+- Use JWT tokens for authentication
+- Implement RBAC (Role-Based Access Control)
+- Use dependency injection for auth checks
+- Validate tokens on every protected endpoint
+- Store sensitive data securely (hashed passwords)
+
+## Error Handling
+
+### Exception Handling Pattern
+```python
+import logging
+from fastapi import HTTPException, status
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+class DAFUException(Exception):
+    """Base exception for DAFU platform"""
+    def __init__(self, message: str, status_code: int = 500):
+        self.message = message
+        self.status_code = status_code
+        super().__init__(self.message)
+
+def handle_dafu_exception(request: Request, exc: DAFUException):
+    """Custom exception handler"""
+    logger.error(f"DAFU Exception: {exc.message}", exc_info=True)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.message, "timestamp": time.time()}
+    )
+```
+
+## Logging & Monitoring
+
+### Logging Standards
+- Use Python's `logging` module (not `print`)
+- Use structured logging with `structlog` for production
+- Log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+- Include context in log messages (user_id, transaction_id, etc.)
+- Log all API requests and responses (sanitize sensitive data)
+- Use correlation IDs for request tracing
+
+### Example Logging Pattern
+```python
+import logging
+import structlog
+
+logger = logging.getLogger(__name__)
+structured_logger = structlog.get_logger()
+
+# Standard logging
+logger.info("Processing transaction", extra={"transaction_id": tx_id})
+
+# Structured logging
+structured_logger.info(
+    "transaction_processed",
+    transaction_id=tx_id,
+    user_id=user_id,
+    amount=amount,
+    processing_time_ms=processing_time
+)
+```
+
+## Testing Standards
+
+### Test Organization
+- Place tests in `tests/` directory mirroring source structure
+- Use pytest for all tests
+- Use fixtures for common test data
+- Aim for 90%+ code coverage
+- Test both success and failure cases
+- Use mocking for external dependencies
+
+### Test Naming
+- Test files: `test_*.py`
+- Test functions: `test_*`
+- Test classes: `Test*`
+
+### Example Test Pattern
+```python
+import pytest
+from fastapi.testclient import TestClient
+from core.apis.services.main import app
+
+client = TestClient(app)
+
+def test_create_resource_success():
+    """Test successful resource creation"""
+    response = client.post(
+        "/api/v1/resources",
+        json={"name": "test", "value": 100.0}
+    )
+    assert response.status_code == 201
+    assert response.json()["name"] == "test"
+
+def test_create_resource_validation_error():
+    """Test validation error handling"""
+    response = client.post(
+        "/api/v1/resources",
+        json={"name": "", "value": -1}
+    )
+    assert response.status_code == 422
+```
+
+## Security Best Practices
+
+### Input Validation
+- Validate all user inputs using Pydantic models
+- Sanitize inputs to prevent injection attacks
+- Use parameterized queries for database operations
+- Validate file uploads (type, size, content)
+
+### Secrets Management
+- Never commit secrets to version control
+- Use environment variables for configuration
+- Use `.env` files for local development (add to `.gitignore`)
+- Use secret management services in production (AWS Secrets Manager, HashiCorp Vault)
+
+### Authentication
+- Use secure password hashing (bcrypt, argon2)
+- Implement token expiration and refresh
+- Use HTTPS in production
+- Implement rate limiting to prevent abuse
+
+## Performance Optimization
+
+### Database Optimization
+- Use database indexes for frequently queried columns
+- Use connection pooling
+- Implement query result caching with Redis
+- Use database query optimization (avoid N+1 queries)
+
+### API Performance
+- Use async/await for I/O operations
+- Implement response caching for expensive operations
+- Use pagination for large result sets
+- Compress responses when appropriate (gzip)
+
+### ML Model Performance
+- Cache preprocessed features
+- Use batch processing for multiple predictions
+- Optimize model loading (lazy loading, model caching)
+- Profile and optimize hot paths
+
+## Docker & Deployment
+
+### Dockerfile Best Practices
+- Use multi-stage builds
+- Use specific version tags (not `latest`)
+- Minimize image size
+- Use non-root user when possible
+- Set proper working directory
+- Copy only necessary files
+
+### Docker Compose
+- Use environment variables for configuration
+- Define health checks for all services
+- Use named volumes for persistent data
+- Set proper restart policies
+- Use networks for service isolation
+
+## Documentation Standards
+
+### Code Documentation
+- Write docstrings for all public functions and classes
+- Include parameter descriptions and return types
+- Provide usage examples in docstrings
+- Document complex algorithms and business logic
+
+### API Documentation
+- Use OpenAPI/Swagger for API documentation
+- Include request/response examples
+- Document error responses
+- Keep documentation up-to-date with code changes
+
+### README Files
+- Include project overview and setup instructions
+- Document environment variables
+- Include usage examples
+- Link to detailed documentation
+
+## Git & Version Control
+
+### Commit Messages
+- Use conventional commit format:
+  ```
+  type(scope): description
+  
+  [optional body]
+  
+  [optional footer]
+  ```
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- Write clear, descriptive commit messages
+- Reference issue numbers when applicable
+
+### Branch Naming
+- Feature branches: `feature/description`
+- Bug fixes: `fix/description`
+- Documentation: `docs/description`
+- Hotfixes: `hotfix/description`
+
+## Frontend (Next.js) Conventions
+
+### TypeScript Usage
+- Use TypeScript for all components
+- Define proper interfaces and types
+- Avoid `any` type
+- Use strict mode
+
+### Component Organization
+- Use functional components with hooks
+- Keep components small and focused
+- Extract reusable logic into custom hooks
+- Use proper prop types
+
+### Styling
+- Use Tailwind CSS utility classes
+- Follow design system (centered layout, Fira Code font)
+- Keep styles consistent across pages
+- Use CSS modules for component-specific styles
+
+## Common Patterns & Anti-patterns
+
+### DO:
+- ✅ Use dependency injection
+- ✅ Implement proper error handling
+- ✅ Use type hints
+- ✅ Write comprehensive tests
+- ✅ Document complex logic
+- ✅ Use async/await for I/O
+- ✅ Validate all inputs
+- ✅ Use environment variables for config
+- ✅ Implement proper logging
+
+### DON'T:
+- ❌ Use global variables
+- ❌ Ignore exceptions silently
+- ❌ Hardcode configuration values
+- ❌ Commit secrets or credentials
+- ❌ Use `print()` for logging
+- ❌ Skip input validation
+- ❌ Write functions without docstrings
+- ❌ Use synchronous I/O in async contexts
+- ❌ Mix business logic with API routes
+
+## Technology-Specific Guidelines
+
+### FastAPI
+- Use Pydantic models for validation
+- Use dependency injection for services
+- Use background tasks for long-running operations
+- Implement proper CORS configuration
+- Use middleware for cross-cutting concerns
+
+### PostgreSQL
+- Use transactions for data consistency
+- Implement proper indexes
+- Use connection pooling
+- Handle connection errors gracefully
+
+### Redis
+- Use for caching and session storage
+- Set appropriate TTLs
+- Handle connection failures
+- Use Redis for rate limiting
+
+### Machine Learning
+- Validate input data shapes
+- Handle missing values explicitly
+- Use proper train/test splits
+- Save and version models
+- Monitor model performance
+
+## Code Review Checklist
+
+Before submitting code, ensure:
+- [ ] Code follows PEP 8 style guide
+- [ ] All functions have type hints and docstrings
+- [ ] Tests are written and passing
+- [ ] No hardcoded secrets or credentials
+- [ ] Error handling is implemented
+- [ ] Logging is appropriate
+- [ ] Documentation is updated
+- [ ] Code is properly formatted (Black)
+- [ ] No linter errors (flake8, pylint)
+- [ ] Security best practices are followed
+
+## Quick Reference
+
+### Running Tests
+```bash
+pytest tests/ -v --cov=src --cov-report=html
+```
+
+### Code Formatting
+```bash
+black src/ tests/
+flake8 src/ tests/
+mypy src/
+```
+
+### Starting Services
+```bash
+# API Server
+cd core/features/fraud_detection
+./start_api.sh
+
+# Docker Compose
+docker-compose up -d
+
+# CLI
+./dafu
+```
+
+### Key Directories
+- API Routes: `core/apis/services/`
+- ML Models: `core/features/fraud_detection/src/models/`
+- Configuration: `core/configs/`
+- CLI: `core/cli/`
+- Frontend: `core/web/`
+
+## Additional Notes
+
+- Always consider scalability and performance
+- Follow microservices principles
+- Implement proper monitoring and observability
+- Use feature flags for gradual rollouts
+- Keep dependencies up-to-date
+- Review security implications of changes
+- Consider backward compatibility
+- Document breaking changes
+

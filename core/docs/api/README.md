@@ -23,6 +23,27 @@ Quick setup guide to get the API running:
 - First API calls
 - Testing procedures
 
+### **[MCP Feature Development](./MCP_FEATURE_DEVELOPMENT.md)** 🔧 Technical Guide
+
+Complete technical documentation for implementing Model Context Protocol (MCP) feature:
+- Architecture and component structure
+- Step-by-step development guide (10+ steps)
+- Detailed code examples for each component
+- How to run and test instructions
+- API endpoints documentation
+- Configuration and troubleshooting
+
+### **[LLM Chat Connector Hub](./LLM_CHAT_CONNECTOR_HUB.md)** 🤖 Technical Guide
+
+Complete technical documentation for LLM Chat Connector Hub Manager:
+- Multi-provider architecture (OpenAI + Claude)
+- Step-by-step development guide (11+ steps)
+- Provider implementation details
+- Chat session management
+- How to run and test instructions
+- API endpoints documentation
+- Configuration for both providers
+
 ---
 
 ## 🔌 API Features
@@ -53,6 +74,19 @@ Quick setup guide to get the API running:
 - Stock management
 - High-risk product detection
 - Product analytics
+
+### MCP (Model Context Protocol)
+- Tool registration and discovery
+- Fraud detection tool integration
+- Model management via MCP
+- External client integration
+
+### LLM Chat Connector Hub
+- Multi-provider LLM support (OpenAI + Claude)
+- Chat session management
+- Streaming responses
+- Provider switching
+- Conversation history
 
 ---
 
@@ -107,6 +141,18 @@ cd fraud_detection
 - `GET /api/v1/products/` - List products
 - `GET /api/v1/products/high-risk` - High-risk products
 - `GET /api/v1/products/stats` - Product statistics
+
+### MCP
+- `GET /api/v1/mcp/health` - MCP health check
+- `GET /api/v1/mcp/tools` - List available tools
+- `POST /api/v1/mcp/tools/call` - Call an MCP tool
+
+### LLM
+- `GET /api/v1/llm/health` - LLM service health check
+- `GET /api/v1/llm/providers` - List available providers
+- `POST /api/v1/llm/chat` - Send chat message
+- `GET /api/v1/llm/sessions/{session_id}` - Get session details
+- `DELETE /api/v1/llm/sessions/{session_id}` - Delete session
 
 **See [API Usage Guide](./API_USAGE_GUIDE.md) for complete endpoint reference**
 
