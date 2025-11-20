@@ -106,3 +106,34 @@ img, svg, video { max-width: 100%; height: auto; }
   border-radius: 0.5rem;
   padding: 2rem;
 }
+
+/* GitHub-style hover card */
+.github-hover-card {
+  max-width: 400px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.github-card-content {
+  background: #ffffff;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.github-card-content a:hover {
+  text-decoration: underline;
+}

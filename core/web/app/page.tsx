@@ -1,5 +1,6 @@
 import Link from "next/link";
 import authorsData from "./data.json";
+import GitHubActivity from "./components/GitHubActivity";
 
 type Author = {
   full_name: string;
@@ -127,6 +128,11 @@ chmod +x dafu
         <p className="lead">Read our open letter and see how you can contribute.</p>
         <p><Link href="/tickets">View tickets →</Link></p>
       </section>
+
+      <div className="hr" />
+
+      {/* GitHub Activity */}
+      <GitHubActivity />
 
       <div className="hr" />
 
