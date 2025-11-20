@@ -26,6 +26,20 @@
         "Recent achievements: Unified CLI with API integration, JWT authentication & RBAC, structured logging system, report management, product risk tracking, and complete Postman collection for API testing.",
         "For details on these recent changes, see the related pull request: https://github.com/masterfabric/dafu/pull/9."
       ]
+    },
+    {
+      "number": 3,
+      "title": "Dynamic GitHub Activity Integration with Rich Hover Cards",
+      "author": "gurkanfikretgunak",
+      "github": "https://github.com/gurkanfikretgunak",
+      "created_at": "2025-01-15",
+      "tags": ["web", "github-integration", "ui-ux", "api", "nextjs"],
+      "body": [
+        "We've enhanced the DAFU website with dynamic GitHub activity display, bringing real-time project updates directly to the homepage. This feature showcases recent commits, open pull requests, and recently merged PRs with rich, interactive hover cards.",
+        "The implementation includes a Next.js API route that fetches data from GitHub's REST API, displaying the latest 5 commits and all open/merged PRs. Each item features GitHub-style hover cards that reveal detailed information including full commit messages, PR descriptions, file change statistics (additions/deletions), and direct links to GitHub.",
+        "Key features: Real-time GitHub data integration, intelligent hover cards with smart positioning, full commit message previews, PR change statistics display, auto-refresh every 5 minutes, and responsive design that works across all devices.",
+        "This enhancement improves transparency and makes it easier for visitors to see the project's active development status at a glance. The hover cards provide a GitHub-native experience without leaving the DAFU website."
+      ]
     }
   ]
 }
