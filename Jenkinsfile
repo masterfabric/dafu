@@ -42,7 +42,7 @@ pipeline {
                 echo '🧪 Running unit tests with coverage and JUnit report...'
                 sh 'pip install pytest pytest-cov'
                 // Test + JUnit + Coverage
-                sh 'pytest --version || echo "No pytest config found, skipping tests"'
+               sh 'pytest --version || echo "No pytest config found, skipping tests"'
             }
             post {
                 always {
